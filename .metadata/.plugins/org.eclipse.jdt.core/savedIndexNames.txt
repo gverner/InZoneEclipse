@@ -1,0 +1,2 @@
+INDEX VERSION 1.126+/Users/glennverner/Documents/android/.metadata/.plugins/org.eclipse.jdt.core
+3981747211.index

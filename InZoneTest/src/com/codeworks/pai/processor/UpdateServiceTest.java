@@ -13,7 +13,10 @@ public class UpdateServiceTest extends ServiceTestCase<UpdateService> {
 	}
 
 	public void testIsMarketOpen() {
-		// UpdateService service = new UpdateService();
+		Intent dailyIntent;
+		dailyIntent = new Intent();
+		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_SCHEDULE);
+		startService(dailyIntent);
 		Calendar cal = GregorianCalendar.getInstance();
 		boolean marketOpen = cal.get(Calendar.HOUR_OF_DAY) > 9 && cal.get(Calendar.HOUR_OF_DAY) < 17;
 		assertEquals(marketOpen, this.getService().isMarketOpen());

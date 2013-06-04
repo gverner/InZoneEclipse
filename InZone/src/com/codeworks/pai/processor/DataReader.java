@@ -5,7 +5,7 @@ import java.util.List;
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.db.model.Security;
 
-public interface SecurityDataReader {
+public interface DataReader {
 
 	public abstract boolean readCurrentPrice(Security security);
 

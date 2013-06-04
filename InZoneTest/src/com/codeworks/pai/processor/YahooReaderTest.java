@@ -9,11 +9,11 @@ import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.db.model.Security;
 
 public class YahooReaderTest extends AndroidTestCase {
-	YahooReader reader;
+	DataReaderYahoo reader;
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		reader = new YahooReader();
+		reader = new DataReaderYahoo();
 	}
 	
 	public void testReadCurrentPrice() {

@@ -15,7 +15,7 @@ import com.codeworks.pai.db.PriceHistoryTable;
 import com.codeworks.pai.db.SecurityTable;
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.mock.TestDataLoader;
-import com.codeworks.pai.processor.Processor;
+import com.codeworks.pai.processor.ProcessorImpl;
 
 public class PaiContentProviderTest extends ProviderTestCase2<PaiContentProvider> {
 
@@ -68,7 +68,7 @@ public class PaiContentProviderTest extends ProviderTestCase2<PaiContentProvider
 			ContentValues values = new ContentValues();
 			values.put(PriceHistoryTable.COLUMN_ADJUSTED_CLOSE, price.getAdjustedClose());
 			values.put(PriceHistoryTable.COLUMN_CLOSE, price.getClose());
-			values.put(PriceHistoryTable.COLUMN_DATE, Processor.dbStringDateFormat.format(price.getDate()));
+			values.put(PriceHistoryTable.COLUMN_DATE, ProcessorImpl.dbStringDateFormat.format(price.getDate()));
 			values.put(PriceHistoryTable.COLUMN_HIGH, price.getHigh());
 			values.put(PriceHistoryTable.COLUMN_LOW, price.getLow());
 			values.put(PriceHistoryTable.COLUMN_OPEN, price.getOpen());

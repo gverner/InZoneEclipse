@@ -23,9 +23,11 @@ public class TestDataLoader {
 	public static String QQQ = "QQQ";
 	public static String GLD = "GLD";
 	public static String UNG = "UNG";
+	public static String HYG = "HYG";
+	
 	public static List<Price> getTestHistory(String symbol) {
 		
-		String[] securities = new String[] {SPY, QQQ, GLD, UNG};
+		String[] securities = new String[] {SPY, QQQ, GLD, UNG, HYG};
 		boolean symbolFound = false;
 		for (String security : securities) {
 			if (security.equals(symbol)) {
@@ -73,7 +75,7 @@ public class TestDataLoader {
 	
 	public static List<Price> generateHistory(double startPrice, double endPrice, int days) {
 		double diff = endPrice - startPrice;
-		double perday = diff / days;
+		double perday = PaiUtils.round(diff / days);
 		List<Price> history = new ArrayList<Price>();
 		Calendar cal = GregorianCalendar.getInstance(Locale.US);
 		double close = endPrice;

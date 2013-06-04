@@ -19,8 +19,8 @@ import au.com.bytecode.opencsv.CSVReader;
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.db.model.Security;
 
-public class YahooReader implements SecurityDataReader {
-	private static final String TAG = YahooReader.class.getSimpleName();
+public class DataReaderYahoo implements DataReader {
+	private static final String TAG = DataReaderYahoo.class.getSimpleName();
 	SimpleDateFormat dateTimeFormat = new SimpleDateFormat("MM/dd/yyyy hh:mmaa", Locale.US);
 	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 

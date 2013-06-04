@@ -10,7 +10,7 @@ import android.test.ProviderTestCase2;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.SecurityTable;
 import com.codeworks.pai.db.model.PaiStudy;
-import com.codeworks.pai.mock.MockSecurityDataReader;
+import com.codeworks.pai.mock.MockDataReader;
 import com.codeworks.pai.mock.TestDataLoader;
 
 public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
@@ -19,21 +19,22 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		super(PaiContentProvider.class, PaiContentProvider.AUTHORITY);
 	}
 
-	Processor processor;
+	ProcessorImpl processor;
 	List<PaiStudy> studies;
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		processor = new Processor(getMockContentResolver(), new MockSecurityDataReader());
+		processor = new ProcessorImpl(getMockContentResolver(), new MockDataReader());
 		//createSecurities();
 		//studies = processor.process();
 	}
 
-	public void insertSecurity(String symbol) {
+	public Uri insertSecurity(String symbol) {
 		ContentValues values = new ContentValues();
 		values.put(SecurityTable.COLUMN_SYMBOL, symbol);
 		Uri uri = getMockContentResolver().insert(PaiContentProvider.SECURITY_URI, values);
+		return uri;
 	}
 
 	public void createSecurities() {
@@ -55,12 +56,36 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		}
 		return null;
 	}
+/*
+	public void testHyg() throws InterruptedException {
+		insertSecurity(TestDataLoader.HYG);
+		studies = processor.process();
+		PaiStudy study = getStudy(TestDataLoader.HYG);
+		assertEquals("Price", MockDataReader.HYG_PRICE, study.getPrice());
+		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
+		assertEquals("MA week", 94.10d, round(study.getMaWeek()));
+		assertEquals("MA month", 92.23d, round(study.getMaMonth()));
+		assertEquals("MA last week", 94.28d, round(study.getMaLastWeek()));
+		assertEquals("MA last month", 92.21d, round(study.getMaLastMonth()));
+		assertEquals("Price last week", 92.92d, round(study.getPriceLastWeek()));
+		assertEquals("Price last month", 92.92d, round(study.getPriceLastMonth()));
+		assertEquals("StdDev Week", .87d, round(study.getStddevWeek()));
+		assertEquals("StdDev Month", 2.18d, round(study.getStddevMonth()));
+		assertEquals("DT Monthly",false, study.isDownTrendMonthly());
+		assertEquals("DT Weekly", true, study.isDownTrendWeekly());
+		assertEquals("TT", false, study.isPossibleTrendTerminationWeekly());
+		assertEquals("TT", false, study.isPossibleUptrendTermination());
+		assertEquals("TT", false, study.isPossibleDowntrendTermination());
+		assertEquals("Buy", false, study.isPriceInBuyZone());
+		assertEquals("Sell", false, study.isPriceInSellZone());
 
+	}
+*/
 	public void testUng() throws InterruptedException {
 		insertSecurity(TestDataLoader.UNG);
 		studies = processor.process();
 		PaiStudy study = getStudy(TestDataLoader.UNG);
-		assertEquals("Price", MockSecurityDataReader.UNG_PRICE, study.getPrice());
+		assertEquals("Price", MockDataReader.UNG_PRICE, study.getPrice());
 		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
 		assertEquals("StdDev Week", 1.46d, round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 5.62d, round(study.getStddevMonth()));
@@ -84,7 +109,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		insertSecurity(TestDataLoader.GLD);
 		studies = processor.process();
 		PaiStudy study = getStudy(TestDataLoader.GLD);
-		assertEquals("Price", MockSecurityDataReader.GLD_PRICE, study.getPrice());
+		assertEquals("Price", MockDataReader.GLD_PRICE, study.getPrice());
 		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
 		assertEquals("StdDev Week", 5.42d, round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 7.15d, round(study.getStddevMonth()));
@@ -106,16 +131,16 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		insertSecurity(TestDataLoader.SPY);
 		studies = processor.process();
 		PaiStudy study = getStudy(TestDataLoader.SPY);
-		assertEquals("Price", MockSecurityDataReader.SPY_PRICE, study.getPrice());
+		assertEquals("Price", MockDataReader.SPY_PRICE, study.getPrice());
 		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
-		assertEquals("StdDev Week", 5.56d, round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 10.94d, round(study.getStddevMonth()));
 		assertEquals("MA week", 151.08d, round(study.getMaWeek()));
 		assertEquals("MA month", 141.13d, round(study.getMaMonth()));
 		assertEquals("MA last week", 150.27d, round(study.getMaLastWeek()));
 		assertEquals("MA last month", 139.27d, round(study.getMaLastMonth()));
 		assertEquals("DT Monthly", false, study.isDownTrendMonthly());
 		assertEquals("DT Weekly", false, study.isDownTrendWeekly());
+		assertEquals("StdDev Week", 5.56d, round(study.getStddevWeek()));
+		assertEquals("StdDev Month", 10.94d, round(study.getStddevMonth()));
 		assertEquals("TT", false, study.isPossibleTrendTerminationWeekly());
 		assertEquals("TT", false, study.isPossibleUptrendTermination());
 		assertEquals("TT", false, study.isPossibleDowntrendTermination());
@@ -129,7 +154,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		studies = processor.process();
 		
 		PaiStudy study = getStudy(TestDataLoader.QQQ);
-		assertEquals("Price", MockSecurityDataReader.QQQ_PRICE, study.getPrice());
+		assertEquals("Price", MockDataReader.QQQ_PRICE, study.getPrice());
 		assertEquals("ATR", 0.0, study.getAverageTrueRange());
 		assertEquals("StdDev Week", 1.42d, round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 4.64d, round(study.getStddevMonth()));

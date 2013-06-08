@@ -5,10 +5,7 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.test.TouchUtils;
 import android.test.ViewAsserts;
 import android.view.KeyEvent;
-import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebView.FindListener;
-import android.widget.Button;
 import android.widget.TextView;
 
 public class PaiStudyListActivityTest extends ActivityInstrumentationTestCase2<PaiStudyListActivity> {

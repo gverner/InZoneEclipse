@@ -12,7 +12,6 @@ import android.test.ProviderTestCase2;
 import android.util.Log;
 
 import com.codeworks.pai.db.PriceHistoryTable;
-import com.codeworks.pai.db.SecurityTable;
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.mock.TestDataLoader;
 import com.codeworks.pai.processor.ProcessorImpl;
@@ -82,7 +81,7 @@ public class PaiContentProviderTest extends ProviderTestCase2<PaiContentProvider
 		String[] projection = { PriceHistoryTable.COLUMN_SYMBOL, PriceHistoryTable.COLUMN_CLOSE, PriceHistoryTable.COLUMN_DATE,
 				PriceHistoryTable.COLUMN_HIGH, PriceHistoryTable.COLUMN_LOW, PriceHistoryTable.COLUMN_OPEN,
 				PriceHistoryTable.COLUMN_ADJUSTED_CLOSE };
-		String selection = SecurityTable.COLUMN_SYMBOL + " = ? ";
+		String selection = PriceHistoryTable.COLUMN_SYMBOL + " = ? ";
 		String[] selectionArgs = { "SPY" };
 		Cursor historyCursor = getMockContentResolver().query(PaiContentProvider.PRICE_HISTORY_URI, projection, selection, selectionArgs,
 				PriceHistoryTable.COLUMN_DATE);

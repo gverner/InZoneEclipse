@@ -2,12 +2,12 @@ package com.codeworks.pai.processor;
 
 import java.util.List;
 
+import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Price;
-import com.codeworks.pai.db.model.Security;
 
 public interface DataReader {
 
-	public abstract boolean readCurrentPrice(Security security);
+	public abstract boolean readCurrentPrice(PaiStudy security);
 
 	public abstract List<Price> readHistory(String symbol);
 

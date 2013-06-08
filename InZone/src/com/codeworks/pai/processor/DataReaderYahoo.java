@@ -16,8 +16,8 @@ import java.util.Locale;
 import android.util.Log;
 import au.com.bytecode.opencsv.CSVReader;
 
+import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Price;
-import com.codeworks.pai.db.model.Security;
 
 public class DataReaderYahoo implements DataReader {
 	private static final String TAG = DataReaderYahoo.class.getSimpleName();
@@ -33,7 +33,7 @@ public class DataReaderYahoo implements DataReader {
 	 * @see com.codeworks.pai.processor.SecurityDataReader#readCurrentPrice(com.codeworks.pai.db.model.Security)
 	 */
 	@Override
-	public boolean readCurrentPrice(Security security) {
+	public boolean readCurrentPrice(PaiStudy security) {
 		List<String[]> results;// "MM/dd/yyyy hh:mmaa"
 		boolean found = false;
 		double quote = 0;
@@ -43,12 +43,17 @@ public class DataReaderYahoo implements DataReader {
 			results = downloadUrl(url);
 			for (String[] line : results) {
 				if (line.length >= 7) {
-					found = true;
 					quote = parseDouble(line[1], "Price");
-					security.setCurrentPrice(quote);
-					security.setRtBid(parseDouble(line[4], "Bid"));
-					security.setRtAsk(parseDouble(line[5], "Ask"));
-					security.setName(line[6]);
+					security.setPrice(quote);
+					//security.setRtBid(parseDouble(line[4], "Bid"));
+					//security.setRtAsk(parseDouble(line[5], "Ask"));
+					if ("N/A".equals(line[2]) && quote == 0.0 && security.getSymbol().equals(line[6])) {
+						found = false;
+						security.setName("Not Found");
+					} else {
+						security.setName(line[6]);
+						found = true;
+					}
 					security.setPriceDate(parseDateTime(line[2] + " " + line[7], " Date Time"));
 					Log.d(TAG, line[0] + " last=" + line[1] + " rtLast=" + line[3] + " rtBid=" + line[4] + " rtAsk=" + line[5]);
 				}

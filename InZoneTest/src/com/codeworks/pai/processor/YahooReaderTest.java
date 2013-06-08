@@ -6,7 +6,7 @@ import java.util.List;
 import android.test.AndroidTestCase;
 
 import com.codeworks.pai.db.model.Price;
-import com.codeworks.pai.db.model.Security;
+import com.codeworks.pai.db.model.PaiStudy;
 
 public class YahooReaderTest extends AndroidTestCase {
 	DataReaderYahoo reader;
@@ -17,22 +17,22 @@ public class YahooReaderTest extends AndroidTestCase {
 	}
 	
 	public void testReadCurrentPrice() {
-		Security security = new Security("SPY");
+		PaiStudy security = new PaiStudy("SPY");
 		assertTrue(reader.readCurrentPrice(security));
-		assertNotSame(0d,security.getCurrentPrice());
+		assertNotSame(0d,security.getPrice());
 	}
 
 	public void testReadBlankCurrentPrice() {
-		Security security = new Security("");
+		PaiStudy security = new PaiStudy("");
 		assertFalse(reader.readCurrentPrice(security));
-		assertEquals(0d,security.getCurrentPrice());
+		assertEquals(0d,security.getPrice());
 	}
 
 
 	public void testReadNullCurrentPrice() {
-		Security security = new Security(null);
+		PaiStudy security = new PaiStudy(null);
 		assertFalse(reader.readCurrentPrice(security));
-		assertEquals(0d,security.getCurrentPrice());
+		assertEquals(0d,security.getPrice());
 	}
 	
 	public void testParseDate() {

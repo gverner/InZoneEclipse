@@ -3,11 +3,6 @@ package com.codeworks.pai.contentprovider;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import com.codeworks.pai.db.PaiDatabaseHelper;
-import com.codeworks.pai.db.PriceHistoryTable;
-import com.codeworks.pai.db.PaiStudyTable;
-import com.codeworks.pai.db.SecurityTable;
-
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -19,6 +14,10 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import com.codeworks.pai.db.PaiDatabaseHelper;
+import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.PriceHistoryTable;
+
 public class PaiContentProvider extends ContentProvider {
 
 	// database
@@ -29,8 +28,6 @@ public class PaiContentProvider extends ContentProvider {
 	static final int PRICE_HISTORY_ID = 20;
 	static final int PRICE_HISTORY_MAX_DATE = 21;
 
-	static final int SECURITY = 30;
-	static final int SECURITY_ID = 40;
 	static final int PAI_STUDY = 50;
 	static final int PAI_STUDY_ID = 60;
 
@@ -54,8 +51,7 @@ public class PaiContentProvider extends ContentProvider {
 		sURIMatcher.addURI(AUTHORITY, PRICE_HISTORY_PATH + "/#", PRICE_HISTORY_ID);
 		// sURIMatcher.addURI(AUTHORITY, PRICE_HISTORY_PATH + "/",
 		// PRICE_HISTORY_MAX_DATE);
-		sURIMatcher.addURI(AUTHORITY, SECURITY_PATH, SECURITY);
-		sURIMatcher.addURI(AUTHORITY, SECURITY_PATH + "/#", SECURITY_ID);
+
 		sURIMatcher.addURI(AUTHORITY, PAI_STUDY_PATH, PAI_STUDY);
 		sURIMatcher.addURI(AUTHORITY, PAI_STUDY_PATH + "/#", PAI_STUDY_ID);
 	}
@@ -96,14 +92,6 @@ public class PaiContentProvider extends ContentProvider {
 			break;
 		case PRICE_HISTORY_MAX_DATE:
 			break;
-		case SECURITY:
-			queryBuilder.setTables(SecurityTable.TABLE_SECURITY);
-			break;
-		case SECURITY_ID:
-			queryBuilder.setTables(SecurityTable.TABLE_SECURITY);
-			// Adding the ID to the original query
-			queryBuilder.appendWhere(SecurityTable.COLUMN_ID + "=" + uri.getLastPathSegment());
-			break;
 		case PAI_STUDY:
 			queryBuilder.setTables(PaiStudyTable.TABLE_STUDY);
 			break;
@@ -138,9 +126,6 @@ public class PaiContentProvider extends ContentProvider {
 		case PRICE_HISTORY:
 			id = sqlDB.insert(PriceHistoryTable.TABLE_PRICE_HISTORY, null, values);
 			break;
-		case SECURITY:
-			id = sqlDB.insert(SecurityTable.TABLE_SECURITY, null, values);
-			break;
 		case PAI_STUDY:
 			id = sqlDB.insert(PaiStudyTable.TABLE_STUDY, null, values);
 			break;
@@ -168,18 +153,6 @@ public class PaiContentProvider extends ContentProvider {
 			} else {
 				rowsDeleted = sqlDB.delete(PriceHistoryTable.TABLE_PRICE_HISTORY, PriceHistoryTable.COLUMN_ID + "=" + id + " and "
 						+ selection, selectionArgs);
-			}
-			break;
-		case SECURITY:
-			rowsDeleted = sqlDB.delete(SecurityTable.TABLE_SECURITY, selection, selectionArgs);
-			break;
-		case SECURITY_ID:
-			String securityId = uri.getLastPathSegment();
-			if (TextUtils.isEmpty(selection)) {
-				rowsDeleted = sqlDB.delete(SecurityTable.TABLE_SECURITY, SecurityTable.COLUMN_ID + "=" + securityId, null);
-			} else {
-				rowsDeleted = sqlDB.delete(SecurityTable.TABLE_SECURITY, SecurityTable.COLUMN_ID + "=" + securityId + " and " + selection,
-						selectionArgs);
 			}
 			break;
 		case PAI_STUDY:
@@ -220,18 +193,6 @@ public class PaiContentProvider extends ContentProvider {
 						+ selection, selectionArgs);
 			}
 			break;
-		case SECURITY:
-			rowsUpdated = sqlDB.update(SecurityTable.TABLE_SECURITY, values, selection, selectionArgs);
-			break;
-		case SECURITY_ID:
-			String securityId = uri.getLastPathSegment();
-			if (TextUtils.isEmpty(selection)) {
-				rowsUpdated = sqlDB.update(SecurityTable.TABLE_SECURITY, values, SecurityTable.COLUMN_ID + "=" + securityId, null);
-			} else {
-				rowsUpdated = sqlDB.update(SecurityTable.TABLE_SECURITY, values, SecurityTable.COLUMN_ID + "=" + securityId + " and "
-						+ selection, selectionArgs);
-			}
-			break;
 		case PAI_STUDY:
 			rowsUpdated = sqlDB.update(PaiStudyTable.TABLE_STUDY, values, selection, selectionArgs);
 			break;
@@ -254,9 +215,9 @@ public class PaiContentProvider extends ContentProvider {
 	private void checkColumns(String[] projection) {
 		String[] available = { PriceHistoryTable.COLUMN_SYMBOL, PriceHistoryTable.COLUMN_DATE, PriceHistoryTable.COLUMN_ADJUSTED_CLOSE,
 				PriceHistoryTable.COLUMN_HIGH, PriceHistoryTable.COLUMN_LOW, PriceHistoryTable.COLUMN_OPEN, PriceHistoryTable.COLUMN_CLOSE,
-				PriceHistoryTable.COLUMN_ID, SecurityTable.COLUMN_ID, SecurityTable.COLUMN_SYMBOL, SecurityTable.COLUMN_NAME, PaiStudyTable.COLUMN_ID,
-				PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_MA_TYPE, PaiStudyTable.COLUMN_MA_WEEK, PaiStudyTable.COLUMN_MA_MONTH,
-				PaiStudyTable.COLUMN_MA_LAST_WEEK, PaiStudyTable.COLUMN_MA_LAST_MONTH, PaiStudyTable.COLUMN_PRICE,
+				PriceHistoryTable.COLUMN_ID, //SecurityTable.COLUMN_ID, SecurityTable.COLUMN_SYMBOL, SecurityTable.COLUMN_NAME, PaiStudyTable.COLUMN_ID,
+				PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_NAME, PaiStudyTable.COLUMN_MA_TYPE, PaiStudyTable.COLUMN_MA_WEEK, PaiStudyTable.COLUMN_MA_MONTH,
+				PaiStudyTable.COLUMN_MA_LAST_WEEK, PaiStudyTable.COLUMN_MA_LAST_MONTH, PaiStudyTable.COLUMN_PRICE, PaiStudyTable.COLUMN_PRICE_DATE,
 				PaiStudyTable.COLUMN_PRICE_LAST_WEEK, PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_STDDEV_WEEK,
 				PaiStudyTable.COLUMN_STDDEV_MONTH, PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_NOTICE, PaiStudyTable.COLUMN_NOTICE_DATE };
 		if (projection != null) {

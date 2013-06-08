@@ -8,7 +8,7 @@ import android.net.Uri;
 import android.test.ProviderTestCase2;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
-import com.codeworks.pai.db.SecurityTable;
+import com.codeworks.pai.db.PaiStudyTable;
 import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.mock.MockDataReader;
 import com.codeworks.pai.mock.TestDataLoader;
@@ -32,8 +32,8 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 
 	public Uri insertSecurity(String symbol) {
 		ContentValues values = new ContentValues();
-		values.put(SecurityTable.COLUMN_SYMBOL, symbol);
-		Uri uri = getMockContentResolver().insert(PaiContentProvider.SECURITY_URI, values);
+		values.put(PaiStudyTable.COLUMN_SYMBOL, symbol);
+		Uri uri = getMockContentResolver().insert(PaiContentProvider.PAI_STUDY_URI, values);
 		return uri;
 	}
 
@@ -158,8 +158,8 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		assertEquals("ATR", 0.0, study.getAverageTrueRange());
 		assertEquals("StdDev Week", 1.42d, round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 4.64d, round(study.getStddevMonth()));
-		assertEquals("MA week", 67.37d, study.getMaWeek());
-		assertEquals("MA month", 63.79d, study.getMaMonth());
+		assertEquals("MA week", 67.37d, round(study.getMaWeek()));
+		assertEquals("MA month", 63.79d, round(study.getMaMonth()));
 		assertEquals("MA last week", 67.32d, round(study.getMaLastWeek()));
 		assertEquals("MA last month", 63.36d, round(study.getMaLastMonth()));
 		assertEquals("DT Monthly", false, study.isDownTrendMonthly());

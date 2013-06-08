@@ -2,10 +2,10 @@ package com.codeworks.pai.db.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.text.ParseException;
 import java.util.Date;
-import java.util.List;
 
+import com.codeworks.pai.db.PaiStudyTable;
 import com.codeworks.pai.processor.Notice;
 
 
@@ -19,8 +19,10 @@ public class PaiStudy implements Serializable {
 	String symbol;
 	String name;
 	double price;
+	Date priceDate;
 	double priceLastWeek;
 	double priceLastMonth;
+	MaType maType;
 	double maMonth;
 	double maWeek;
 	double maLastWeek;
@@ -31,8 +33,6 @@ public class PaiStudy implements Serializable {
 	long securityId;
 	Notice notice;
 	Date noticeDate;
-	
-	List<Price> priceHistory = new ArrayList<Price>();
 	
 	public double getStddevWeek() {
 		return stddevWeek;
@@ -48,14 +48,6 @@ public class PaiStudy implements Serializable {
 
 	public void setStddevMonth(double stddev_month) {
 		this.stddevMonth = stddev_month;
-	}
-
-	public List<Price> getPriceHistory() {
-		return priceHistory;
-	}
-
-	public void setPriceHistory(List<Price> priceHistory) {
-		this.priceHistory = priceHistory;
 	}
 
 	public PaiStudy(String symbol) {
@@ -82,8 +74,32 @@ public class PaiStudy implements Serializable {
 		return price;
 	}
 
+	public Date getPriceDate() {
+		return priceDate;
+	}
+
+	public void setPriceDate(Date priceDate) {
+		this.priceDate = priceDate;
+	}
+
+	public void setPriceDate(String priceDateStr) throws ParseException {
+		if (priceDateStr == null) {
+			this.priceDate = null;
+		} else {
+			this.priceDate = PaiStudyTable.priceDateFormat.parse(priceDateStr);
+		}
+	}
+
 	public void setPrice(double price) {
-		this.price = round(price);
+		this.price = price;
+	}
+
+	public MaType getMaType() {
+		return maType;
+	}
+
+	public void setMaType(MaType maType) {
+		this.maType = maType;
 	}
 
 	public double getMaMonth() {
@@ -91,7 +107,7 @@ public class PaiStudy implements Serializable {
 	}
 
 	public void setMaMonth(double ma_month) {
-		this.maMonth = round(ma_month);
+		this.maMonth = ma_month;
 	}
 
 	public double getPriceLastWeek() {
@@ -99,7 +115,7 @@ public class PaiStudy implements Serializable {
 	}
 
 	public void setPriceLastWeek(double priceLastWeek) {
-		this.priceLastWeek = round(priceLastWeek);
+		this.priceLastWeek = priceLastWeek;
 	}
 
 	public double getPriceLastMonth() {
@@ -107,7 +123,7 @@ public class PaiStudy implements Serializable {
 	}
 
 	public void setPriceLastMonth(double priceLastMonth) {
-		this.priceLastMonth = round(priceLastMonth);
+		this.priceLastMonth = priceLastMonth;
 	}
 
 	public double getMaWeek() {
@@ -115,7 +131,7 @@ public class PaiStudy implements Serializable {
 	}
 
 	public void setMaWeek(double maWeek) {
-		this.maWeek = round(maWeek);
+		this.maWeek = maWeek;
 	}
 
 	public double getMaLastWeek() {
@@ -123,7 +139,7 @@ public class PaiStudy implements Serializable {
 	}
 
 	public void setMaLastWeek(double maLastWeek) {
-		this.maLastWeek = round(maLastWeek);
+		this.maLastWeek = maLastWeek;
 	}
 
 	public double getMaLastMonth() {
@@ -131,7 +147,7 @@ public class PaiStudy implements Serializable {
 	}
 
 	public void setMaLastMonth(double maLastMonth) {
-		this.maLastMonth = round(maLastMonth);
+		this.maLastMonth = maLastMonth;
 	}
 
 	public double getAverageTrueRange() {

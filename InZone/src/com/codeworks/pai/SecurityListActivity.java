@@ -19,7 +19,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
-import com.codeworks.pai.db.SecurityTable;
+import com.codeworks.pai.db.PaiStudyTable;
 
 public class SecurityListActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final String TAG = SecurityListActivity.class.getSimpleName();
@@ -76,7 +76,7 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 		if (securityId.length() == 0) {
 			return;
 		}
-		Uri securityUri = Uri.parse(PaiContentProvider.SECURITY_URI + "/" + securityId);
+		Uri securityUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + securityId);
 		int countDeleted = getContentResolver().delete(securityUri, null, null);
 		Log.d(TAG, "Uri=" + securityUri.toString() + " Delete Count=" + countDeleted);
 	}
@@ -86,7 +86,7 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 		Intent i = new Intent(this, SecurityDetailActivity.class);
-		Uri todoUri = Uri.parse(PaiContentProvider.SECURITY_URI + "/" + id);
+		Uri todoUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + id);
 		i.putExtra(PaiContentProvider.CONTENT_ITEM_TYPE, todoUri);
 
 		startActivity(i);
@@ -94,9 +94,9 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 
 	private void fillData() {
 		// Must include the _id column for the adapter to work
-		// SecurityTable.COLUMN_ID,
+		// PaiStudyTable.COLUMN_ID,
 
-		String[] from = new String[] { SecurityTable.COLUMN_ID, SecurityTable.COLUMN_SYMBOL, SecurityTable.COLUMN_NAME };
+		String[] from = new String[] { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_NAME };
 		// Fields on the UI to which we map
 		int[] to = new int[] { R.id.securityId, R.id.securitySymbol, R.id.securityName };
 
@@ -109,8 +109,8 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 	// Creates a new loader after the initLoader () call
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = { SecurityTable.COLUMN_ID, SecurityTable.COLUMN_SYMBOL, SecurityTable.COLUMN_NAME };
-		CursorLoader cursorLoader = new CursorLoader(this, PaiContentProvider.SECURITY_URI, projection, null, null, null);
+		String[] projection = { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_NAME };
+		CursorLoader cursorLoader = new CursorLoader(this, PaiContentProvider.PAI_STUDY_URI, projection, null, null, null);
 		return cursorLoader;
 	}
 

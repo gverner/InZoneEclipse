@@ -26,7 +26,6 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -46,9 +45,6 @@ import com.codeworks.pai.processor.UpdateService;
  * sample.
  */
 public class PaiStudyListActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
-
-	/** An intent for launching the system settings. */
-	private static final Intent sSettingsIntent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
 
 	private Intent dailyIntent;
 

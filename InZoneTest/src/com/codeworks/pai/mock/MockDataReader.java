@@ -5,8 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Price;
-import com.codeworks.pai.db.model.Security;
 import com.codeworks.pai.processor.DataReader;
 
 public class MockDataReader implements DataReader {
@@ -19,7 +19,7 @@ public class MockDataReader implements DataReader {
 	public static final double HYG_PRICE = 92.36d;
 
 	@Override
-	public boolean readCurrentPrice(Security security) {
+	public boolean readCurrentPrice(PaiStudy security) {
 		if (TestDataLoader.SPY.equalsIgnoreCase(security.getSymbol())) {
 			buildSecurity(security, "S&P 500", SPY_PRICE,"04/12/2013");
 		} else if (TestDataLoader.QQQ.equalsIgnoreCase(security.getSymbol())) {
@@ -36,11 +36,9 @@ public class MockDataReader implements DataReader {
 		return true;
 	}
 
-	public static void buildSecurity(Security security, String name, double price, String date) {
+	public static void buildSecurity(PaiStudy security, String name, double price, String date) {
 		try {
-			security.setCurrentPrice(price);
-			security.setRtBid(security.getCurrentPrice());
-			security.setRtAsk(security.getCurrentPrice());
+			security.setPrice(price);
 			security.setName(name);
 			security.setPriceDate(sdf.parse(date));
 		} catch (ParseException e) {

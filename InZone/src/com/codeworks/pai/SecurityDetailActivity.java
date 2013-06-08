@@ -11,13 +11,10 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
-import com.codeworks.pai.db.SecurityTable;
+import com.codeworks.pai.db.PaiStudyTable;
 import com.codeworks.pai.processor.UpdateService;
 
 /*
@@ -53,11 +50,11 @@ public class SecurityDetailActivity extends Activity {
   }
 
 	private void fillData(Uri uri) {
-		String[] projection = { SecurityTable.COLUMN_SYMBOL };
+		String[] projection = { PaiStudyTable.COLUMN_SYMBOL };
 		Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
 		if (cursor != null) try {
 			cursor.moveToFirst();
-			String symbol = cursor.getString(cursor.getColumnIndexOrThrow(SecurityTable.COLUMN_SYMBOL));
+			String symbol = cursor.getString(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SYMBOL));
 			mSymbolText.setText(symbol);
 		} finally {
 			// Always close the cursor
@@ -110,12 +107,12 @@ public class SecurityDetailActivity extends Activity {
     }
 
     ContentValues values = new ContentValues();
-    values.put(SecurityTable.COLUMN_SYMBOL, symbol.trim());
+    values.put(PaiStudyTable.COLUMN_SYMBOL, symbol.trim());
 
     if (securityUri == null) {
       // New security
       ContentResolver contentResolver = getContentResolver();
-      securityUri = contentResolver.insert(PaiContentProvider.SECURITY_URI, values);
+      securityUri = contentResolver.insert(PaiContentProvider.PAI_STUDY_URI, values);
     } else {
       // Update security
       getContentResolver().update(securityUri, values, null, null);

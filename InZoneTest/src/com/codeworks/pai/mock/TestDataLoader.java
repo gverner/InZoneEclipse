@@ -41,7 +41,7 @@ public class TestDataLoader {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 		List<Price> history = new ArrayList<Price>();
 		String filename = "/com/codeworks/pai/mock/" + symbol + "_history.csv";
-		InputStream url = GrouperTest.class.getResourceAsStream(filename.toLowerCase());
+		InputStream url = GrouperTest.class.getResourceAsStream(filename.toLowerCase(Locale.US));
 		if (url == null) {
 			throw new IllegalArgumentException(filename+" history data not found");
 		}

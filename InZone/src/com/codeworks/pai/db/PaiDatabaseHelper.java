@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class PaiDatabaseHelper extends SQLiteOpenHelper {
 
   private static final String DATABASE_NAME = "paitable.db";
-  private static final int DATABASE_VERSION = 1;
+  private static final int DATABASE_VERSION = 2;
 
   public PaiDatabaseHelper(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -17,7 +17,6 @@ public class PaiDatabaseHelper extends SQLiteOpenHelper {
   @Override
   public void onCreate(SQLiteDatabase database) {
     PriceHistoryTable.onCreate(database);
-    SecurityTable.onCreate(database);
     PaiStudyTable.onCreate(database);
   }
 
@@ -27,7 +26,6 @@ public class PaiDatabaseHelper extends SQLiteOpenHelper {
   public void onUpgrade(SQLiteDatabase database, int oldVersion,
       int newVersion) {
     PriceHistoryTable.onUpgrade(database, oldVersion, newVersion);
-    SecurityTable.onUpgrade(database, oldVersion, newVersion);
     PaiStudyTable.onUpgrade(database, oldVersion, newVersion);
   }
 }

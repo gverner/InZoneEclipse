@@ -4,7 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
@@ -18,10 +17,9 @@ import android.util.Log;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.PaiStudyTable;
 import com.codeworks.pai.db.PriceHistoryTable;
-import com.codeworks.pai.db.SecurityTable;
+import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Price;
-import com.codeworks.pai.db.model.Security;
 import com.codeworks.pai.study.EMA2;
 import com.codeworks.pai.study.Grouper;
 import com.codeworks.pai.study.Period;
@@ -39,81 +37,67 @@ public class ProcessorImpl implements Processor {
 	}
 
 	public List<PaiStudy> process() throws InterruptedException {
-		List<PaiStudy> studies = new ArrayList<PaiStudy>();
-		List<Security> securities = new ArrayList<Security>();
-		securities = getSecurities();
-		updateCurrentPrice(securities);
-		for (Security security : securities) {
-			if (security.getCurrentPrice() != 0) {
+		List<PaiStudy> studies = getSecurities();
+		updateCurrentPrice(studies);
+		for (PaiStudy security : studies) {
+			if (security.getPrice() != 0) {
 				List<Price> history = getPriceHistory(security.getSymbol());
 				if (history.size() >= 20) {
 					if (Thread.interrupted()) {
 						throw new InterruptedException();
 					}
-					PaiStudy study = calculateStudy(security, history);
-					saveStudy(study);
-					studies.add(study);
+					calculateStudy(security, history);
+					saveStudy(security);
 				} else {
-					studies.add(saveProcessNotification(security, Notice.INSUFFICIENT_HISTORY));
+					security.setNotice(Notice.INSUFFICIENT_HISTORY);
 				}
 			} else {
-				studies.add(saveProcessNotification(security, Notice.NO_PRICE));
+				security.setNotice(Notice.NO_PRICE);
 			}
 		}
-		removeObsoleteStudies(securities);
 		return studies;
 	}
 
-	PaiStudy saveProcessNotification(Security security, Notice notice) {
-		PaiStudy study = new PaiStudy(security.getSymbol());
-		study.setNotice(notice);
-		return study;
-	}
 	
-	PaiStudy calculateStudy(Security security, List<Price> history) {
+	void calculateStudy(PaiStudy security, List<Price> history) {
 		Collections.sort(history);
-		PaiStudy study = new PaiStudy(security.getSymbol());
-		study.setPrice(security.getCurrentPrice());
-		study.setAverageTrueRange(0d);
-		study.setSecurityId(security.getId());
 
 		Grouper grouper = new Grouper();
 		{
 			List<Price> weekly = grouper.periodList(history, Period.Week);
 			if (weekly.size() >= 20) {
-				study.setMaLastWeek(EMA2.compute(weekly, 20));
-				study.setPriceLastWeek(weekly.get(weekly.size() - 1).getClose());
+				security.setMaLastWeek(EMA2.compute(weekly, 20));
+				security.setPriceLastWeek(weekly.get(weekly.size() - 1).getClose());
 
 				appendCurrentPrice(weekly, security);
-				study.setMaWeek(EMA2.compute(weekly, 20));
-				study.setStddevWeek(StdDev.calculate(weekly, 20));
+				security.setMaWeek(EMA2.compute(weekly, 20));
+				security.setStddevWeek(StdDev.calculate(weekly, 20));
 			}
 		}
 		{
 			List<Price> monthly = grouper.periodList(history, Period.Month);
 			if (monthly.size() >= 20) {
-				study.setMaLastMonth(EMA2.compute(monthly, 20));
-				study.setPriceLastMonth(monthly.get(monthly.size() - 1).getClose());
+				security.setMaLastMonth(EMA2.compute(monthly, 20));
+				security.setPriceLastMonth(monthly.get(monthly.size() - 1).getClose());
 				appendCurrentPrice(monthly, security);
-				study.setMaMonth(EMA2.compute(monthly, 20));
+				security.setMaMonth(EMA2.compute(monthly, 20));
 
-				study.setStddevMonth(StdDev.calculate(monthly, 20));
+				security.setStddevMonth(StdDev.calculate(monthly, 20));
 			}
 		}
-		return study;
 	}
 
-	private void appendCurrentPrice(List<Price> weekly, Security security) {
+	private void appendCurrentPrice(List<Price> weekly, PaiStudy security) {
 		if (weekly != null && weekly.size() > 0) {
 			Price lastHistory = weekly.get(weekly.size() - 1);
 			if (security.getPriceDate().compareTo(lastHistory.getDate()) == 0) {
-				if (security.getCurrentPrice() != lastHistory.getClose()) {
-					lastHistory.setClose(security.getCurrentPrice());
-					Log.d(TAG, "History and Price Close Differ Should not Happend=" + lastHistory.getDate() + " History Close" + lastHistory.getClose()+ " Current Price" + security.getCurrentPrice());
+				if (security.getPrice() != lastHistory.getClose()) {
+					lastHistory.setClose(security.getPrice());
+					Log.d(TAG, "History and Price Close Differ Should not Happend=" + lastHistory.getDate() + " History Close" + lastHistory.getClose()+ " Current Price" + security.getPrice());
 				}
 			} else if (security.getPriceDate().after(weekly.get(weekly.size() - 1).getDate())) {
 				Price lastPrice = new Price();
-				lastPrice.setClose(security.getCurrentPrice());
+				lastPrice.setClose(security.getPrice());
 				lastPrice.setDate(security.getPriceDate());
 				weekly.add(lastPrice);
 				Log.d(TAG, "Last History Date=" + lastHistory.getDate() + " Add Current Price Date" + security.getPriceDate());
@@ -121,15 +105,11 @@ public class ProcessorImpl implements Processor {
 		}
 	}
 
-	private void updateCurrentPrice(List<Security> securities) throws InterruptedException {
-		for (Security quote : securities) {
+	private void updateCurrentPrice(List<PaiStudy> securities) throws InterruptedException {
+		for (PaiStudy quote : securities) {
 			Log.d(TAG, quote.getSymbol());
 			String oldName = quote.getName();
-			if (!reader.readCurrentPrice(quote) ) {
-				if (quote.getName() == null || quote.getName().trim().length() == 0) { 
-				quote.setName("Not Found");
-				}
-			}
+			reader.readCurrentPrice(quote);
 			// updating the name here, may need to move update to when security
 			// is added by user or kick off Processor at that time.
 			if (quote.getName() != null && !quote.getName().equals(oldName)) {
@@ -141,10 +121,10 @@ public class ProcessorImpl implements Processor {
 		}
 	}
 
-	void updateSecurityName(Security security) {
+	void updateSecurityName(PaiStudy security) {
 		ContentValues values = new ContentValues();
-		values.put(SecurityTable.COLUMN_NAME, security.getName());
-		Uri securityUri = Uri.parse(PaiContentProvider.SECURITY_URI + "/" + security.getId());
+		values.put(PaiStudyTable.COLUMN_NAME, security.getName());
+		Uri securityUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + security.getSecurityId());
 		getContentResolver().update(securityUri, values, null, null);
 	}
 
@@ -152,7 +132,7 @@ public class ProcessorImpl implements Processor {
 		String[] projection = { PriceHistoryTable.COLUMN_SYMBOL, PriceHistoryTable.COLUMN_CLOSE, PriceHistoryTable.COLUMN_DATE,
 				PriceHistoryTable.COLUMN_HIGH, PriceHistoryTable.COLUMN_LOW, PriceHistoryTable.COLUMN_OPEN,
 				PriceHistoryTable.COLUMN_ADJUSTED_CLOSE };
-		String selection = SecurityTable.COLUMN_SYMBOL + " = ? ";
+		String selection = PaiStudyTable.COLUMN_SYMBOL + " = ? ";
 		String[] selectionArgs = { symbol };
 		Log.d(TAG, "Reading Price from database");
 		Cursor historyCursor = getContentResolver().query(PaiContentProvider.PRICE_HISTORY_URI, projection, selection, selectionArgs,
@@ -217,46 +197,26 @@ public class ProcessorImpl implements Processor {
 	}
 
 	void saveStudy(PaiStudy study) {
-		String[] projection = new String[] { PaiStudyTable.COLUMN_ID };
-		String selection = "symbol = ? ";
-		String[] selectionArgs = new String[] { study.getSymbol() };
-		Cursor studyCursor = getContentResolver().query(PaiContentProvider.PAI_STUDY_URI, projection, selection, selectionArgs, null);
-		try {
-			if (studyCursor.getCount() > 1) {
-				Log.e(TAG, "Too many study rows for symbol " + study.getSymbol());
-				studyCursor.moveToFirst();
-				Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + studyCursor.getLong(studyCursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_ID)));
-				getContentResolver().delete(studyUri, null, null);
-			}
-			ContentValues values = new ContentValues();
-			values.put(PaiStudyTable.COLUMN_MA_TYPE, "E");
-			values.put(PaiStudyTable.COLUMN_MA_WEEK, study.getMaWeek());
-			values.put(PaiStudyTable.COLUMN_MA_MONTH, study.getMaMonth());
-			values.put(PaiStudyTable.COLUMN_MA_LAST_WEEK, study.getMaLastWeek());
-			values.put(PaiStudyTable.COLUMN_MA_LAST_MONTH, study.getMaLastMonth());
-			values.put(PaiStudyTable.COLUMN_PRICE, study.getPrice());
-			values.put(PaiStudyTable.COLUMN_PRICE_LAST_WEEK, study.getPriceLastWeek());
-			values.put(PaiStudyTable.COLUMN_PRICE_LAST_MONTH, study.getPriceLastMonth());
-			values.put(PaiStudyTable.COLUMN_STDDEV_WEEK, study.getStddevWeek());
-			values.put(PaiStudyTable.COLUMN_STDDEV_MONTH, study.getStddevMonth());
-			values.put(PaiStudyTable.COLUMN_AVG_TRUE_RANGE, study.getAverageTrueRange());
-			values.put(PaiStudyTable.COLUMN_SYMBOL, study.getSymbol());
-			if (studyCursor.getCount() == 0) {
-				Log.d(TAG, "Inserting Study " + study.toString());
-				getContentResolver().insert(PaiContentProvider.PAI_STUDY_URI, values);
-			} else {
-				Log.d(TAG, "Updating Study " + study.toString());
-				studyCursor.moveToFirst();
-				Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + studyCursor.getLong(0));
-				getContentResolver().update(studyUri, values, null, null);
-			}
-
-		} finally {
-			studyCursor.close();
-		}
+		ContentValues values = new ContentValues();
+		values.put(PaiStudyTable.COLUMN_MA_TYPE, "E");
+		values.put(PaiStudyTable.COLUMN_MA_WEEK, study.getMaWeek());
+		values.put(PaiStudyTable.COLUMN_MA_MONTH, study.getMaMonth());
+		values.put(PaiStudyTable.COLUMN_MA_LAST_WEEK, study.getMaLastWeek());
+		values.put(PaiStudyTable.COLUMN_MA_LAST_MONTH, study.getMaLastMonth());
+		values.put(PaiStudyTable.COLUMN_PRICE, study.getPrice());
+		values.put(PaiStudyTable.COLUMN_PRICE_LAST_WEEK, study.getPriceLastWeek());
+		values.put(PaiStudyTable.COLUMN_PRICE_LAST_MONTH, study.getPriceLastMonth());
+		values.put(PaiStudyTable.COLUMN_STDDEV_WEEK, study.getStddevWeek());
+		values.put(PaiStudyTable.COLUMN_STDDEV_MONTH, study.getStddevMonth());
+		values.put(PaiStudyTable.COLUMN_AVG_TRUE_RANGE, study.getAverageTrueRange());
+		values.put(PaiStudyTable.COLUMN_SYMBOL, study.getSymbol());
+		values.put(PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.priceDateFormat.format(study.getPriceDate()));
+		Log.d(TAG, "Updating Study " + study.toString());
+		Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + study.getSecurityId());
+		getContentResolver().update(studyUri, values, null, null);
 	}
 	
-	void removeObsoleteStudies(List<Security> securities) {
+	void removeObsoleteStudies(List<PaiStudy> securities) {
 		String[] projection = new String[] { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_SYMBOL };
 		Cursor studyCursor = getContentResolver().query(PaiContentProvider.PAI_STUDY_URI, projection, null, null, null);
 		try {
@@ -265,7 +225,7 @@ public class ProcessorImpl implements Processor {
 					int studyId = studyCursor.getInt(studyCursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_ID));
 					String symbol = studyCursor.getString(studyCursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SYMBOL));
 					boolean found = false;
-					for (Security security : securities) {
+					for (PaiStudy security : securities) {
 						if (security.getSymbol().equals(symbol)) {
 							found = true;
 						}
@@ -294,23 +254,40 @@ public class ProcessorImpl implements Processor {
 		return dbStringDateFormat.format(cal.getTime());
 	}
 
-	List<Security> getSecurities() {
-		List<Security> securities = new ArrayList<Security>();
-		String[] projection = { SecurityTable.COLUMN_ID, SecurityTable.COLUMN_SYMBOL, SecurityTable.COLUMN_NAME };
-		Cursor cursor = getContentResolver().query(PaiContentProvider.SECURITY_URI, projection, null, null, null);
+	List<PaiStudy> getSecurities() {
+		List<PaiStudy> securities = new ArrayList<PaiStudy>();
+		String[] projection = { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_NAME, PaiStudyTable.COLUMN_MA_TYPE, PaiStudyTable.COLUMN_MA_WEEK, PaiStudyTable.COLUMN_MA_MONTH,
+				PaiStudyTable.COLUMN_MA_LAST_WEEK, PaiStudyTable.COLUMN_MA_LAST_MONTH, PaiStudyTable.COLUMN_PRICE, PaiStudyTable.COLUMN_PRICE_LAST_WEEK,
+				PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_STDDEV_WEEK, PaiStudyTable.COLUMN_STDDEV_MONTH,
+				PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE };
+		Cursor cursor = getContentResolver().query(PaiContentProvider.PAI_STUDY_URI, projection, null, null, null);
 		try {
 			if (cursor != null) {
 				if (cursor.moveToFirst())
 					do {
-						String symbol = cursor.getString(cursor.getColumnIndexOrThrow(SecurityTable.COLUMN_SYMBOL));
-						Security security = new Security(symbol);
-						security.setId(cursor.getLong(cursor.getColumnIndexOrThrow(SecurityTable.COLUMN_ID)));
-						security.setName(cursor.getString(cursor.getColumnIndexOrThrow(SecurityTable.COLUMN_NAME)));						
-						security.setName(cursor.getString(cursor.getColumnIndexOrThrow(SecurityTable.COLUMN_NAME)));
+						String symbol = cursor.getString(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SYMBOL));
+						PaiStudy security = new PaiStudy(symbol);
+						security.setSecurityId(cursor.getLong(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_ID)));
+						security.setName(cursor.getString(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_NAME)));
+
+						security.setMaType(MaType.parse(cursor.getString(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_MA_TYPE))));
+						security.setMaWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_MA_WEEK)));
+						security.setMaMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_MA_MONTH)));
+						security.setMaLastWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_MA_LAST_WEEK)));
+						security.setMaLastMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_MA_LAST_MONTH)));
+						security.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PRICE)));
+						security.setPriceLastWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PRICE_LAST_WEEK)));
+						security.setPriceLastMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PRICE_LAST_MONTH)));
+						security.setStddevWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_STDDEV_WEEK)));
+						security.setStddevMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_STDDEV_MONTH)));
+						security.setAverageTrueRange(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_AVG_TRUE_RANGE)));
+						security.setPriceDate(cursor.getString(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PRICE_DATE)));
 						securities.add(security);
-						
+
 					} while (cursor.moveToNext());
 			}
+		} catch (Exception e) {
+			Log.e(TAG, "Exception in Processor GetSecurities", e);
 		} finally {
 			// Always close the cursor
 			cursor.close();

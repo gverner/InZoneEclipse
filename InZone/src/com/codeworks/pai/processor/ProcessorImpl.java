@@ -36,8 +36,16 @@ public class ProcessorImpl implements Processor {
 		this.reader = reader;
 	}
 
-	public List<PaiStudy> process() throws InterruptedException {
-		List<PaiStudy> studies = getSecurities();
+	/**
+	 * Process all securities.
+	 * lookup current price and calculates study
+	 * 
+	 * @param symbol when symbol is null all securities are processed.
+	 * @return
+	 * @throws InterruptedException
+	 */
+	public List<PaiStudy> process(String symbol) throws InterruptedException {
+		List<PaiStudy> studies = getSecurities(symbol);
 		updateCurrentPrice(studies);
 		for (PaiStudy security : studies) {
 			if (security.getPrice() != 0) {
@@ -57,7 +65,6 @@ public class ProcessorImpl implements Processor {
 		}
 		return studies;
 	}
-
 	
 	void calculateStudy(PaiStudy security, List<Price> history) {
 		Collections.sort(history);
@@ -254,13 +261,20 @@ public class ProcessorImpl implements Processor {
 		return dbStringDateFormat.format(cal.getTime());
 	}
 
-	List<PaiStudy> getSecurities() {
+	List<PaiStudy> getSecurities(String inSymbol) {
 		List<PaiStudy> securities = new ArrayList<PaiStudy>();
 		String[] projection = { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_NAME, PaiStudyTable.COLUMN_MA_TYPE, PaiStudyTable.COLUMN_MA_WEEK, PaiStudyTable.COLUMN_MA_MONTH,
 				PaiStudyTable.COLUMN_MA_LAST_WEEK, PaiStudyTable.COLUMN_MA_LAST_MONTH, PaiStudyTable.COLUMN_PRICE, PaiStudyTable.COLUMN_PRICE_LAST_WEEK,
 				PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_STDDEV_WEEK, PaiStudyTable.COLUMN_STDDEV_MONTH,
 				PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE };
-		Cursor cursor = getContentResolver().query(PaiContentProvider.PAI_STUDY_URI, projection, null, null, null);
+		String selection = null;
+		String[] selectionArgs = null;
+		if (inSymbol != null && inSymbol.length() > 0) {
+			selection = PaiStudyTable.COLUMN_SYMBOL + " = ? ";
+			selectionArgs = new String [] { inSymbol };
+			Log.d(TAG, "Selecting Single Security from database");
+		}
+		Cursor cursor = getContentResolver().query(PaiContentProvider.PAI_STUDY_URI, projection, selection, selectionArgs, null);
 		try {
 			if (cursor != null) {
 				if (cursor.moveToFirst())

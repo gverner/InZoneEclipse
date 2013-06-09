@@ -26,6 +26,7 @@ public class UpdateService extends Service {
 	public static final String	EXTRA_QUOTES		= "com.codeworks.pai.updateservice.quotes";
 	public static final String	EXTRA_RESULTS		= "com.codeworks.pai.updateservice.quotes";
 	public static final String	SERVICE_ACTION		= "com.codeworks.pai.updateservice.action";
+	public static final String	SERVICE_SYMBOL		= "com.codeworks.pai.updateservice.symbol";
 	static int					RUN_START_HOUR		= 9;
 	static int					RUN_END_HOUR		= 17;
 	public static final int		DAILY_INTENT_ID		= 5453;
@@ -70,16 +71,14 @@ public class UpdateService extends Service {
 				makeToast("Price Update Service Started", Toast.LENGTH_LONG);
 				Log.d(TAG, "on Starte'd");
 			} else {
-				Log.d(TAG, "allready Starte'd");
+				updater.restart(); // interrupt sleep and restart now
+				Log.d(TAG, "an Re-Starte'd");
 			}
 
 		} else if (ACTION_ONE_TIME.equals(action)) {
 			Log.d(TAG, "One Time start");
-			if (updater.isRunning()) {
-				updater.restart(); // interrupt sleep and restart now
-			} else {
-				updater.start();
-			}
+			String symbol = bundle.getString(SERVICE_SYMBOL);
+			new OneTimeUpdate(symbol).start();
 		}
 		Log.d(TAG, "on Starte'd");
 		updateAlarm();
@@ -273,7 +272,7 @@ public class UpdateService extends Service {
 			while (running) {
 				try {
 					Log.d(TAG, "Updater Running");
-					List<PaiStudy> studies = processor.process();
+					List<PaiStudy> studies = processor.process(null);
 					notifier.updateNotification(studies);
 					if (isMarketOpen()) {
 						synchronized (lock) {
@@ -293,4 +292,26 @@ public class UpdateService extends Service {
 
 	}
 
+	class OneTimeUpdate extends Thread {
+		String symbol;
+		public OneTimeUpdate(String symbol) {
+			super("OneTimeUpdate");
+			this.symbol = symbol;
+		}
+
+		@Override
+		public void run() {
+			try {
+				Log.d(TAG, "One Time Update Running for "+symbol);
+				List<PaiStudy> studies = processor.process(symbol);
+				notifier.updateNotification(studies);
+				Log.d(TAG, "One Time Update Complete for "+symbol);
+				stopSelf();
+			} catch (InterruptedException e) {
+				Log.d(TAG, "One Time Update has been interrupted");
+			}
+		}
+
+	}
+	
 }

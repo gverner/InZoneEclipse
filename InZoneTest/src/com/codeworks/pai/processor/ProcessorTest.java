@@ -83,7 +83,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 */
 	public void testUng() throws InterruptedException {
 		insertSecurity(TestDataLoader.UNG);
-		studies = processor.process();
+		studies = processor.process(TestDataLoader.UNG);
 		PaiStudy study = getStudy(TestDataLoader.UNG);
 		assertEquals("Price", MockDataReader.UNG_PRICE, study.getPrice());
 		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
@@ -107,7 +107,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 
 	public void testGld() throws InterruptedException {
 		insertSecurity(TestDataLoader.GLD);
-		studies = processor.process();
+		studies = processor.process(null);
 		PaiStudy study = getStudy(TestDataLoader.GLD);
 		assertEquals("Price", MockDataReader.GLD_PRICE, study.getPrice());
 		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
@@ -129,7 +129,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 
 	public void testSpy() throws InterruptedException {
 		insertSecurity(TestDataLoader.SPY);
-		studies = processor.process();
+		studies = processor.process(TestDataLoader.SPY);
 		PaiStudy study = getStudy(TestDataLoader.SPY);
 		assertEquals("Price", MockDataReader.SPY_PRICE, study.getPrice());
 		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
@@ -151,7 +151,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 
 	public void testQQQ() throws InterruptedException {
 		insertSecurity(TestDataLoader.QQQ);
-		studies = processor.process();
+		studies = processor.process(null);
 		
 		PaiStudy study = getStudy(TestDataLoader.QQQ);
 		assertEquals("Price", MockDataReader.QQQ_PRICE, study.getPrice());

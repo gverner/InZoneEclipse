@@ -91,19 +91,12 @@ public class UpdateServiceTest extends AndroidTestCase {
 	public void testOneTimeIntent() throws InterruptedException {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();
-		Intent dailyIntent = new Intent();
-		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_SCHEDULE);
-		service.onStartCommand(dailyIntent, 0, 0);
 		Intent oneTimeIntent = new Intent();
 		oneTimeIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_ONE_TIME);
+		service.onStartCommand(oneTimeIntent, 0, 0);
 		Thread.sleep(1000);
-		while (service.updater.isRunning()) {
-			service.mockSystemTime = service.mockSystemTime.hourOfDay().addToCopy(1);
-			service.onStartCommand(oneTimeIntent, 0, 0);
-			Thread.sleep(1000);
-		}
-		assertEquals("Number of Process Calls",9, ((MockProcessor)service.processor).numberOfCalls);
-		assertEquals("Number of Notifier Calls",9, ((MockNotifier)service.notifier).numberOfCalls);
+		assertEquals("Number of Process Calls", 1, ((MockProcessor) service.processor).numberOfCalls);
+		assertEquals("Number of Notifier Calls", 1, ((MockNotifier) service.notifier).numberOfCalls);
 
 	}
 	

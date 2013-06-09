@@ -9,7 +9,7 @@ public class MockProcessor implements Processor {
 	int numberOfCalls = 0;
 	
 	@Override
-	public List<PaiStudy> process() throws InterruptedException {
+	public List<PaiStudy> process(String symbol) throws InterruptedException {
 		numberOfCalls++;
 		List<PaiStudy> studies = new ArrayList<PaiStudy>();
 		PaiStudy study = new PaiStudy("SPY");

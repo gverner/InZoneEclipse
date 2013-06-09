@@ -117,12 +117,13 @@ public class SecurityDetailActivity extends Activity {
       // Update security
       getContentResolver().update(securityUri, values, null, null);
     }
-    startServiceOneTime();
+    startServiceOneTime(symbol);
   }
 
-  void startServiceOneTime() {
+  void startServiceOneTime(String symbol) {
 		Intent oneTimeIntent = new Intent(this, UpdateService.class);
 		oneTimeIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_ONE_TIME);
+		oneTimeIntent.putExtra(UpdateService.SERVICE_SYMBOL, symbol);
 		startService(oneTimeIntent);
   }
   

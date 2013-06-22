@@ -8,6 +8,7 @@ import com.codeworks.pai.processor.Notifier;
 public class MockNotifier implements Notifier {
 	int numberOfCalls = 0;
 	int numberOfStudies = 0;
+	int numberOfSendNoticeCalls = 0;
 	@Override
 	public void updateNotification(List<PaiStudy> studies) {
 		numberOfCalls++;
@@ -15,6 +16,10 @@ public class MockNotifier implements Notifier {
 			numberOfStudies++;
 			System.out.println("Mock Notifier received study "+study.toString());
 		}
+	}
+	@Override
+	public void sendNotice(long securityId, String title, String text) {
+		numberOfSendNoticeCalls++;
 	}
 
 }

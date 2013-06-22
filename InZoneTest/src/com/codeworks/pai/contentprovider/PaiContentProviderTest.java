@@ -12,6 +12,7 @@ import android.test.ProviderTestCase2;
 import android.util.Log;
 
 import com.codeworks.pai.db.PriceHistoryTable;
+import com.codeworks.pai.db.PaiStudyTable;
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.mock.TestDataLoader;
 import com.codeworks.pai.processor.ProcessorImpl;
@@ -26,8 +27,8 @@ public class PaiContentProviderTest extends ProviderTestCase2<PaiContentProvider
 
 	static final int PRICE_HISTORY = 10;
 	static final int PRICE_HISTORY_ID = 20;
-	static final int SECURITY = 30;
-	static final int SECURITY_ID = 40;
+	static final int SETTINGS = 30;
+	static final int SETTINGS_ID = 40;
 	static final int PAI_STUDY = 50;
 	static final int PAI_STUDY_ID = 60;
 
@@ -37,7 +38,7 @@ public class PaiContentProviderTest extends ProviderTestCase2<PaiContentProvider
 	private static final String PRICE_HISTORY_PATH = "price_history";
 	private static final String PAI_STUDY_PATH = "pai_study";
 
-	public static final Uri SECURITY_URI = Uri.parse("content://" + AUTHORITY + "/" + SECURITY_PATH);
+	public static final Uri SETTINGS_URI = Uri.parse("content://" + AUTHORITY + "/" + SECURITY_PATH);
 	public static final Uri PRICE_HISTORY_URI = Uri.parse("content://" + AUTHORITY + "/" + PRICE_HISTORY_PATH);
 	public static final Uri PAI_STUDY_URI = Uri.parse("content://" + AUTHORITY + "/" + PAI_STUDY_PATH);
 
@@ -49,14 +50,14 @@ public class PaiContentProviderTest extends ProviderTestCase2<PaiContentProvider
 	static {
 		sURIMatcher.addURI(AUTHORITY, PRICE_HISTORY_PATH, PRICE_HISTORY);
 		sURIMatcher.addURI(AUTHORITY, PRICE_HISTORY_PATH + "/#", PRICE_HISTORY_ID);
-		sURIMatcher.addURI(AUTHORITY, SECURITY_PATH, SECURITY);
-		sURIMatcher.addURI(AUTHORITY, SECURITY_PATH + "/#", SECURITY_ID);
+		sURIMatcher.addURI(AUTHORITY, SECURITY_PATH, SETTINGS);
+		sURIMatcher.addURI(AUTHORITY, SECURITY_PATH + "/#", SETTINGS_ID);
 		sURIMatcher.addURI(AUTHORITY, PAI_STUDY_PATH, PAI_STUDY);
 		sURIMatcher.addURI(AUTHORITY, PAI_STUDY_PATH + "/#", PAI_STUDY_ID);
 	}
 
 	public void testUriMatcher() {
-		assertEquals(SECURITY, sURIMatcher.match(SECURITY_URI));
+		assertEquals(SETTINGS, sURIMatcher.match(SETTINGS_URI));
 		assertEquals(PRICE_HISTORY, sURIMatcher.match(PRICE_HISTORY_URI));
 		assertEquals(PAI_STUDY, sURIMatcher.match(PAI_STUDY_URI));
 	}
@@ -102,4 +103,55 @@ public class PaiContentProviderTest extends ProviderTestCase2<PaiContentProvider
 		}
 	}
 
+	
+	public Uri loadSettings() throws IOException {
+			ContentValues values = new ContentValues();
+			values.put(PaiStudyTable.COLUMN_SYMBOL, "SPY");
+			values.put(PaiStudyTable.COLUMN_MA_TYPE, "E");
+			values.put(PaiStudyTable.COLUMN_PRICE, 1.1d);
+			values.put(PaiStudyTable.COLUMN_NAME, "S&P");
+			return getMockContentResolver().insert(PaiContentProvider.PAI_STUDY_URI, values);
+	}
+
+	public void testSettings() throws IOException {
+		Uri settingsUri = loadSettings();
+		String[] projection = { PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_MA_TYPE, PaiStudyTable.COLUMN_PRICE,
+				PaiStudyTable.COLUMN_NAME };
+
+		Cursor cursor = getMockContentResolver().query(settingsUri, projection, null, null ,null);
+		try {
+			assertEquals("one row", 1, cursor.getCount());
+			boolean rowResult = cursor.moveToFirst();
+			assertEquals("moveToFirst", true, rowResult);
+			assertEquals("SPY", cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_SYMBOL)));
+			assertEquals("E", cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_MA_TYPE)));
+			assertEquals(1.1d, cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_PRICE)));
+			assertEquals("S&P", cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_NAME)));
+		} finally {
+			cursor.close();
+		}
+		ContentValues values = new ContentValues();
+		values.put(PaiStudyTable.COLUMN_SYMBOL, "QQQ");
+		values.put(PaiStudyTable.COLUMN_MA_TYPE, "S");
+		values.put(PaiStudyTable.COLUMN_PRICE, 2.2d);
+		values.put(PaiStudyTable.COLUMN_NAME, "THE Qs");
+		assertEquals("Rows Updated", 1, getMockContentResolver().update(settingsUri, values, null, null));
+		
+		cursor = getMockContentResolver().query(settingsUri, projection, null, null ,null);
+		try {
+			assertEquals("one row", 1, cursor.getCount());
+			boolean rowResult = cursor.moveToFirst();
+			assertEquals("moveToFirst", true, rowResult);
+			assertEquals("QQQ", cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_SYMBOL)));
+			assertEquals("S", cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_MA_TYPE)));
+			assertEquals(2.2d, cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_PRICE)));
+			assertEquals("THE Qs", cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_NAME)));
+		} finally {
+			cursor.close();
+		}
+		getMockContentResolver().delete(settingsUri, null, null);
+		cursor = getMockContentResolver().query(settingsUri, projection, null, null ,null);
+		assertEquals("zero row", 0, cursor.getCount());
+	}
+	
 }

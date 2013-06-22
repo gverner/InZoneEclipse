@@ -26,6 +26,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -57,8 +58,9 @@ public class PaiStudyListActivity extends ListActivity implements LoaderManager.
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		dailyIntent = new Intent(this, UpdateService.class);
-		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_SCHEDULE);
+		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_MANUAL);
 		startService(dailyIntent);
 		setContentView(R.layout.studylist_main);
 		fillData();
@@ -86,7 +88,13 @@ public class PaiStudyListActivity extends ListActivity implements LoaderManager.
 			intent.setClassName(getPackageName(), SecurityListActivity.class.getName());
 			startActivity(intent);
 			break;
+		case R.id.action_settings:
+			Intent settingsIntent = new Intent();
+			settingsIntent.setClassName(getPackageName(), SettingsActivity.class.getName());
+			startActivity(settingsIntent);
+			break;
 		}
+		
 		return true;
 	}
 

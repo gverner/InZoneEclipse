@@ -78,6 +78,10 @@ public class TestDataLoader {
 		double perday = PaiUtils.round(diff / days);
 		List<Price> history = new ArrayList<Price>();
 		Calendar cal = GregorianCalendar.getInstance(Locale.US);
+		// role calendar so we always start on the same and generate weekly values based on the same value.
+		while (cal.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
+			cal.add(Calendar.DAY_OF_MONTH, -1);
+		}
 		double close = endPrice;
 		do {
 			cal.add(Calendar.DAY_OF_MONTH, -1); // start before today

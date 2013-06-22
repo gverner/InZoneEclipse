@@ -57,7 +57,7 @@ public class NotifierImpl implements Notifier {
 				study.setNotice(Notice.NONE);
 			}
 			if (saveStudyNoticeIfChanged(study) && !Notice.NONE.equals(study.getNotice())) {
-				notify(study.getSecurityId(), res.getString(study.getNotice().getSubject()),
+				sendNotice(study.getSecurityId(), res.getString(study.getNotice().getSubject()),
 						String.format(res.getString(study.getNotice().getMessage()), study.getSymbol()));
 			}
 		}
@@ -89,8 +89,14 @@ public class NotifierImpl implements Notifier {
 		}
 		return changed;
 	}
-
-	void notify(long securityId, String title, String text) {
+	/**
+	 * Create Notification from PaiStucyListActivity
+	 * 
+	 * @param securityId  Notification Id
+	 * @param title		
+	 * @param text
+	 */
+	public void sendNotice(long securityId, String title, String text) {
 		Log.d(TAG, String.format("create notice title %1$s with text %2$s", title, text));
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.ic_input_add)
 				.setContentTitle(title).setContentText(text);

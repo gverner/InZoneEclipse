@@ -7,8 +7,16 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.test.AndroidTestCase;
+import android.test.mock.MockContext;
+import android.test.mock.MockResources;
+
+import com.codeworks.pai.R;
+import com.codeworks.pai.mock.MockSharedPreferences;
 
 public class UpdateServiceTest extends AndroidTestCase {
 
@@ -21,6 +29,7 @@ public class UpdateServiceTest extends AndroidTestCase {
 		int		minute			= 1;
 		DateTime mockSystemTime = new DateTime();
 		List<DateTime> alarmTimes = new ArrayList<DateTime>();
+		SharedPreferences sharedPref = new MockSharedPreferences();
 		
 		@Override
 		public void onCreate() {
@@ -60,7 +69,56 @@ public class UpdateServiceTest extends AndroidTestCase {
 			System.out.println("Test Time="+formatStartTime(mockSystemTime));
 			return mockSystemTime;
 		}
+		
+		int getPrefUpdateFrequency() {
+			int frequency = 3;
+			return frequency;
+		}
 
+		@Override
+		SharedPreferences getSharedPreferences() {
+			return sharedPref;
+		}
+		@Override
+		public Context getApplicationContext() {
+			
+			Context context = new MockContext() {
+				@Override
+				public
+				Resources getResources() {
+					Resources resource = new MockResources() {
+						@Override
+						public String getString(int key) {
+							if (key == R.string.scheduledStartSubject) {
+								return "Value for Mock Key scheduledStartSubject";
+							}
+							if (key == R.string.scheduleSetupSubject) {
+								return "Value for Mock Key R.string.scheduleSetupSubject";
+							}
+							throw new NotFoundException(String.valueOf(key));
+						}
+						@Override
+						public String getString(int key, Object ... formatArgs) {
+							if (key == R.string.scheduledStartMessage) {
+								return "Value for Mock R.string.scheduledStartMessage";
+							}
+						
+							if (key == R.string.scheduledStartSubject) {
+								return "Value for Mock Key scheduledStartSubject";
+							}
+							if (key == R.string.scheduleSetupSubject) {
+								return "Value for Mock Key R.string.scheduleSetupSubject";
+							}
+							throw new NotFoundException(String.valueOf(key));
+						}
+
+					};
+					return resource;
+				}
+			};
+			
+			return context;
+		}
 	}
 
 	public void testIsMarketOpen() {

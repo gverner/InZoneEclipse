@@ -79,6 +79,8 @@ public class ProcessorImpl implements Processor {
 				appendCurrentPrice(weekly, security);
 				security.setMaWeek(EMA2.compute(weekly, 20));
 				security.setStddevWeek(StdDev.calculate(weekly, 20));
+			} else {
+				Log.w(TAG,"Insufficent Weekly History only "+weekly.size()+" periods.");
 			}
 		}
 		{
@@ -90,6 +92,8 @@ public class ProcessorImpl implements Processor {
 				security.setMaMonth(EMA2.compute(monthly, 20));
 
 				security.setStddevMonth(StdDev.calculate(monthly, 20));
+			} else {
+				Log.w(TAG,"Insufficent Monthly History only "+monthly.size()+" periods.");
 			}
 		}
 	}
@@ -116,7 +120,17 @@ public class ProcessorImpl implements Processor {
 		for (PaiStudy quote : securities) {
 			Log.d(TAG, quote.getSymbol());
 			String oldName = quote.getName();
-			reader.readCurrentPrice(quote);
+			if (!reader.readRTPrice(quote)) {
+				reader.readCurrentPrice(quote);
+				Log.w(TAG,"FAILED to get real time price using delayed Price");
+			} else {
+				if (quote.getPriceDate() == null) {
+					PaiStudy quote2 = new PaiStudy(quote.getSymbol());
+					reader.readCurrentPrice(quote);
+					quote.setPriceDate(quote2.getPriceDate());
+					Log.w(TAG,"Using price Date from delayed Price");
+				}
+			}
 			// updating the name here, may need to move update to when security
 			// is added by user or kick off Processor at that time.
 			if (quote.getName() != null && !quote.getName().equals(oldName)) {

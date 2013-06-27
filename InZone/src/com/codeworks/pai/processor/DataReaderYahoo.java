@@ -1,10 +1,15 @@
 package com.codeworks.pai.processor;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StreamTokenizer;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -12,7 +17,13 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
+import javax.xml.transform.stream.StreamResult;
+
+import android.text.Html;
+import android.text.Spanned;
+import android.text.format.DateUtils;
 import android.util.Log;
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -64,6 +75,99 @@ public class DataReaderYahoo implements DataReader {
 		return found;
 	}
 
+	public boolean readRTPrice(PaiStudy security) {
+		boolean found = false;
+		BufferedReader br = null;
+		try {
+			String urlStr = buildRealtimeUrl(security.getSymbol());
+			String searchStr = "yfs_l84_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
+			//String searchBid = "yfs_b00_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
+			//String searchAsk = "yfs_a00_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
+			String searchName = "class=\"title\"><h2>";
+			String searchTime2 = "yfs_t53_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
+			String searchTime1 = "yfs_t53_"+security.getSymbol().toLowerCase(Locale.US) +"\"><span id=\"yfs_t53_"+security.getSymbol().toLowerCase(Locale.US) +"\">";
+			long start = System.currentTimeMillis();
+			URL url = new URL(urlStr);
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setReadTimeout(10000 /* milliseconds */);
+			conn.setConnectTimeout(15000 /* milliseconds */);
+			conn.setRequestMethod("GET");
+			conn.setDoInput(true);
+			// Starts the query
+			conn.connect();
+			int response = conn.getResponseCode();
+			Log.d(TAG, "The response is: " + response);
+			br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+			String line;
+			int count = 0;
+			while ((line = br.readLine()) != null) {
+				count++;
+				String result = scanLine(searchStr, start, line, count);
+				if (result != null) {
+					found = true;
+					security.setPrice(Double.parseDouble(result));
+				}
+				result = scanLine(searchName, start, line, count);
+				if (result != null) {
+					//result = URLDecoder.decode(result, "UTF-8");
+				Spanned spanned = Html.fromHtml(result);
+					security.setName(spanned.toString());
+				}
+				result = scanLine(searchTime1, start, line, count);
+				if (result == null) {
+					result = scanLine(searchTime2, start, line, count);
+					
+				}
+				if (result != null) {
+					security.setPriceDate(parseRTDate(result));
+				}
+			}
+			Log.d(TAG, "SCANNED "+count+" lines in ms " + (System.currentTimeMillis() - start));
+		} catch (Exception e) {
+			Log.e(TAG, "Exception in ReadRTPrice", e);
+		} finally {
+			if (br != null) {
+				try {
+					br.close();
+				} catch (IOException e) {
+					// ignore on close
+				}
+			}
+		}
+		return found;
+	}
+
+	String scanLine(String searchStr, long start, String line, int count) {
+		String result = null;
+		int pos = line.indexOf(searchStr);
+		if (pos > -1) {
+			int endPos = line.indexOf("<", pos+searchStr.length());
+			result = line.substring(pos + searchStr.length(), endPos);
+			Log.d(TAG, "SCAN FOUND " + result + " on line " + count + " in ms " + (System.currentTimeMillis() - start));
+		}
+		return result;
+	}
+	
+	Date parseRTDate(String stringDate) {
+		Date returnDate = null;
+		Calendar cal = GregorianCalendar.getInstance (TimeZone.getTimeZone("US/Eastern"),Locale.US);
+		SimpleDateFormat ydf = new SimpleDateFormat("MMM dd, hh:mmaa zzz yyyy", Locale.US);
+		ydf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		if (stringDate.length() >= 18) {
+			stringDate = stringDate + " " + cal.get(Calendar.YEAR);
+		} else if (stringDate.length() == 10 || stringDate.length() == 11) {
+			stringDate = cal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.US) + " " + cal.get(Calendar.DAY_OF_MONTH) + ", " + stringDate + " " + cal.get(Calendar.YEAR);
+		}
+		try {
+			returnDate = ydf.parse(stringDate);
+			Log.d(TAG,"Price Date "+ydf.format(returnDate));
+		} catch (ParseException e) {
+			e.printStackTrace();
+			Log.e(TAG, "Parse Date Exception", e);
+		}
+		return returnDate;
+	}
+	
 	double parseDouble(String value, String fieldName) {
 		try {
 			return Double.parseDouble(value);
@@ -133,7 +237,7 @@ public class DataReaderYahoo implements DataReader {
 		String endDay = Integer.toString(cal.get(Calendar.DAY_OF_MONTH));
 		String endMonth = Integer.toString(cal.get(Calendar.MONTH));
 		String endYear = Integer.toString(cal.get(Calendar.YEAR));
-		cal.add(Calendar.WEEK_OF_YEAR, -80);
+		cal.add(Calendar.WEEK_OF_YEAR, -100);
 		String startDay = Integer.toString(cal.get(Calendar.DAY_OF_MONTH));
 		String startMonth = Integer.toString(cal.get(Calendar.MONTH));
 		String startYear = Integer.toString(cal.get(Calendar.YEAR));
@@ -143,6 +247,10 @@ public class DataReaderYahoo implements DataReader {
 		return url;
 	}
 
+	String buildRealtimeUrl(String symbol) {
+		String url = "http://finance.yahoo.com/q?s="+symbol+"&ql=1";
+		return url;
+	}
 	/** 
 	 * Given a URL, establishes an HttpUrlConnection and retrieves
 	 * the content as a InputStream, which is CSV parsed and returned

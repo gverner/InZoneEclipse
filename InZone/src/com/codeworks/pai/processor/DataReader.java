@@ -11,4 +11,6 @@ public interface DataReader {
 
 	public abstract List<Price> readHistory(String symbol);
 
+	public abstract boolean readRTPrice(PaiStudy security);
+
 }

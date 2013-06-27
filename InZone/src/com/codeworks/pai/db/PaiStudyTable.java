@@ -2,6 +2,7 @@ package com.codeworks.pai.db;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
@@ -53,6 +54,7 @@ public class PaiStudyTable {
 
 	  public static void onCreate(SQLiteDatabase database) {
 	    database.execSQL(DATABASE_CREATE);
+	    priceDateFormat.setTimeZone(TimeZone.getDefault());
 	  }
 
 	  public static void onUpgrade(SQLiteDatabase database, int oldVersion,

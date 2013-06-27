@@ -95,6 +95,18 @@ public class UpdateServiceTest extends AndroidTestCase {
 							if (key == R.string.scheduleSetupSubject) {
 								return "Value for Mock Key R.string.scheduleSetupSubject";
 							}
+							if (key == R.string.updateServiceSubject) {
+								return "Value for Mock key R.string.updateServiceSubject"; 
+							}
+							if (key == R.string.serviceStoppedMessage) {
+								return "Value for Mock key R.string.serviceStoppedMessage";
+							}
+							if (key == R.string.serviceRunningMessage) {
+								return "Value for Mock key R.string.serviceRunningMessage";
+							}
+							if (key == R.string.servicePausedMessage) {
+								return "Value for Mock key R.string.servicePausedMessage";
+							}
 							throw new NotFoundException(String.valueOf(key));
 						}
 						@Override

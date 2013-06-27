@@ -1,7 +1,14 @@
 package com.codeworks.pai.processor;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
+
+import org.apache.http.impl.cookie.DateUtils;
 
 import android.test.AndroidTestCase;
 
@@ -16,6 +23,40 @@ public class YahooReaderTest extends AndroidTestCase {
 		reader = new DataReaderYahoo();
 	}
 	
+	public void testFormatDate() {
+		SimpleDateFormat ydf = new SimpleDateFormat("MMM dd, hh:mmaa zzz yyyy", Locale.US);
+		ydf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		String stringDate = "Jun 21, 4:30PM EDT 2013";//stringDate.substring(0, 5) + " " + cal.get(Calendar.YEAR) + " " + stringDate.substring(8,15);
+		try {
+			Date returnDate = ydf.parse(stringDate);
+			System.out.println(ydf.format(returnDate));
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	public void testReadRTPrice() {
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mmaa zzz",Locale.US);
+		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		PaiStudy security = new PaiStudy("SPY");
+		assertTrue(reader.readRTPrice(security));
+		System.out.println(sdf.format(security.getPriceDate()));
+		System.out.println(security.getName());
+		/*
+	    security = new PaiStudy("QQQ");
+		assertTrue(reader.readRTPrice(security));
+	    security = new PaiStudy("IWM");
+		assertTrue(reader.readRTPrice(security));
+	    security = new PaiStudy("EFA");
+		assertTrue(reader.readRTPrice(security));
+	    security = new PaiStudy("HYG");
+		assertTrue(reader.readRTPrice(security));
+	    security = new PaiStudy("XLE");
+		assertTrue(reader.readRTPrice(security));
+	    security = new PaiStudy("");
+		assertFalse(reader.readRTPrice(security));
+		*/
+	}
 	public void testReadCurrentPrice() {
 		PaiStudy security = new PaiStudy("SPY");
 		assertTrue(reader.readCurrentPrice(security));

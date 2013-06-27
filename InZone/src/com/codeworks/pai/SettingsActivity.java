@@ -3,7 +3,6 @@ package com.codeworks.pai;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 
@@ -20,9 +19,9 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		if (key.equals(KEY_PREF_SYNC_CONN)) {
-			SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+			//SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 			// Set summary to be the user-description for the selected value
-			sharedPref.setSummary(sharedPreferences.getString(key, ""));
+			//sharedPref. Summary(sharedPreferences.getString(key, ""));
 		}
 	}
 

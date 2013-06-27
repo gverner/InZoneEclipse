@@ -11,5 +11,5 @@
         android:dialogTitle="@string/pref_updateFrequency"
         android:entries="@array/pref_updateFrequencyTypes_entries"
         android:entryValues="@array/pref_updateFrequencyTypes_values"
-        android:defaultValue="@string/pref_updateFrequencyTypes_default" />
+        android:defaultValue="3" />
 </PreferenceScreen>

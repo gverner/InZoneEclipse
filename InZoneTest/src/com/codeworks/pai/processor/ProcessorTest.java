@@ -118,7 +118,10 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		assertEquals("MA last week", 157.94d, round(study.getMaLastWeek()));
 		assertEquals("MA last month", 156.99d, round(study.getMaLastMonth()));
 		assertEquals("DT Monthly",true, study.isDownTrendMonthly());
+		assertEquals("UT Monthly",false, study.isUpTrendMonthly());
+		
 		assertEquals("DT Weekly", true, study.isDownTrendWeekly());
+		assertEquals("UT Weekly", false, study.isUpTrendWeekly());
 		assertEquals("TT", false, study.isPossibleTrendTerminationWeekly());
 		assertEquals("TT", false, study.isPossibleUptrendTermination());
 		assertEquals("TT", false, study.isPossibleDowntrendTermination());

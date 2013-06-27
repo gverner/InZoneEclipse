@@ -53,4 +53,9 @@ public class MockDataReader implements DataReader {
 		return history;
 	}
 
+	@Override
+	public boolean readRTPrice(PaiStudy security) {
+		return readCurrentPrice(security);
+	}
+
 }

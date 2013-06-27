@@ -3,6 +3,7 @@ package com.codeworks.pai.mock;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -12,6 +13,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
+import android.text.format.DateUtils;
 import au.com.bytecode.opencsv.CSVReader;
 
 import com.codeworks.pai.PaiUtils;
@@ -73,13 +75,15 @@ public class TestDataLoader {
 		}
 	}
 	
-	public static List<Price> generateHistory(double startPrice, double endPrice, int days) {
+	public static List<Price> generateHistory(double startPrice, double endPrice, int days) throws ParseException {
 		double diff = endPrice - startPrice;
+		SimpleDateFormat sdf  = new SimpleDateFormat("MM/dd/yyyy",Locale.US);
+		Date startDate = sdf.parse("06/15/2013");
 		double perday = PaiUtils.round(diff / days);
 		List<Price> history = new ArrayList<Price>();
 		Calendar cal = GregorianCalendar.getInstance(Locale.US);
-		// role calendar so we always start on the same and generate weekly values based on the same value.
-		while (cal.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
+		// role calendar so we always start on the same date and generate weekly values based on the same value.
+		while (cal.getTime().after(startDate) || cal.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
 			cal.add(Calendar.DAY_OF_MONTH, -1);
 		}
 		double close = endPrice;

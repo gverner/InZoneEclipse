@@ -19,6 +19,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -81,11 +82,8 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		sharedPref.unregisterOnSharedPreferenceChangeListener(this);
 
 		Log.d(TAG, "on Destroy'd");
-		String formattedNextStartTime = "";
-		if (nextStartTime != null) {
-			formattedNextStartTime = formatStartTime(nextStartTime);
-		}
-		makeToast("Price Update Service Stopped Next Restart " + formattedNextStartTime, Toast.LENGTH_LONG);
+		updateServiceNotice(R.string.serviceStoppedMessage);
+		makeToast("Price Update Service Stopped", Toast.LENGTH_LONG);
 	}
 
 	SharedPreferences getSharedPreferences() {
@@ -135,6 +133,12 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		Resources res = getApplicationContext().getResources();
 		notifier.sendNotice(50000L, res.getString(R.string.scheduleSetupSubject),
 				String.format(res.getString(R.string.scheduleSetupMessage, formatStartTime(startTime))));
+	}
+
+	void updateServiceNotice(int messageKey) {
+		Resources res = getApplicationContext().getResources();
+		notifier.sendNotice(50002L, res.getString(R.string.updateServiceSubject),
+				res.getString(messageKey));
 	}
 
 	/**
@@ -241,7 +245,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	boolean isMarketOpen() {
 		DateTime cal = getCurrentNYTime();
 		int hour = cal.getHourOfDay();
-		Log.d(TAG, "Is EST Hour of day (" + hour + ") between 8 and 17 ");
+		Log.d(TAG, "Is EST Hour of day (" + hour + ") between 8 and 17 "+DateUtils.formatDateTime(getApplicationContext(), cal.getMillis(), DateUtils.FORMAT_ABBREV_RELATIVE));
 		boolean marketOpen = false; // set to true to ignore market
 		if (hour > 8 && hour < 17 && cal.getDayOfWeek() != DateTimeConstants.SATURDAY && cal.getDayOfWeek() != DateTimeConstants.SUNDAY) {
 			marketOpen = true;
@@ -253,9 +257,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		int frequency = 3;
 		try {
 			SharedPreferences sharedPref = getSharedPreferences();
-			frequency = sharedPref.getInt(KEY_PREF_UPDATE_FREQUENCY_TYPE, 3);
-//			String updateFrequency = sharedPref.getString(KEY_PREF_UPDATE_FREQUENCY, "3");
-//			frequency = Integer.parseInt(updateFrequency);
+			frequency = Integer.parseInt(sharedPref.getString(KEY_PREF_UPDATE_FREQUENCY_TYPE, "3"));
 		} catch (Exception e) {
 			frequency = 3;
 			Log.e(TAG, "Exception reading update frequency preference", e);
@@ -316,10 +318,12 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 
 			while (running) {
 				try {
+					updateServiceNotice(R.string.serviceRunningMessage);
 					Log.d(TAG, "Updater Running");
 					List<PaiStudy> studies = processor.process(null);
 					notifier.updateNotification(studies);
 					if (isMarketOpen()) {
+						updateServiceNotice(R.string.servicePausedMessage);
 						synchronized (lock) {
 							lock.wait(frequency * 60000);
 						}

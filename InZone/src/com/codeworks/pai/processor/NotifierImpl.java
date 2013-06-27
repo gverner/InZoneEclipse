@@ -98,7 +98,7 @@ public class NotifierImpl implements Notifier {
 	 */
 	public void sendNotice(long securityId, String title, String text) {
 		Log.d(TAG, String.format("create notice title %1$s with text %2$s", title, text));
-		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.ic_input_add)
+		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.ic_launcher)
 				.setContentTitle(title).setContentText(text);
 		mBuilder.setAutoCancel(true);
 		mBuilder.setOnlyAlertOnce(true);

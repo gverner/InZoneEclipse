@@ -227,6 +227,11 @@ public class PaiStudy implements Serializable {
 		sb.append(format(this.calcSellZoneBottom()));
 		sb.append(" top=");
 		sb.append(format(this.calcSellZoneTop()));
+		sb.append(" WUT="+isUpTrendWeekly());
+		sb.append(" MUT="+isUpTrendMonthly());
+		sb.append(" PLW="+format(priceLastWeek));
+		sb.append(" maLM="+format(maLastMonth));
+		sb.append(" PLM="+format(priceLastMonth));
 		return sb.toString();
 	}
 

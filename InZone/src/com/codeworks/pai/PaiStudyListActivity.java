@@ -16,6 +16,10 @@
 
 package com.codeworks.pai;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
+
 import android.R.color;
 import android.app.ListActivity;
 import android.app.LoaderManager;
@@ -27,12 +31,15 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.CursorAdapter;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,12 +53,13 @@ import com.codeworks.pai.processor.UpdateService;
  * sample.
  */
 public class PaiStudyListActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+	private static final String TAG = PaiStudyListActivity.class.getSimpleName();
 
 	private Intent dailyIntent;
 
 	// private Cursor cursor;
 	private PaiCursorAdapter adapter;
-
+	SimpleDateFormat lastUpdatedFormat = new SimpleDateFormat("MM/dd/yyyy hh:mmaa");
 	// List<PaiStudy> quotes = new ArrayList<PaiStudy>();
 
 	/** Called when the activity is first created. */
@@ -64,6 +72,7 @@ public class PaiStudyListActivity extends ListActivity implements LoaderManager.
 		startService(dailyIntent);
 		setContentView(R.layout.studylist_main);
 		fillData();
+		lastUpdatedFormat.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
 	}
 	
 
@@ -110,7 +119,7 @@ public class PaiStudyListActivity extends ListActivity implements LoaderManager.
 		String[] projection = new String[] { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_PRICE,
 				PaiStudyTable.COLUMN_PRICE_LAST_WEEK, PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_MA_WEEK,
 				PaiStudyTable.COLUMN_MA_MONTH, PaiStudyTable.COLUMN_MA_LAST_WEEK, PaiStudyTable.COLUMN_MA_LAST_MONTH,
-				PaiStudyTable.COLUMN_STDDEV_WEEK, PaiStudyTable.COLUMN_STDDEV_MONTH, PaiStudyTable.COLUMN_AVG_TRUE_RANGE };
+				PaiStudyTable.COLUMN_STDDEV_WEEK, PaiStudyTable.COLUMN_STDDEV_MONTH, PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE };
 		CursorLoader cursorLoader = new CursorLoader(this, PaiContentProvider.PAI_STUDY_URI, projection, null, null, null);
 		return cursorLoader;
 	}
@@ -152,6 +161,11 @@ public class PaiStudyListActivity extends ListActivity implements LoaderManager.
 				study.setStddevWeek(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_STDDEV_WEEK)));
 				study.setStddevMonth(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_STDDEV_MONTH)));
 				study.setAverageTrueRange(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_AVG_TRUE_RANGE)));
+				try {
+					study.setPriceDate(cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_PRICE_DATE)));
+				} catch (ParseException e) {
+					Log.d(TAG,"Parse Exception Price Date",e);
+				}
 				// Set the Menu Image
 				// ImageView
 				// menuImage=(ImageView)arg0.findViewById(R.id.iv_ContactImg);
@@ -204,7 +218,13 @@ public class PaiStudyListActivity extends ListActivity implements LoaderManager.
 					textSellZoneTop.setBackgroundColor(Color.WHITE);
 					textSellZoneBot.setTextColor(Color.BLACK);
 					textSellZoneTop.setTextColor(Color.BLACK);
-				}				
+				}
+
+				TextView lastUpdated = (TextView) findViewById(R.id.studyList_lastUpdated);
+				if (study.getPriceDate() != null && lastUpdated != null) {
+					lastUpdated.setText(lastUpdatedFormat.format(study.getPriceDate()));
+				}
+				
 			}
 		}
 		

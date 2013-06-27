@@ -45,8 +45,12 @@
     <string name="pref_updateFrequencyTypeOne">One Minute</string>
     <string name="pref_updateFrequencyTypes_default">3</string>
     <string name="scheduledStartSubject">Started by Schedule</string>
-    <string name="scheduledStartMessage">At %1Ss</string>
+    <string name="scheduledStartMessage">Next at %1Ss</string>
     <string name="scheduleSetupSubject">Schedule Setup</string>
-    <string name="scheduleSetupMessage">At %1$s Start Price Service</string>
+    <string name="scheduleSetupMessage">Next at %1$s Start Price Service</string>
+    <string name="updateServiceSubject">Update Servce</string>
+    <string name="serviceStoppedMessage">Stopped</string>
+    <string name="serviceRunningMessage">Running</string>
+    <string name="servicePausedMessage">Paused</string>
     
 </resources>

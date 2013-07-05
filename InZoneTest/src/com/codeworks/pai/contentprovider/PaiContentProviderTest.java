@@ -110,6 +110,7 @@ public class PaiContentProviderTest extends ProviderTestCase2<PaiContentProvider
 			values.put(PaiStudyTable.COLUMN_MA_TYPE, "E");
 			values.put(PaiStudyTable.COLUMN_PRICE, 1.1d);
 			values.put(PaiStudyTable.COLUMN_NAME, "S&P");
+			values.put(PaiStudyTable.COLUMN_PORTFOLIO_ID, 1L);
 			return getMockContentResolver().insert(PaiContentProvider.PAI_STUDY_URI, values);
 	}
 

@@ -8,11 +8,11 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
 
-public class PaiStudyListActivityTest extends ActivityInstrumentationTestCase2<PaiStudyListActivity> {
-	PaiStudyListActivity activity;
+public class PaiStudyListActivityTest extends ActivityInstrumentationTestCase2<StudyActivity> {
+	StudyActivity activity;
 	static String SPY = "SPY";
 	public PaiStudyListActivityTest() {
-		super(PaiStudyListActivity.class);
+		super(StudyActivity.class);
 	}
 
 	@Override

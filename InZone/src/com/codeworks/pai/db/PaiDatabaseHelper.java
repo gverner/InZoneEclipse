@@ -6,8 +6,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class PaiDatabaseHelper extends SQLiteOpenHelper {
 
-  private static final String DATABASE_NAME = "paitable.db";
-  private static final int DATABASE_VERSION = 2;
+  private static final String DATABASE_NAME = "inzone.db";
+  private static final int DATABASE_VERSION = 3;
 
   public PaiDatabaseHelper(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);

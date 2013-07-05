@@ -33,6 +33,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 	public Uri insertSecurity(String symbol) {
 		ContentValues values = new ContentValues();
 		values.put(PaiStudyTable.COLUMN_SYMBOL, symbol);
+		values.put(PaiStudyTable.COLUMN_PORTFOLIO_ID, 1L);
 		Uri uri = getMockContentResolver().insert(PaiContentProvider.PAI_STUDY_URI, values);
 		return uri;
 	}
@@ -86,7 +87,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		studies = processor.process(TestDataLoader.UNG);
 		PaiStudy study = getStudy(TestDataLoader.UNG);
 		assertEquals("Price", MockDataReader.UNG_PRICE, study.getPrice());
-		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
+		assertEquals("ATR", 0.58d, round(study.getAverageTrueRange()));
 		assertEquals("StdDev Week", 1.46d, round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 5.62d, round(study.getStddevMonth()));
 		assertEquals("MA week", 20.46d, round(study.getMaWeek()));
@@ -110,7 +111,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		studies = processor.process(null);
 		PaiStudy study = getStudy(TestDataLoader.GLD);
 		assertEquals("Price", MockDataReader.GLD_PRICE, study.getPrice());
-		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
+		assertEquals("ATR", 1.94d, round(study.getAverageTrueRange()));
 		assertEquals("StdDev Week", 5.42d, round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 7.15d, round(study.getStddevMonth()));
 		assertEquals("MA week", 156.61d, round(study.getMaWeek()));
@@ -135,7 +136,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		studies = processor.process(TestDataLoader.SPY);
 		PaiStudy study = getStudy(TestDataLoader.SPY);
 		assertEquals("Price", MockDataReader.SPY_PRICE, study.getPrice());
-		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
+		assertEquals("ATR", 1.46d, round(study.getAverageTrueRange()));
 		assertEquals("MA week", 151.08d, round(study.getMaWeek()));
 		assertEquals("MA month", 141.13d, round(study.getMaMonth()));
 		assertEquals("MA last week", 150.27d, round(study.getMaLastWeek()));
@@ -158,7 +159,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		
 		PaiStudy study = getStudy(TestDataLoader.QQQ);
 		assertEquals("Price", MockDataReader.QQQ_PRICE, study.getPrice());
-		assertEquals("ATR", 0.0, study.getAverageTrueRange());
+		assertEquals("ATR", 0.75, round(study.getAverageTrueRange()));
 		assertEquals("StdDev Week", 1.42d, round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 4.64d, round(study.getStddevMonth()));
 		assertEquals("MA week", 67.37d, round(study.getMaWeek()));

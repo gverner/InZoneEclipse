@@ -86,6 +86,9 @@ public class DataReaderYahoo implements DataReader {
 			String searchName = "class=\"title\"><h2>";
 			String searchTime2 = "yfs_t53_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
 			String searchTime1 = "yfs_t53_"+security.getSymbol().toLowerCase(Locale.US) +"\"><span id=\"yfs_t53_"+security.getSymbol().toLowerCase(Locale.US) +"\">";
+			String searchLow = "yfs_g53_"+security.getSymbol().toLowerCase(Locale.US)+"\">";
+			String searchHigh = "yfs_h53_"+security.getSymbol().toLowerCase(Locale.US)+"\">";
+			String searchOpen = "Open:</th><td class=\"yfnc_tabledata1\">";
 			long start = System.currentTimeMillis();
 			URL url = new URL(urlStr);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -121,6 +124,18 @@ public class DataReaderYahoo implements DataReader {
 				if (result != null) {
 					security.setPriceDate(parseRTDate(result));
 				}
+				result = scanLine(searchOpen, start, line, count);
+				if (result != null) {
+					security.setOpen(Double.parseDouble(result));
+				}
+				result = scanLine(searchLow, start, line, count);
+				if (result != null) {
+					security.setLow(Double.parseDouble(result));
+				}
+				result = scanLine(searchHigh, start, line, count);
+				if (result != null) {
+					security.setHigh(Double.parseDouble(result));
+				}
 			}
 			Log.d(TAG, "SCANNED "+count+" lines in ms " + (System.currentTimeMillis() - start));
 		} catch (Exception e) {
@@ -149,11 +164,11 @@ public class DataReaderYahoo implements DataReader {
 	}
 	
 	Date parseRTDate(String stringDate) {
-		Date returnDate = null;
 		Calendar cal = GregorianCalendar.getInstance (TimeZone.getTimeZone("US/Eastern"),Locale.US);
+		Date returnDate = cal.getTime(); // return now on parse failure
 		SimpleDateFormat ydf = new SimpleDateFormat("MMM dd, hh:mmaa zzz yyyy", Locale.US);
 		ydf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
-		if (stringDate.length() >= 18) {
+		if (stringDate.length() >= 17) {
 			stringDate = stringDate + " " + cal.get(Calendar.YEAR);
 		} else if (stringDate.length() == 10 || stringDate.length() == 11) {
 			stringDate = cal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.US) + " " + cal.get(Calendar.DAY_OF_MONTH) + ", " + stringDate + " " + cal.get(Calendar.YEAR);

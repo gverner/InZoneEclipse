@@ -50,7 +50,7 @@ public class SecurityDetailActivity extends Activity {
   }
 
 	private void fillData(Uri uri) {
-		String[] projection = { PaiStudyTable.COLUMN_SYMBOL };
+		String[] projection = { PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_PORTFOLIO_ID };
 		Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
 		if (cursor != null) try {
 			cursor.moveToFirst();
@@ -108,6 +108,8 @@ public class SecurityDetailActivity extends Activity {
 
     ContentValues values = new ContentValues();
     values.put(PaiStudyTable.COLUMN_SYMBOL, symbol.trim());
+    values.put(PaiStudyTable.COLUMN_PORTFOLIO_ID, 1L);
+    values.put(PaiStudyTable.COLUMN_MA_TYPE, "E");
 
     if (securityUri == null) {
       // New security

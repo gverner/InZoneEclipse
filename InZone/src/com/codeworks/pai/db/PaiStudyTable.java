@@ -12,9 +12,13 @@ public class PaiStudyTable {
 	  // Database table
 	  public static final String TABLE_STUDY = "study";
 	  public static final String COLUMN_ID = "_id";
+	  public static final String COLUMN_PORTFOLIO_ID = "portfolio_id";
 	  public static final String COLUMN_SYMBOL = "symbol";
 	  public static final String COLUMN_NAME = "name";
 	  public static final String COLUMN_PRICE = "price";
+	  public static final String COLUMN_OPEN = "open";
+	  public static final String COLUMN_HIGH = "high";
+	  public static final String COLUMN_LOW = "low";
 	  public static final String COLUMN_PRICE_DATE = "price_date";
 	  public static final String COLUMN_PRICE_LAST_WEEK = "price_last_week";
 	  public static final String COLUMN_PRICE_LAST_MONTH = "price_last_month";
@@ -28,15 +32,22 @@ public class PaiStudyTable {
 	  public static final String COLUMN_AVG_TRUE_RANGE = "avg_true_range";
 	  public static final String COLUMN_NOTICE = "notice";
 	  public static final String COLUMN_NOTICE_DATE = "notice_date";
+	  public static final String COLUMN_SMA_MONTH = "sma_month";
+	  public static final String COLUMN_SMA_LAST_MONTH = "sma_last_month";
+	  public static final String COLUMN_S_STDDEV_MONTH = "s_stddev_month";
 
 	  // Database creation SQL statement
 	  private static final String DATABASE_CREATE = "create table " 
 	      + TABLE_STUDY
 	      + "(" 
 	      + COLUMN_ID + " integer primary key autoincrement, " 
+	      + COLUMN_PORTFOLIO_ID + " integer not null, "
 	      + COLUMN_SYMBOL + " text not null, " 
 	      + COLUMN_NAME + " text null, "
 	      + COLUMN_PRICE + " real null, " 
+	      + COLUMN_OPEN + " real null, "
+	      + COLUMN_HIGH + " real null, "
+	      + COLUMN_LOW + " real null, "
 	      + COLUMN_PRICE_DATE + " string null, "
 	      + COLUMN_PRICE_LAST_WEEK + " real null, " 
 	      + COLUMN_PRICE_LAST_MONTH + " real null, " 
@@ -47,6 +58,9 @@ public class PaiStudyTable {
 	      + COLUMN_MA_LAST_MONTH + " real null, "
 	      + COLUMN_STDDEV_WEEK + " real null, " 
 	      + COLUMN_STDDEV_MONTH + " real null, "
+	      + COLUMN_SMA_MONTH + " real null, " 
+	      + COLUMN_SMA_LAST_MONTH + " real null, "
+	      + COLUMN_S_STDDEV_MONTH + " real null, "
 	      + COLUMN_AVG_TRUE_RANGE + " real null, "
 	      + COLUMN_NOTICE + " integer null, "
 	      + COLUMN_NOTICE_DATE + " text null"

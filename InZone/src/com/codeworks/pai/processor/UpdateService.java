@@ -92,10 +92,17 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	}
 
 	@Override
-	public synchronized int onStartCommand(Intent intent, int flags, int startId) {
-		Intent updateIntent;
-		updateIntent = intent;
+	public synchronized int onStartCommand(Intent updateIntent, int flags, int startId) {
+		if (updateIntent == null) {
+			Log.e(TAG,"onStartCommand receive null intent");
+			return START_STICKY;
+		}
 		Bundle bundle = updateIntent.getExtras();
+		if (bundle == null) {
+			Log.e(TAG,"onStartCommand receive null bundle");
+			return START_STICKY;
+		}
+
 		String action = (String) bundle.get(SERVICE_ACTION);
 		if (ACTION_SCHEDULE.equals(action) || ACTION_MANUAL.equals(action)) {
 			if (ACTION_MANUAL.equals(action)) {

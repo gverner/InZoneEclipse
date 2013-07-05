@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import com.codeworks.pai.PaiStudyListActivity;
+import com.codeworks.pai.StudyActivity;
 import com.codeworks.pai.R;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.PaiStudyTable;
@@ -105,7 +105,7 @@ public class NotifierImpl implements Notifier {
 
 		// the started Activity.
 		// Creates an explicit intent for an Activity in your app
-		Intent resultIntent = new Intent(context, PaiStudyListActivity.class);
+		Intent resultIntent = new Intent(context, StudyActivity.class);
 
 		// The stack builder object will contain an artificial back stack for
 		// This ensures that navigating backward from the Activity leads out of

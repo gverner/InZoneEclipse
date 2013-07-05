@@ -1,6 +1,9 @@
 package com.codeworks.pai.study;
 
 import java.util.LinkedList;
+import java.util.List;
+
+import com.codeworks.pai.db.model.Price;
 
 public class SMA {
 	private LinkedList<Double> values = new LinkedList<Double>();
@@ -15,6 +18,14 @@ public class SMA {
 		this.length = length;
 	}
 
+	public double getSum() {
+		return sum;
+	}
+	
+	public double getAvr() {
+		return sum / length;
+	}
+	
 	public double compute(double value) {
 		if (values.size() == length) {
 			sum -= ((Double) values.getFirst()).doubleValue();
@@ -24,4 +35,13 @@ public class SMA {
 		values.addLast(Double.valueOf(value));
 		return sum / length;
 	}
+	
+	public static double compute(List<Price> priceList, int noPeriods) {
+		SMA ema = new SMA(noPeriods);
+		for (Price price : priceList) {
+			ema.compute(price.getClose());
+		}
+		return ema.getAvr();
+	}
+
 }

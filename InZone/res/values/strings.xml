@@ -8,7 +8,8 @@
     <string name="calculate">Calculate</string>
     <string name="titleServiceStart">Start Service</string>
     <string name="titleServiceStop">Stop Service</string>
-    <string name="pai_study_list_window">Zones</string>
+    <string name="study_activity_window">Zones</string>
+	<string name="study_detail_activity_window">Zone Detail</string>
     <string name="edit_security_list">Edit Portfolio</string>
     <string name="security_edit_symbol">Security Symbol</string>
     <string name="security_edit_confirm">Confirm</string>
@@ -52,5 +53,10 @@
     <string name="serviceStoppedMessage">Stopped</string>
     <string name="serviceRunningMessage">Running</string>
     <string name="servicePausedMessage">Paused</string>
+    <string name="sdfColumnHeader4">Monthly</string>
+    <string name="sdfColumnHeader3">Weekly</string>
+    <string name="sdfPriceLabel">Price</string>
+    <string name="sdfAtr24Label">ATR/25</string>
+    <string name="sdfPricePlusAtr25Label">Stop</string>
     
 </resources>

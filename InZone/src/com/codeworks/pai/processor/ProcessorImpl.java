@@ -20,9 +20,11 @@ import com.codeworks.pai.db.PriceHistoryTable;
 import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Price;
+import com.codeworks.pai.study.ATR;
 import com.codeworks.pai.study.EMA2;
 import com.codeworks.pai.study.Grouper;
 import com.codeworks.pai.study.Period;
+import com.codeworks.pai.study.SMA;
 import com.codeworks.pai.study.StdDev;
 
 public class ProcessorImpl implements Processor {
@@ -79,6 +81,10 @@ public class ProcessorImpl implements Processor {
 				appendCurrentPrice(weekly, security);
 				security.setMaWeek(EMA2.compute(weekly, 20));
 				security.setStddevWeek(StdDev.calculate(weekly, 20));
+				if (DateUtils.isAfterMarketClose(security.getPriceDate(), Period.Week)) {
+					security.setMaLastWeek(security.getMaWeek());
+					security.setPriceLastWeek(security.getPrice());
+				}
 			} else {
 				Log.w(TAG,"Insufficent Weekly History only "+weekly.size()+" periods.");
 			}
@@ -87,13 +93,23 @@ public class ProcessorImpl implements Processor {
 			List<Price> monthly = grouper.periodList(history, Period.Month);
 			if (monthly.size() >= 20) {
 				security.setMaLastMonth(EMA2.compute(monthly, 20));
+				security.setSmaLastMonth(SMA.compute(monthly, 12));
 				security.setPriceLastMonth(monthly.get(monthly.size() - 1).getClose());
 				appendCurrentPrice(monthly, security);
 				security.setMaMonth(EMA2.compute(monthly, 20));
 
 				security.setStddevMonth(StdDev.calculate(monthly, 20));
+				security.setSmaMonth(SMA.compute(monthly, 12));
+				security.setS_stddevMonth(StdDev.calculate(monthly, 12));
 			} else {
 				Log.w(TAG,"Insufficent Monthly History only "+monthly.size()+" periods.");
+			}
+		}
+		{
+			List<Price> daily = new ArrayList<Price>(history);
+			if (daily.size() > 20) {
+				//appendCurrentPrice(daily,security);
+				security.setAverageTrueRange(ATR.compute(daily, 20));
 			}
 		}
 	}
@@ -104,12 +120,18 @@ public class ProcessorImpl implements Processor {
 			if (security.getPriceDate().compareTo(lastHistory.getDate()) == 0) {
 				if (security.getPrice() != lastHistory.getClose()) {
 					lastHistory.setClose(security.getPrice());
+					lastHistory.setOpen(security.getOpen());
+					lastHistory.setLow(security.getLow());
+					lastHistory.setHigh(security.getHigh());
 					Log.d(TAG, "History and Price Close Differ Should not Happend=" + lastHistory.getDate() + " History Close" + lastHistory.getClose()+ " Current Price" + security.getPrice());
 				}
 			} else if (security.getPriceDate().after(weekly.get(weekly.size() - 1).getDate())) {
 				Price lastPrice = new Price();
-				lastPrice.setClose(security.getPrice());
+				lastPrice.setClose(security.getPrice()); // current price is close in history
 				lastPrice.setDate(security.getPriceDate());
+				lastPrice.setOpen(security.getOpen());
+				lastPrice.setLow(security.getLow());
+				lastPrice.setHigh(security.getHigh());
 				weekly.add(lastPrice);
 				Log.d(TAG, "Last History Date=" + lastHistory.getDate() + " Add Current Price Date" + security.getPriceDate());
 			}
@@ -232,6 +254,14 @@ public class ProcessorImpl implements Processor {
 		values.put(PaiStudyTable.COLUMN_AVG_TRUE_RANGE, study.getAverageTrueRange());
 		values.put(PaiStudyTable.COLUMN_SYMBOL, study.getSymbol());
 		values.put(PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.priceDateFormat.format(study.getPriceDate()));
+		values.put(PaiStudyTable.COLUMN_SMA_MONTH, study.getSmaMonth());
+		values.put(PaiStudyTable.COLUMN_SMA_LAST_MONTH, study.getSmaLastMonth());
+		values.put(PaiStudyTable.COLUMN_S_STDDEV_MONTH, study.getS_stddevMonth());
+		values.put(PaiStudyTable.COLUMN_PORTFOLIO_ID, study.getPortfolioId());
+		values.put(PaiStudyTable.COLUMN_OPEN, study.getOpen());
+		values.put(PaiStudyTable.COLUMN_HIGH, study.getHigh());
+		values.put(PaiStudyTable.COLUMN_LOW, study.getLow());
+		
 		Log.d(TAG, "Updating Study " + study.toString());
 		Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + study.getSecurityId());
 		getContentResolver().update(studyUri, values, null, null);
@@ -280,7 +310,14 @@ public class ProcessorImpl implements Processor {
 		String[] projection = { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_NAME, PaiStudyTable.COLUMN_MA_TYPE, PaiStudyTable.COLUMN_MA_WEEK, PaiStudyTable.COLUMN_MA_MONTH,
 				PaiStudyTable.COLUMN_MA_LAST_WEEK, PaiStudyTable.COLUMN_MA_LAST_MONTH, PaiStudyTable.COLUMN_PRICE, PaiStudyTable.COLUMN_PRICE_LAST_WEEK,
 				PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_STDDEV_WEEK, PaiStudyTable.COLUMN_STDDEV_MONTH,
-				PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE };
+				PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE,
+				PaiStudyTable.COLUMN_PORTFOLIO_ID,
+				PaiStudyTable.COLUMN_OPEN,
+				PaiStudyTable.COLUMN_HIGH,
+				PaiStudyTable.COLUMN_LOW,
+				PaiStudyTable.COLUMN_SMA_MONTH,
+				PaiStudyTable.COLUMN_SMA_LAST_MONTH,
+				PaiStudyTable.COLUMN_S_STDDEV_MONTH};
 		String selection = null;
 		String[] selectionArgs = null;
 		if (inSymbol != null && inSymbol.length() > 0) {
@@ -310,6 +347,13 @@ public class ProcessorImpl implements Processor {
 						security.setStddevMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_STDDEV_MONTH)));
 						security.setAverageTrueRange(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_AVG_TRUE_RANGE)));
 						security.setPriceDate(cursor.getString(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PRICE_DATE)));
+						security.setPortfolioId(cursor.getLong(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PORTFOLIO_ID)));
+						security.setSmaMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_MONTH)));
+						security.setSmaLastMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_LAST_MONTH)));
+						security.setS_stddevMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_S_STDDEV_MONTH)));
+						security.setOpen(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_OPEN)));
+						security.setHigh(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_HIGH)));
+						security.setLow(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_LOW)));
 						securities.add(security);
 
 					} while (cursor.moveToNext());

@@ -9,8 +9,10 @@ import java.util.Locale;
 import android.test.AndroidTestCase;
 
 import com.codeworks.pai.PaiUtils;
+import com.codeworks.pai.db.model.EmaRules;
 import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Price;
+import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.mock.MockDataReader;
 import com.codeworks.pai.mock.TestDataLoader;
 
@@ -26,6 +28,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 
 	public void testStudyGenDTSell() throws ParseException {
 		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
+		Rules rules = new EmaRules(study);
 		List<Price> history = TestDataLoader.generateHistory(40.00, 10.00, 500);
 		logHistory(history);
 		MockDataReader.buildSecurity(study, "S&P 500", 9.10, sdf.format(new Date()));
@@ -39,17 +42,18 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("MA last month", 21.36d, PaiUtils.round(study.getMaLastMonth()));
 		assertEquals("StdDev Week", 1.81d, PaiUtils.round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 7.52d, PaiUtils.round(study.getStddevMonth()));
-		assertEquals("DT Monthly", true, study.isDownTrendMonthly());
-		assertEquals("DT Weekly", true, study.isDownTrendWeekly());
-		assertEquals("TT", false, study.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, study.isPossibleUptrendTermination());
-		assertEquals("TT", false, study.isPossibleDowntrendTermination());
-		assertEquals("Buy", true, study.isPriceInBuyZone());
-		assertEquals("Sell", false, study.isPriceInSellZone());
+		assertEquals("DT Monthly", true, rules.isDownTrendMonthly());
+		assertEquals("DT Weekly", true, rules.isDownTrendWeekly());
+		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
+		assertEquals("TT", false, rules.isPossibleUptrendTermination());
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("Buy", true, rules.isPriceInBuyZone());
+		assertEquals("Sell", false, rules.isPriceInSellZone());
 	}
 	
 	public void testStudyGenDTBelowSell() throws ParseException {
 		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
+		Rules rules = new EmaRules(study);
 		List<Price> history = TestDataLoader.generateHistory(40.00, 10.00, 500);
 		logHistory(history);
 		MockDataReader.buildSecurity(study, "S&P 500", 8.00,sdf.format(new Date()));
@@ -63,16 +67,17 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("MA last month", 21.36, PaiUtils.round(study.getMaLastMonth()));
 		assertEquals("StdDev Week", 1.94d, PaiUtils.round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 7.61d, PaiUtils.round(study.getStddevMonth()));
-		assertEquals("DT Monthly", true, study.isDownTrendMonthly());
-		assertEquals("DT Weekly", true, study.isDownTrendWeekly());
-		assertEquals("TT", false, study.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, study.isPossibleUptrendTermination());
-		assertEquals("TT", false, study.isPossibleDowntrendTermination());
-		assertEquals("Buy", false, study.isPriceInBuyZone());
-		assertEquals("Sell", false, study.isPriceInSellZone());
+		assertEquals("DT Monthly", true, rules.isDownTrendMonthly());
+		assertEquals("DT Weekly", true, rules.isDownTrendWeekly());
+		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
+		assertEquals("TT", false, rules.isPossibleUptrendTermination());
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("Buy", false, rules.isPriceInBuyZone());
+		assertEquals("Sell", false, rules.isPriceInSellZone());
 	}	
 	public void testStudyGenSell() throws ParseException {
 		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
+		Rules rules = new EmaRules(study);
 		List<Price> history = TestDataLoader.generateHistory(10.00, 40.00, 500);
 		logHistory(history);
 		MockDataReader.buildSecurity(study, "S&P 500", 41.10,sdf.format(new Date()));
@@ -86,17 +91,18 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("MA month", 29.83d, PaiUtils.round(study.getMaMonth()));
 		assertEquals("MA last week", 36.85d, PaiUtils.round(study.getMaLastWeek()));
 		assertEquals("MA last month", 28.64d, PaiUtils.round(study.getMaLastMonth()));
-		assertEquals("DT Monthly", false, study.isDownTrendMonthly());
-		assertEquals("DT Weekly", false, study.isDownTrendWeekly());
-		assertEquals("TT", false, study.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, study.isPossibleUptrendTermination());
-		assertEquals("TT", false, study.isPossibleDowntrendTermination());
-		assertEquals("Buy", false, study.isPriceInBuyZone());
-		assertEquals("Sell", true, study.isPriceInSellZone());
+		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
+		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
+		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
+		assertEquals("TT", false, rules.isPossibleUptrendTermination());
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("Buy", false, rules.isPriceInBuyZone());
+		assertEquals("Sell", true, rules.isPriceInSellZone());
 	}
 	
 	public void testStudyGenBuy() throws ParseException {
 		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
+		Rules rules = new EmaRules(study);
 		List<Price> history = TestDataLoader.generateHistory(10.00, 40.00, 500);
 		logHistory(history);
 		MockDataReader.buildSecurity(study, "S&P 500", 37.50,sdf.format(new Date()));
@@ -110,18 +116,19 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("MA month", 29.49d, PaiUtils.round(study.getMaMonth()));
 		assertEquals("MA last week", 36.85d, PaiUtils.round(study.getMaLastWeek()));
 		assertEquals("MA last month", 28.64d, PaiUtils.round(study.getMaLastMonth()));
-		assertEquals("DT Monthly", false, study.isDownTrendMonthly());
-		assertEquals("DT Weekly", false, study.isDownTrendWeekly());
-		assertEquals("TT", false, study.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, study.isPossibleUptrendTermination());
-		assertEquals("TT", false, study.isPossibleDowntrendTermination());
-		assertEquals("Buy", true, study.isPriceInBuyZone());
-		assertEquals("Sell", false, study.isPriceInSellZone());
+		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
+		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
+		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
+		assertEquals("TT", false, rules.isPossibleUptrendTermination());
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("Buy", true, rules.isPriceInBuyZone());
+		assertEquals("Sell", false, rules.isPriceInSellZone());
 	}
 	
 	public void testStudyGenUTrendTT() throws ParseException {
 		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
 		List<Price> history = TestDataLoader.generateHistory(10.00, 40.00, 500);
+		Rules rules = new EmaRules(study);
 		logHistory(history);
 		MockDataReader.buildSecurity(study, "S&P 500", 36.50,sdf.format(new Date()));
 		processor.calculateStudy(study, history);
@@ -134,13 +141,13 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("MA last month", 28.64d, PaiUtils.round(study.getMaLastMonth()));
 		assertEquals("StdDev Week", 1.61d, PaiUtils.round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 7.21d, PaiUtils.round(study.getStddevMonth()));
-		assertEquals("DT Monthly", false, study.isDownTrendMonthly());
-		assertEquals("DT Weekly", false, study.isDownTrendWeekly());
-		assertEquals("TT", true, study.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", true, study.isPossibleUptrendTermination());
-		assertEquals("TT", false, study.isPossibleDowntrendTermination());
-		assertEquals("Buy", false, study.isPriceInBuyZone());
-		assertEquals("Sell", false, study.isPriceInSellZone());
+		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
+		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
+		assertEquals("TT", true, rules.isPossibleTrendTerminationWeekly());
+		assertEquals("TT", true, rules.isPossibleUptrendTermination());
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("Buy", false, rules.isPriceInBuyZone());
+		assertEquals("Sell", false, rules.isPriceInSellZone());
 	}
 	
 	void logHistory(List<Price> history) {
@@ -150,12 +157,13 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 	}
 	
 	void logStudy (PaiStudy study) {
+		Rules rules = new EmaRules(study);
 		System.out.println(study.getSymbol());
 		System.out.println("price         "+study.getPrice());
-		System.out.println("BuyZone Top   "+study.calcBuyZoneTop());
-		System.out.println("BuyZone Botto "+study.calcBuyZoneBottom());
-		System.out.println("SelZone Top   "+study.calcSellZoneTop());
-		System.out.println("SelZone Botto "+study.calcSellZoneBottom());
+		System.out.println("BuyZone Top   "+rules.calcBuyZoneTop());
+		System.out.println("BuyZone Botto "+rules.calcBuyZoneBottom());
+		System.out.println("SelZone Top   "+rules.calcSellZoneTop());
+		System.out.println("SelZone Botto "+rules.calcSellZoneBottom());
 		System.out.println("ma week       "+study.getMaWeek());
 		System.out.println("ma month      "+study.getMaMonth());
 		System.out.println("pr last week  "+study.getPriceLastWeek());
@@ -168,6 +176,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 	}
 	public void testStudy() throws ParseException {
 		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
+		Rules rules = new EmaRules(study);
 		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY);
 		// history.add(buildPrice(MockPaiStudyDataReader.SPY_PRICE,
 		// "04/13/2013"));
@@ -181,13 +190,13 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("MA month", 141.13d, PaiUtils.round(study.getMaMonth()));
 		assertEquals("MA last week", 150.27d, PaiUtils.round(study.getMaLastWeek()));
 		assertEquals("MA last month", 139.27d, PaiUtils.round(study.getMaLastMonth()));
-		assertEquals("DT Monthly", false, study.isDownTrendMonthly());
-		assertEquals("DT Weekly", false, study.isDownTrendWeekly());
-		assertEquals("TT", false, study.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, study.isPossibleUptrendTermination());
-		assertEquals("TT", false, study.isPossibleDowntrendTermination());
-		assertEquals("Buy", false, study.isPriceInBuyZone());
-		assertEquals("Sell", false, study.isPriceInSellZone());
+		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
+		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
+		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
+		assertEquals("TT", false, rules.isPossibleUptrendTermination());
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("Buy", false, rules.isPriceInBuyZone());
+		assertEquals("Sell", false, rules.isPriceInSellZone());
 
 	}
 

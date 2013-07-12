@@ -4,9 +4,45 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+		<TextView
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:text="@string/sla_portfolio_name"/>
+
+		<EditText
+            android:id="@+id/sla_portfolio_name"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:gravity="top"
+            android:textSize="14sp"
+            android:imeOptions="actionNext"
+            android:inputType="textCapCharacters|textNoSuggestions"
+            android:maxLength="10" >
+        </EditText>
+
+		<TextView
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+		    android:text="@string/sla_moving_average_type"/>
+		
+        <Spinner
+            android:id="@+id/sla_strategy"
+            android:layout_marginLeft="10dp"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+        
+    </LinearLayout>
+
     <ListView
         android:id="@android:id/list"
+		android:layout_marginTop="5dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
     </ListView>
@@ -15,6 +51,6 @@
         android:id="@android:id/empty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/no_securities" />         
-    
+        android:text="@string/no_securities" />
+
 </LinearLayout>

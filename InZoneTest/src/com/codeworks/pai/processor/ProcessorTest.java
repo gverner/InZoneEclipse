@@ -9,7 +9,9 @@ import android.test.ProviderTestCase2;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.model.EmaRules;
 import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.mock.MockDataReader;
 import com.codeworks.pai.mock.TestDataLoader;
 
@@ -86,6 +88,8 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		insertSecurity(TestDataLoader.UNG);
 		studies = processor.process(TestDataLoader.UNG);
 		PaiStudy study = getStudy(TestDataLoader.UNG);
+		Rules rules = new EmaRules(study);
+		
 		assertEquals("Price", MockDataReader.UNG_PRICE, study.getPrice());
 		assertEquals("ATR", 0.58d, round(study.getAverageTrueRange()));
 		assertEquals("StdDev Week", 1.46d, round(study.getStddevWeek()));
@@ -96,13 +100,13 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		assertEquals("MA last month", 17.16d, round(study.getMaLastMonth()));
 		assertEquals("Price last week", 22.46d, round(study.getPriceLastWeek()));
 		assertEquals("Price last month", 21.88d, round(study.getPriceLastMonth()));
-		assertEquals("DT Monthly",false, study.isDownTrendMonthly());
-		assertEquals("DT Weekly", false, study.isDownTrendWeekly());
-		assertEquals("TT", false, study.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, study.isPossibleUptrendTermination());
-		assertEquals("TT", false, study.isPossibleDowntrendTermination());
-		assertEquals("Buy", false, study.isPriceInBuyZone());
-		assertEquals("Sell", false, study.isPriceInSellZone());
+		assertEquals("DT Monthly",false, rules.isDownTrendMonthly());
+		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
+		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
+		assertEquals("TT", false, rules.isPossibleUptrendTermination());
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("Buy", false, rules.isPriceInBuyZone());
+		assertEquals("Sell", false, rules.isPriceInSellZone());
 
 	}
 
@@ -110,6 +114,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		insertSecurity(TestDataLoader.GLD);
 		studies = processor.process(null);
 		PaiStudy study = getStudy(TestDataLoader.GLD);
+		Rules rules = new EmaRules(study);
 		assertEquals("Price", MockDataReader.GLD_PRICE, study.getPrice());
 		assertEquals("ATR", 1.94d, round(study.getAverageTrueRange()));
 		assertEquals("StdDev Week", 5.42d, round(study.getStddevWeek()));
@@ -118,16 +123,16 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		assertEquals("MA month", 155.75d, round(study.getMaMonth()));
 		assertEquals("MA last week", 157.94d, round(study.getMaLastWeek()));
 		assertEquals("MA last month", 156.99d, round(study.getMaLastMonth()));
-		assertEquals("DT Monthly",true, study.isDownTrendMonthly());
-		assertEquals("UT Monthly",false, study.isUpTrendMonthly());
+		assertEquals("DT Monthly",true, rules.isDownTrendMonthly());
+		assertEquals("UT Monthly",false, rules.isUpTrendMonthly());
 		
-		assertEquals("DT Weekly", true, study.isDownTrendWeekly());
-		assertEquals("UT Weekly", false, study.isUpTrendWeekly());
-		assertEquals("TT", false, study.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, study.isPossibleUptrendTermination());
-		assertEquals("TT", false, study.isPossibleDowntrendTermination());
-		assertEquals("Buy", true, study.isPriceInBuyZone());
-		assertEquals("Sell", false, study.isPriceInSellZone());
+		assertEquals("DT Weekly", true, rules.isDownTrendWeekly());
+		assertEquals("UT Weekly", false, rules.isUpTrendWeekly());
+		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
+		assertEquals("TT", false, rules.isPossibleUptrendTermination());
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("Buy", true, rules.isPriceInBuyZone());
+		assertEquals("Sell", false, rules.isPriceInSellZone());
 
 	}
 
@@ -135,21 +140,22 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		insertSecurity(TestDataLoader.SPY);
 		studies = processor.process(TestDataLoader.SPY);
 		PaiStudy study = getStudy(TestDataLoader.SPY);
+		Rules rules = new EmaRules(study);
 		assertEquals("Price", MockDataReader.SPY_PRICE, study.getPrice());
 		assertEquals("ATR", 1.46d, round(study.getAverageTrueRange()));
 		assertEquals("MA week", 151.08d, round(study.getMaWeek()));
 		assertEquals("MA month", 141.13d, round(study.getMaMonth()));
 		assertEquals("MA last week", 150.27d, round(study.getMaLastWeek()));
 		assertEquals("MA last month", 139.27d, round(study.getMaLastMonth()));
-		assertEquals("DT Monthly", false, study.isDownTrendMonthly());
-		assertEquals("DT Weekly", false, study.isDownTrendWeekly());
+		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
+		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
 		assertEquals("StdDev Week", 5.56d, round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 10.94d, round(study.getStddevMonth()));
-		assertEquals("TT", false, study.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, study.isPossibleUptrendTermination());
-		assertEquals("TT", false, study.isPossibleDowntrendTermination());
-		assertEquals("Buy", false, study.isPriceInBuyZone());
-		assertEquals("Sell", false, study.isPriceInSellZone());
+		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
+		assertEquals("TT", false, rules.isPossibleUptrendTermination());
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("Buy", false, rules.isPriceInBuyZone());
+		assertEquals("Sell", false, rules.isPriceInSellZone());
 
 	}
 
@@ -158,6 +164,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		studies = processor.process(null);
 		
 		PaiStudy study = getStudy(TestDataLoader.QQQ);
+		Rules rules = new EmaRules(study);
 		assertEquals("Price", MockDataReader.QQQ_PRICE, study.getPrice());
 		assertEquals("ATR", 0.75, round(study.getAverageTrueRange()));
 		assertEquals("StdDev Week", 1.42d, round(study.getStddevWeek()));
@@ -166,13 +173,13 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		assertEquals("MA month", 63.79d, round(study.getMaMonth()));
 		assertEquals("MA last week", 67.32d, round(study.getMaLastWeek()));
 		assertEquals("MA last month", 63.36d, round(study.getMaLastMonth()));
-		assertEquals("DT Monthly", false, study.isDownTrendMonthly());
-		assertEquals("DT Weekly", false, study.isDownTrendWeekly());
-		assertEquals("TT", false, study.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, study.isPossibleUptrendTermination());
-		assertEquals("TT", false, study.isPossibleDowntrendTermination());
-		assertEquals("Buy", true, study.isPriceInBuyZone());
-		assertEquals("Sell", false, study.isPriceInSellZone());
+		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
+		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
+		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
+		assertEquals("TT", false, rules.isPossibleUptrendTermination());
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("Buy", true, rules.isPriceInBuyZone());
+		assertEquals("Sell", false, rules.isPriceInSellZone());
 
 	}
 

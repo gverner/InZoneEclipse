@@ -10,6 +10,8 @@
         android:layout_height="wrap_content"
         android:gravity="top"
         android:hint="@string/security_edit_symbol"
+        android:maxLength="10"
+        android:inputType="textCapCharacters"
         android:imeOptions="actionNext" >
     </EditText>
 <!--         android:layout_height="0dip"

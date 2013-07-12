@@ -16,8 +16,14 @@
 
 package com.codeworks.pai;
 
+import android.app.ActionBar;
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
@@ -30,11 +36,11 @@ import com.codeworks.pai.processor.UpdateService;
  * Starts up the task list that will interact with the AccessibilityService
  * sample.
  */
-public class StudyActivity extends Activity implements StudyListFragment.OnItemSelectedListener {
+public class StudyActivity extends Activity implements StudyEListFragment.OnItemSelectedListener, StudySListFragment.OnItemSelectedListener, ActionBar.TabListener, OnSharedPreferenceChangeListener {
 	private static final String TAG = StudyActivity.class.getSimpleName();
 
 	private Intent dailyIntent;
-
+	private int portfolioId = 1;
 	// List<PaiStudy> quotes = new ArrayList<PaiStudy>();
 
 	/** Called when the activity is first created. */
@@ -45,22 +51,98 @@ public class StudyActivity extends Activity implements StudyListFragment.OnItemS
 		dailyIntent = new Intent(this, UpdateService.class);
 		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_MANUAL);
 		startService(dailyIntent);
-		setContentView(R.layout.study_activity);		
+		setContentView(R.layout.study_activity_frame);	
+        // Set up the action bar.
+        final ActionBar actionBar = getActionBar();
+
+        // Specify that the Home/Up button should not be enabled, since there is no hierarchical
+        // parent.
+        //actionBar.setHomeButtonEnabled(false);
+
+        // Specify that we will be displaying tabs in the action bar.
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+        // For each of the sections in the app, add a tab to the action bar.
+ 		Resources resources = getResources();
+		SharedPreferences sharedPreferences = getSharedPreferences(PaiUtils.PREF_FILE, MODE_PRIVATE);
+		for (int i = 1; i < 4; i++) {
+			String portfolioName = PaiUtils.getPortfolioName(resources, sharedPreferences, i);
+			actionBar.addTab(actionBar.newTab().setText(portfolioName).setTabListener(this));
+		}
+		sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+		String strategy = PaiUtils.getStrategy(sharedPreferences, portfolioId);
+		// the fragment_container FrameLayout
+        if (findViewById(R.id.study_activity_frame) != null) {
+
+            // However, if we're being restored from a previous state,
+            // then we don't need to do anything and should return or else
+            // we could end up with overlapping fragments.
+            if (savedInstanceState != null) {
+                return;
+            }
+
+            // Create an instance of ExampleFragment
+            Fragment firstFragment;
+            if (PaiUtils.MA_TYPE_EMA.equals(strategy)) {
+            	firstFragment = new StudyEListFragment();
+            } else {
+            	firstFragment = new StudySListFragment();
+            }
+            
+            // In case this activity was started with special instructions from an Intent,
+            // pass the Intent's extras to the fragment as arguments
+    	    Bundle args = new Bundle();
+    	    args.putInt(StudyEListFragment.ARG_PORTFOLIO_ID, 1);
+    	    firstFragment.setArguments(args);
+            
+            // Add the fragment to the 'fragment_container' FrameLayout
+            getFragmentManager().beginTransaction()
+                    .add(R.id.study_activity_frame, firstFragment).commit();
+        }
 	}
 	
+	@Override
+	public void onSStudySelected(Long studyId) {
+		onStudySelected(studyId);
+	}		
 	  @Override
 	public void onStudySelected(Long studyId) {
-		StudyDetailFragment fragment = (StudyDetailFragment) getFragmentManager().findFragmentById(R.id.studyDetailFragment);
+
+		StudyEDetailFragment fragment = (StudyEDetailFragment) getFragmentManager().findFragmentById(R.id.study_detail_frame);
 		if (fragment != null && fragment.isInLayout()) {
-			fragment.setId(studyId);
+
+			FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+			Fragment oldFragment = (StudyEListFragment) getFragmentManager().findFragmentById(R.id.study_detail_frame);
+			if (oldFragment != null) {
+				fragmentTransaction.remove(oldFragment);
+			}
+			// Create fragment and give it an argument specifying the article it
+			// should show
+
+			Fragment newFragment;
+			if (PaiUtils.MA_TYPE_EMA.equals(PaiUtils.getStrategy(this, portfolioId))) {
+				newFragment = new StudyEDetailFragment();
+				Bundle args = new Bundle();
+				args.putLong(StudyEDetailFragment.ARG_STUDY_ID, studyId);
+				newFragment.setArguments(args);
+			} else {
+				newFragment = new StudySDetailFragment();
+				Bundle args = new Bundle();
+				args.putLong(StudySDetailFragment.ARG_STUDY_ID, studyId);
+				newFragment.setArguments(args);
+			}
+
+			fragmentTransaction.add(R.id.study_detail_frame, newFragment);
+			fragmentTransaction.commit();
 		} else {
 			Intent intent = new Intent(getApplicationContext(), StudyDetailActivity.class);
 			intent.putExtra(StudyDetailActivity.STUDY_ID, studyId);
+			intent.putExtra(StudyDetailActivity.PORTFOLIO_ID, portfolioId);
 			startActivity(intent);
 
 		}
-	}
 
+	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -81,6 +163,7 @@ public class StudyActivity extends Activity implements StudyListFragment.OnItemS
 		case R.id.portfolio:
 			Intent intent = new Intent();
 			intent.setClassName(getPackageName(), SecurityListActivity.class.getName());
+			intent.putExtra(SecurityListActivity.ARG_PORTFOLIO_ID, portfolioId);
 			startActivity(intent);
 			break;
 		case R.id.action_settings:
@@ -93,7 +176,51 @@ public class StudyActivity extends Activity implements StudyListFragment.OnItemS
 		return true;
 	}
 
+    @Override
+    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+    }
 
+    @Override
+	public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+		// save portfolioId for calls to portfolio
+		portfolioId = tab.getPosition() + 1;
+		Fragment oldFragment = getFragmentManager().findFragmentById(R.id.study_activity_frame);
+		if (oldFragment != null) {
+			fragmentTransaction.remove(oldFragment);
+			// Create fragment and give it an argument specifying the article it
+			// should show
+			Fragment newFragment = createFragment();
+			Bundle args = new Bundle();
+			args.putInt(StudyEListFragment.ARG_PORTFOLIO_ID, tab.getPosition() + 1);
+			newFragment.setArguments(args);
+
+			fragmentTransaction.add(R.id.study_activity_frame, newFragment);
+		}
+	}
+
+	Fragment createFragment() {
+		Fragment newFragment;
+		if (PaiUtils.MA_TYPE_EMA.equals(PaiUtils.getStrategy(this, portfolioId))) {
+			newFragment = new StudyEListFragment();
+		} else {
+			newFragment = new StudySListFragment();
+		}
+		return newFragment;
+	}
+
+    @Override
+    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+    }
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+	}
 
 	public void showToast(final String toast)
 	{
@@ -103,5 +230,21 @@ public class StudyActivity extends Activity implements StudyListFragment.OnItemS
 	            Toast.makeText(StudyActivity.this, toast, Toast.LENGTH_SHORT).show();
 	        }
 	    });
-	}	
+	}
+
+	@Override
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+		if ((PaiUtils.PREF_PORTFOLIO_KEY + 1).equals(key)) {
+			getActionBar().getTabAt(0).setText(sharedPreferences.getString(key, ""));
+		}
+		if ((PaiUtils.PREF_PORTFOLIO_KEY + 2).equals(key)) {
+			getActionBar().getTabAt(1).setText(sharedPreferences.getString(key, ""));
+		}
+		if ((PaiUtils.PREF_PORTFOLIO_KEY + 3).equals(key)) {
+			getActionBar().getTabAt(2).setText(sharedPreferences.getString(key, ""));
+		}
+		
+	}
+
+
 }

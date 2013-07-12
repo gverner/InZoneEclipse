@@ -18,7 +18,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:textDirection="ltr" >
+    android:textDirection="ltr" 
+    >
 
     
     <TextView
@@ -36,6 +37,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"        
         android:textIsSelectable="false"
+        android:textSize="12sp"
         android:textStyle="bold" />
     <TextView
         android:id="@+id/quoteList_MonthyTrend"
@@ -46,6 +48,7 @@
         android:layout_toRightOf="@+id/quoteList_symbol"
         android:gravity="right"
         android:textAlignment="center"
+        android:textSize="12sp"
         android:textIsSelectable="false" />
     <TextView
         android:id="@+id/quoteList_WeeklyTrend"
@@ -56,6 +59,7 @@
         android:layout_toRightOf="@+id/quoteList_MonthyTrend"
         android:gravity="right"
         android:textAlignment="center"
+        android:textSize="12sp"
         android:textIsSelectable="false" />
 
     <TextView
@@ -67,6 +71,7 @@
         android:layout_toRightOf="@+id/quoteList_WeeklyTrend"
         android:gravity="right"
         android:textAlignment="center"
+        android:textSize="12sp"
         android:textIsSelectable="false" />
 
     <TextView
@@ -78,6 +83,7 @@
         android:layout_toRightOf="@+id/quoteList_Price"
 		android:gravity="right"
         android:textAlignment="viewEnd"
+        android:textSize="12sp"
         android:textIsSelectable="false" />
 
     <TextView
@@ -88,6 +94,7 @@
         android:layout_toRightOf="@+id/quoteList_ema"
 		android:gravity="right"
         android:textAlignment="viewEnd"
+        android:textSize="12sp"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textIsSelectable="false" />
     
@@ -99,6 +106,7 @@
         android:layout_below="@+id/quoteList_BuyZoneTop"        
 		android:gravity="right"
         android:textAlignment="viewEnd"
+        android:textSize="12sp"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textIsSelectable="false" />
 
@@ -110,6 +118,7 @@
         android:layout_toRightOf="@+id/quoteList_BuyZoneTop"
 		android:gravity="right"
         android:textAlignment="viewEnd"
+        android:textSize="12sp"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textIsSelectable="false" />
     
@@ -121,6 +130,7 @@
         android:layout_below="@+id/quoteList_SellZoneTop"        
 		android:gravity="right"
         android:textAlignment="viewEnd"
+        android:textSize="12sp"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textIsSelectable="false" />
 

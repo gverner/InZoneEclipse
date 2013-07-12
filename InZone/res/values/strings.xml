@@ -23,6 +23,7 @@
     <string name="studyHeaderSymbol">Symbol</string>
     <string name="studyHeaderLast">Last</string>
     <string name="studyHeaderMa">EMA</string>
+    <string name="studyHeaderSma">SMA</string>
     <string name="studyHeaderBuyZone">Buy</string>
     <string name="studyHeaderSellZone">Sell</string>
     <string name="studyHeaderMonthlyTrend">M</string>
@@ -55,8 +56,16 @@
     <string name="servicePausedMessage">Paused</string>
     <string name="sdfColumnHeader4">Monthly</string>
     <string name="sdfColumnHeader3">Weekly</string>
+    <string name="sdfEColumnHeader4">Monthly\nSMA</string>
+    <string name="sdfEColumnHeader3">Weekly\nEMA</string>
     <string name="sdfPriceLabel">Price</string>
     <string name="sdfAtr24Label">ATR/25</string>
     <string name="sdfPricePlusAtr25Label">Stop</string>
-    
+   	<string name="tab_protfolio_1">Weekly</string> 
+   	<string name="tab_protfolio_2">Monthly</string> 
+   	<string name="tab_protfolio_3">Other</string> 
+   	<string name="sla_moving_average_type">Type</string> 
+   	<string name="sla_portfolio_name">Name</string> 
+   	<string name="sla_maTypeEma">EMA</string> 
+   	<string name="sla_maTypeSma">SMA</string> 
 </resources>

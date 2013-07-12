@@ -9,7 +9,9 @@ import com.codeworks.pai.StudyActivity;
 import com.codeworks.pai.R;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.model.EmaRules;
 import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Rules;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -41,17 +43,18 @@ public class NotifierImpl implements Notifier {
 		Resources res = context.getResources();
 
 		for (PaiStudy study : studies) {
+			Rules rules = new EmaRules(study);
 			if (Notice.NO_PRICE.equals(study.getNotice())) {
 				// set by processor
 			} else if (Notice.INSUFFICIENT_HISTORY.equals(study.getNotice())) {
 				// set by processor
-			} else	if (study.isPossibleDowntrendTermination()) {
+			} else	if (rules.isPossibleDowntrendTermination()) {
 				study.setNotice(Notice.POSSIBLE_WEEKLY_DOWNTREND_TERMINATION);
-			} else if (study.isPossibleUptrendTermination()) {
+			} else if (rules.isPossibleUptrendTermination()) {
 				study.setNotice(Notice.POSSIBLE_WEEKLY_UPTREND_TEMINATION);
-			} else if (study.isPriceInBuyZone()) {
+			} else if (rules.isPriceInBuyZone()) {
 				study.setNotice(Notice.IN_BUY_ZONE);
-			} else if (study.isPriceInSellZone()) {
+			} else if (rules.isPriceInSellZone()) {
 				study.setNotice(Notice.IN_SELL_ZONE);
 			} else {
 				study.setNotice(Notice.NONE);

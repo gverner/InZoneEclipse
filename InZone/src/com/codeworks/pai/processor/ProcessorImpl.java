@@ -241,7 +241,6 @@ public class ProcessorImpl implements Processor {
 
 	void saveStudy(PaiStudy study) {
 		ContentValues values = new ContentValues();
-		values.put(PaiStudyTable.COLUMN_MA_TYPE, "E");
 		values.put(PaiStudyTable.COLUMN_MA_WEEK, study.getMaWeek());
 		values.put(PaiStudyTable.COLUMN_MA_MONTH, study.getMaMonth());
 		values.put(PaiStudyTable.COLUMN_MA_LAST_WEEK, study.getMaLastWeek());
@@ -347,7 +346,7 @@ public class ProcessorImpl implements Processor {
 						security.setStddevMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_STDDEV_MONTH)));
 						security.setAverageTrueRange(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_AVG_TRUE_RANGE)));
 						security.setPriceDate(cursor.getString(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PRICE_DATE)));
-						security.setPortfolioId(cursor.getLong(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PORTFOLIO_ID)));
+						security.setPortfolioId(cursor.getInt(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PORTFOLIO_ID)));
 						security.setSmaMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_MONTH)));
 						security.setSmaLastMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_LAST_MONTH)));
 						security.setS_stddevMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_S_STDDEV_MONTH)));

@@ -8,6 +8,6 @@
         android:id="@+id/studyDetailFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        class="com.codeworks.pai.StudyDetailFragment" />
+        class="com.codeworks.pai.StudyEDetailFragment" />
 
 </LinearLayout>

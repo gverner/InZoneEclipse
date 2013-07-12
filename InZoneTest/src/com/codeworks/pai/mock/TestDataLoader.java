@@ -50,26 +50,30 @@ public class TestDataLoader {
 		Reader streamReader = new java.io.InputStreamReader(url);
 		CSVReader reader = new CSVReader(streamReader);
 		try {
-		List<String[]> lines = reader.readAll();
-		for (String[] line : lines)
 			try {
-				if (!"Date".equals(line[0])) { // skip header
-					Price price = new Price();
-					price.setDate(sdf.parse(line[0]));
-					price.setOpen(Double.parseDouble(line[1]));
-					price.setHigh(Double.parseDouble(line[2]));
-					price.setLow(Double.parseDouble(line[3]));
-					price.setClose(Double.parseDouble(line[4]));
-					price.setAdjustedClose(Double.parseDouble(line[6]));
-					if (price.valid()) {
-						history.add(price);
+				List<String[]> lines = reader.readAll();
+				for (String[] line : lines)
+					try {
+						if (!"Date".equals(line[0])) { // skip header
+							Price price = new Price();
+							price.setDate(sdf.parse(line[0]));
+							price.setOpen(Double.parseDouble(line[1]));
+							price.setHigh(Double.parseDouble(line[2]));
+							price.setLow(Double.parseDouble(line[3]));
+							price.setClose(Double.parseDouble(line[4]));
+							price.setAdjustedClose(Double.parseDouble(line[6]));
+							if (price.valid()) {
+								history.add(price);
+							}
+						}
+					} catch (Exception e) {
+						System.out.println(e.getMessage());
 					}
-				}
-			} catch (Exception e) {
-				System.out.println(e.getMessage());
-			}
 
-		return history;
+				return history;
+			} finally {
+				reader.close();
+			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

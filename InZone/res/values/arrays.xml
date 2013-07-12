@@ -16,5 +16,8 @@
         <item name="4">5</item>
         <item name="5">8</item>
     </string-array>
-    
+    <string-array name="spinner_moving_average">
+        <item>EMA</item>
+        <item>SMA</item>
+    </string-array>    
 </resources>

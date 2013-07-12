@@ -31,6 +31,7 @@ import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Price;
 
 public class DataReaderYahoo implements DataReader {
+	private static final String	N_A	= "N/A";
 	private static final String TAG = DataReaderYahoo.class.getSimpleName();
 	SimpleDateFormat dateTimeFormat = new SimpleDateFormat("MM/dd/yyyy hh:mmaa", Locale.US);
 	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
@@ -58,7 +59,7 @@ public class DataReaderYahoo implements DataReader {
 					security.setPrice(quote);
 					//security.setRtBid(parseDouble(line[4], "Bid"));
 					//security.setRtAsk(parseDouble(line[5], "Ask"));
-					if ("N/A".equals(line[2]) && quote == 0.0 && security.getSymbol().equals(line[6])) {
+					if (N_A.equals(line[2]) && quote == 0.0 && security.getSymbol().equals(line[6])) {
 						found = false;
 						security.setName("Not Found");
 					} else {
@@ -125,15 +126,15 @@ public class DataReaderYahoo implements DataReader {
 					security.setPriceDate(parseRTDate(result));
 				}
 				result = scanLine(searchOpen, start, line, count);
-				if (result != null) {
+				if (result != null && !N_A.equalsIgnoreCase(result)) {
 					security.setOpen(Double.parseDouble(result));
 				}
 				result = scanLine(searchLow, start, line, count);
-				if (result != null) {
+				if (result != null && !N_A.equalsIgnoreCase(result)) {
 					security.setLow(Double.parseDouble(result));
 				}
 				result = scanLine(searchHigh, start, line, count);
-				if (result != null) {
+				if (result != null && !N_A.equalsIgnoreCase(result)) {
 					security.setHigh(Double.parseDouble(result));
 				}
 			}
@@ -288,8 +289,12 @@ public class DataReaderYahoo implements DataReader {
 			is = conn.getInputStream();
 
 			CSVReader reader = new CSVReader(new InputStreamReader(is, "UTF-8"));
-			List<String[]> lines = reader.readAll();
-			return lines;
+			try {
+				List<String[]> lines = reader.readAll();
+				return lines;
+			} finally {
+				reader.close();
+			}
 
 			// Makes sure that the InputStream is closed after the app is
 			// finished using it.

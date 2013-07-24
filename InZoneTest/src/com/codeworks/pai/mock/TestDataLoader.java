@@ -22,6 +22,7 @@ import com.codeworks.pai.study.GrouperTest;
 
 public class TestDataLoader {
 	public static String SPY = "SPY";
+	public static String SPY2 = "SPY2";
 	public static String QQQ = "QQQ";
 	public static String GLD = "GLD";
 	public static String UNG = "UNG";
@@ -29,7 +30,7 @@ public class TestDataLoader {
 	
 	public static List<Price> getTestHistory(String symbol) {
 		
-		String[] securities = new String[] {SPY, QQQ, GLD, UNG, HYG};
+		String[] securities = new String[] {SPY, SPY2, QQQ, GLD, UNG, HYG};
 		boolean symbolFound = false;
 		for (String security : securities) {
 			if (security.equals(symbol)) {
@@ -103,7 +104,7 @@ public class TestDataLoader {
 		return history;
 	}
 	
-	static Price buildPrice(Date date, double close) {
+	public static Price buildPrice(Date date, double close) {
 		Price price = new Price();
 		price.setDate(date);
 		price.setOpen((close));

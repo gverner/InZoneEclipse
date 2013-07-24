@@ -6,8 +6,9 @@
 
     <TextView
         android:id="@+id/studyListHeader_symbol"
-        android:layout_width="52dp"
+        android:layout_width="40dp"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="1sp"
         android:text="@string/studyHeaderSymbol"
         android:textIsSelectable="true"
 		android:focusableInTouchMode="false"
@@ -17,7 +18,7 @@
 
     <TextView
         android:id="@+id/studyListHeader_MonthyTrend"
-        android:layout_width="12dp"
+        android:layout_width="11dp"
         android:layout_height="wrap_content"
         android:gravity="right"
         android:text="@string/studyHeaderMonthlyTrend"
@@ -30,7 +31,7 @@
 
     <TextView
         android:id="@+id/studyListHeader_WeeklyTrend"
-        android:layout_width="12dp"
+        android:layout_width="11dp"
         android:layout_height="wrap_content"
         android:gravity="right"
         android:text="@string/studyHeader_WeeklyTrend"
@@ -43,7 +44,7 @@
 
     <TextView
         android:id="@+id/studyListHeader_Price"
-        android:layout_width="60dp"
+        android:layout_width="53dp"
         android:layout_height="wrap_content"
         android:gravity="right"
         android:text="@string/studyHeaderLast"
@@ -52,10 +53,22 @@
 		android:clickable="false"
 		android:focusable="false"         
         android:textStyle="bold"  />
-
+    
+    <TextView
+        android:id="@+id/studyListHeader_net"
+        android:layout_width="36dp"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:text="@string/studyHeaderNet"
+        android:textIsSelectable="true"
+		android:focusableInTouchMode="false"
+		android:clickable="false"
+		android:focusable="false"         
+        android:textStyle="bold"  />
+    
     <TextView
         android:id="@+id/studyListHeader_ema"
-        android:layout_width="60dp"
+        android:layout_width="55dp"
         android:layout_height="wrap_content"
         android:gravity="right"
         android:text="@string/studyHeaderSma"
@@ -67,7 +80,7 @@
 
     <TextView
         android:id="@+id/studyListHeader_BuyZone"
-        android:layout_width="60dp"
+        android:layout_width="55dp"
         android:layout_height="wrap_content"
         android:gravity="right"
         android:text="@string/studyHeaderBuyZone"
@@ -80,7 +93,7 @@
 
     <TextView
         android:id="@+id/studyListHeader_SellZone"
-        android:layout_width="58dp"
+        android:layout_width="55dp"
         android:layout_height="wrap_content"
         android:gravity="right"
         android:text="@string/studyHeaderSellZone"

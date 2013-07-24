@@ -61,7 +61,7 @@ public class Price implements Comparable<Price>, Serializable {
 		return sb.toString();
 	}
 	public boolean valid() {
-		return (date != null && adjustedClose != 0);
+		return (date != null && close != 0);
 	}
 
 	@Override

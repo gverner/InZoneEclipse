@@ -48,4 +48,14 @@ public interface Rules {
 
 	public abstract boolean isPossibleDowntrendTermination();
 
+	public abstract String formatNet(double net);
+	
+	public abstract String inCash();
+		
+	public abstract String inCashAndPut();
+	
+	public abstract String inStock();
+	
+	public abstract String inStockAndCall();
+
 }

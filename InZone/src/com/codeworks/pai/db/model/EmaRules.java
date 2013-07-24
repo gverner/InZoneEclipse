@@ -2,27 +2,33 @@ package com.codeworks.pai.db.model;
 
 import com.codeworks.pai.study.Period;
 
-public class EmaRules implements Rules {
+public class EmaRules extends RulesBase {
 
-	protected static double				ZONE_INNER			= 0.5d;
-	protected static double				ZONE_OUTER			= 2d;
+	protected static double	ZONE_INNER	= 0.5d;
+	protected static double	ZONE_OUTER	= 2d;
 
-	PaiStudy study;
-	
 	public EmaRules(PaiStudy study) {
 		this.study = study;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.codeworks.pai.db.model.Rules#calcUpperSellZoneTop(com.codeworks.pai.study.Period)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.codeworks.pai.db.model.Rules#calcUpperSellZoneTop(com.codeworks.pai
+	 * .study.Period)
 	 */
 	@Override
 	public double calcUpperSellZoneTop(Period period) {
 		return calcUpperSellZoneBottom(period) + pierceOffset();
 	}
 
-	/* (non-Javadoc)
-	 * @see com.codeworks.pai.db.model.Rules#calcUpperSellZoneBottom(com.codeworks.pai.study.Period)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.codeworks.pai.db.model.Rules#calcUpperSellZoneBottom(com.codeworks
+	 * .pai.study.Period)
 	 */
 	@Override
 	public double calcUpperSellZoneBottom(Period period) {
@@ -33,8 +39,12 @@ public class EmaRules implements Rules {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.codeworks.pai.db.model.Rules#calcUpperBuyZoneTop(com.codeworks.pai.study.Period)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.codeworks.pai.db.model.Rules#calcUpperBuyZoneTop(com.codeworks.pai
+	 * .study.Period)
 	 */
 	@Override
 	public double calcUpperBuyZoneTop(Period period) {
@@ -45,8 +55,12 @@ public class EmaRules implements Rules {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.codeworks.pai.db.model.Rules#calcUpperBuyZoneBottom(com.codeworks.pai.study.Period)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.codeworks.pai.db.model.Rules#calcUpperBuyZoneBottom(com.codeworks
+	 * .pai.study.Period)
 	 */
 	@Override
 	public double calcUpperBuyZoneBottom(Period period) {
@@ -57,8 +71,12 @@ public class EmaRules implements Rules {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.codeworks.pai.db.model.Rules#calcLowerSellZoneTop(com.codeworks.pai.study.Period)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.codeworks.pai.db.model.Rules#calcLowerSellZoneTop(com.codeworks.pai
+	 * .study.Period)
 	 */
 	@Override
 	public double calcLowerSellZoneTop(Period period) {
@@ -69,8 +87,12 @@ public class EmaRules implements Rules {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.codeworks.pai.db.model.Rules#calcLowerSellZoneBottom(com.codeworks.pai.study.Period)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.codeworks.pai.db.model.Rules#calcLowerSellZoneBottom(com.codeworks
+	 * .pai.study.Period)
 	 */
 	@Override
 	public double calcLowerSellZoneBottom(Period period) {
@@ -81,8 +103,12 @@ public class EmaRules implements Rules {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.codeworks.pai.db.model.Rules#calcLowerBuyZoneTop(com.codeworks.pai.study.Period)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.codeworks.pai.db.model.Rules#calcLowerBuyZoneTop(com.codeworks.pai
+	 * .study.Period)
 	 */
 	@Override
 	public double calcLowerBuyZoneTop(Period period) {
@@ -93,15 +119,21 @@ public class EmaRules implements Rules {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.codeworks.pai.db.model.Rules#calcLowerBuyZoneBottom(com.codeworks.pai.study.Period)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.codeworks.pai.db.model.Rules#calcLowerBuyZoneBottom(com.codeworks
+	 * .pai.study.Period)
 	 */
 	@Override
 	public double calcLowerBuyZoneBottom(Period period) {
 		return calcLowerBuyZoneTop(period) - pierceOffset();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.codeworks.pai.db.model.Rules#calcBuyZoneBottom()
 	 */
 	@Override
@@ -116,7 +148,9 @@ public class EmaRules implements Rules {
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.codeworks.pai.db.model.Rules#calcBuyZoneTop()
 	 */
 	@Override
@@ -131,7 +165,9 @@ public class EmaRules implements Rules {
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.codeworks.pai.db.model.Rules#calcSellZoneBottom()
 	 */
 	@Override
@@ -146,7 +182,9 @@ public class EmaRules implements Rules {
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.codeworks.pai.db.model.Rules#calcSellZoneTop()
 	 */
 	@Override
@@ -165,7 +203,9 @@ public class EmaRules implements Rules {
 		return (study.getPrice() / 100d) * 2d;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.codeworks.pai.db.model.Rules#isPriceInBuyZone()
 	 */
 	@Override
@@ -173,16 +213,20 @@ public class EmaRules implements Rules {
 		return (study.getPrice() >= calcBuyZoneBottom() && study.getPrice() <= calcBuyZoneTop());
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.codeworks.pai.db.model.Rules#isPriceInSellZone()
 	 */
 	@Override
 	public boolean isPriceInSellZone() {
 		return (study.getPrice() >= calcSellZoneBottom());// && price <=
-												// calcSellZoneTop());
+		// calcSellZoneTop());
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.codeworks.pai.db.model.Rules#isUpTrendWeekly()
 	 */
 	@Override
@@ -190,7 +234,9 @@ public class EmaRules implements Rules {
 		return study.getMaLastWeek() <= study.getPriceLastWeek();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.codeworks.pai.db.model.Rules#isUpTrendMonthly()
 	 */
 	@Override
@@ -198,8 +244,12 @@ public class EmaRules implements Rules {
 		return study.getMaLastMonth() <= study.getPriceLastMonth();
 	}
 
-	/* (non-Javadoc)
-	 * @see com.codeworks.pai.db.model.Rules#isUpTrend(com.codeworks.pai.study.Period)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.codeworks.pai.db.model.Rules#isUpTrend(com.codeworks.pai.study.Period
+	 * )
 	 */
 	@Override
 	public boolean isUpTrend(Period period) {
@@ -210,7 +260,9 @@ public class EmaRules implements Rules {
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.codeworks.pai.db.model.Rules#isDownTrendWeekly()
 	 */
 	@Override
@@ -218,7 +270,9 @@ public class EmaRules implements Rules {
 		return study.getMaLastWeek() > study.getPriceLastWeek();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.codeworks.pai.db.model.Rules#isDownTrendMonthly()
 	 */
 	@Override
@@ -226,7 +280,9 @@ public class EmaRules implements Rules {
 		return study.getMaLastMonth() > study.getPriceLastMonth();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.codeworks.pai.db.model.Rules#isPossibleTrendTerminationWeekly()
 	 */
 	@Override
@@ -234,7 +290,9 @@ public class EmaRules implements Rules {
 		return isPossibleDowntrendTermination() || isPossibleUptrendTermination();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.codeworks.pai.db.model.Rules#isPossibleUptrendTermination()
 	 */
 	@Override
@@ -242,14 +300,16 @@ public class EmaRules implements Rules {
 		return (isUpTrendWeekly() && study.getPrice() < study.getMaWeek());
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.codeworks.pai.db.model.Rules#isPossibleDowntrendTermination()
 	 */
 	@Override
 	public boolean isPossibleDowntrendTermination() {
 		return (isDownTrendWeekly() && study.getPrice() > study.getMaWeek());
 	}
-	
+
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Symbol=");
@@ -270,5 +330,113 @@ public class EmaRules implements Rules {
 		sb.append(" maLM=" + PaiStudy.format(study.getMaLastMonth()));
 		sb.append(" PLM=" + PaiStudy.format(study.getPriceLastMonth()));
 		return sb.toString();
+	}
+
+	@Override
+	public String inCash() {
+		String rule = "";
+		if (isUpTrendWeekly()) {
+			if (isPossibleUptrendTermination()) {
+				rule = "Place Stop Buy Order at moving average + 1/4 Averate True Range(ATR)";
+			} else if (isPriceInBuyZone()) {
+				double buyZoneTop = calcBuyZoneTop();
+				double AOBBUY = Math.floor(buyZoneTop);
+				rule = "C: Sell Puts in Buy Zone AOB " + Double.toString(AOBBUY) + "\n A: Buy Stock";
+			} else if (isPriceInSellZone()) {
+				double buyZoneTop = calcBuyZoneTop();
+				double AOBBUY = Math.floor(buyZoneTop);
+				rule = "C: Sell Puts in Buy Zone AOB " + Double.toString(AOBBUY);
+			} else {
+				double buyZoneTop = calcBuyZoneTop();
+				double AOBBUY = Math.floor(buyZoneTop);
+				rule = "Sell puts in the Buy Zone AOB " + Double.toString(AOBBUY);
+			}
+		} else { // Weekly DownTrend
+			if (isUpTrendMonthly()) {
+				if (isPossibleDowntrendTermination()) {
+					rule = "Wait for Weekly Close above moving average";
+				} else if (isPriceInBuyZone()) {
+					double buyZoneTop = calcBuyZoneTop();
+					double AOBBUY = Math.floor(buyZoneTop);
+					rule = "C: Sell Puts in Buy Zone AOB " + Double.toString(AOBBUY) + "\n A: Buy Stock";
+				} else if (isPriceInSellZone()) {
+					rule = "Wait for Weekly Close above moving average";
+				} else {
+					double buyZoneTop = calcBuyZoneTop();
+					double AOBBUY = Math.floor(buyZoneTop);
+					rule = "Sell puts in the Buy Zone AOB " + Double.toString(AOBBUY);
+				}
+			} else { // Monthly DownTrend
+				if (isPossibleDowntrendTermination()) {
+					rule = "Wait for Weekly Close above moving average";
+				} else if (isPriceInSellZone()) {
+					rule = "Wait for Weekly Close above moving average";
+				} else if (isPriceInBuyZone()) {
+					if (study.getPrice() <= study.getMaLastMonth()) {
+						rule = "C: Sell Puts at Proximal demand level (PDL)";
+					} else {
+						double buyZoneTop = calcBuyZoneTop();
+						double AOBBUY = Math.floor(buyZoneTop);
+						rule = "Sell puts in the Buy Zone AOB " + Double.toString(AOBBUY);
+					}
+				}
+
+			}
+		}
+		return rule;
+	}
+
+	@Override
+	public String inCashAndPut() {
+		String rule = "";
+		if (isUpTrendWeekly()) {
+			if (isPossibleUptrendTermination()) {
+				rule = "Buy back Put nad Place Stop Buy Order at moving average + 1/4 Averate True Range(ATR)";
+			} else if (isPriceInBuyZone()) {
+				rule = "C: Going For the Ride \n A: Buy Back Put and Buy Stock";
+			} else if (isPriceInSellZone()) {
+				rule = "Going for the Ride ";
+			} else {
+				rule = "Going for the Ride ";
+			}
+		} else { // Weekly DownTrend
+			if (isUpTrendMonthly()) {
+				if (isPossibleDowntrendTermination()) {
+					rule = "Wait for Weekly Close above moving average";
+				} else if (isPriceInBuyZone()) {
+					rule = "C: Going for the Ride \n A: Buy Stock";
+				} else if (isPriceInSellZone()) {
+					rule = "Wait for Weekly Close above moving average";
+				} else {
+					rule = "Going for the Ride ";
+				}
+			} else { // Monthly DownTrend
+				if (isPossibleDowntrendTermination()) {
+					rule = "Wait for Weekly Close above moving average";
+				} else if (isPriceInSellZone()) {
+					rule = "Wait for Weekly Close above moving average";
+				} else if (isPriceInBuyZone()) {
+					if (study.getPrice() <= study.getMaLastMonth()) {
+						rule = "Buy back Puts and Role to Puts at Proximal demand level (PDL)";
+					} else {
+						rule = "Going for the Ride";
+					}
+				}
+
+			}
+		}
+		return rule;
+	}
+
+	@Override
+	public String inStock() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String inStockAndCall() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

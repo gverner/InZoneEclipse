@@ -21,54 +21,37 @@ import com.codeworks.pai.mock.MockSharedPreferences;
 public class UpdateServiceTest extends AndroidTestCase {
 
 	class TestUpdateService extends UpdateService {
-		boolean	alarmStarted	= false;
-		int		month			= 6; // June
-		int		day				= 3;
-		int		year			= 2013;
-		int		hour			= 9;
-		int		minute			= 1;
-		DateTime mockSystemTime = new DateTime();
-		List<DateTime> alarmTimes = new ArrayList<DateTime>();
 		SharedPreferences sharedPref = new MockSharedPreferences();
-		
+		int progressBarStopCalls = 0;
+		int progressBarStartCalls = 0;
+
 		@Override
 		public void onCreate() {
 			updater = new Updater();
 		    notifier = new MockNotifier();
 			processor = new MockProcessor();
-			mockSystemTime = new DateTime(year,month,day,hour, minute, DateTimeZone.forID("America/New_York"));
+			priceUpdater = new PriceUpdater();
+			alarmSetup = new MockAlarmSetup(getContext(),notifier);
 		}
 
+
 		@Override
-		void setAlarm(DateTime startTime) {
-			alarmStarted = true;
-			System.out.println("Call set Alarm with start of " + formatStartTime(startTime));
-			alarmTimes.add(startTime);
+		public synchronized int onStartCommand(Intent updateIntent, int flags, int startId) {
+			int returnvalue =super.onStartCommand(updateIntent, flags, startId);
+			try {  // allow time for AlarmSetup thread
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			return returnvalue;
 		}
+
 
 		@Override
 		void makeToast(String message, int length) {
 			System.out.println("MakeToast Message -> " + message);
 		}
 
-		@Override
-		boolean isAlarmAlreadyUp() {
-			if (alarmStarted) {
-				System.out.println("Alarm is already installed");
-				return true;
-			} else {
-				System.out.println("Alarm is not installed");
-				return false;
-			}
-		}
-
-		@Override
-		DateTime getCurrentNYTime() {
-			System.out.println("Run Time="+formatStartTime(mockSystemTime)+ " hour="+mockSystemTime.getHourOfDay());
-			System.out.println("day of week="+mockSystemTime.getDayOfWeek()+ " Sat="+DateTimeConstants.SATURDAY+ " Sun="+DateTimeConstants.SUNDAY);
-			System.out.println("Test Time="+formatStartTime(mockSystemTime));
-			return mockSystemTime;
-		}
 		
 		int getPrefUpdateFrequency() {
 			int frequency = 3;
@@ -131,8 +114,69 @@ public class UpdateServiceTest extends AndroidTestCase {
 			
 			return context;
 		}
+
+
+		@Override
+		void progressBarStart() {
+			progressBarStartCalls++;
+		}
+
+
+		@Override
+		void progressBarStop() {
+			progressBarStopCalls++;
+		}
+		
 	}
 
+	class MockAlarmSetup extends AlarmSetup {
+		int		month			= 6; // June
+		int		day				= 3;
+		int		year			= 2013;
+		int		hour			= 9;
+		int		minute			= 1;
+
+		public DateTime mockSystemTime = new DateTime();
+
+		public List<DateTime> alarmTimes = new ArrayList<DateTime>();
+		public boolean	alarmStarted	= false;
+
+		public MockAlarmSetup(Context context, Notifier notifier) {
+			super(context, notifier);
+			mockSystemTime = new DateTime(year,month,day,hour, minute, DateTimeZone.forID("America/New_York"));
+		}
+		
+		public void resetTime() {
+			mockSystemTime = new DateTime(year,month,day,hour, minute, DateTimeZone.forID("America/New_York"));
+		}
+		
+		@Override
+		void setAlarm(DateTime startTime) {
+			alarmStarted = true;
+			System.out.println("Call set Alarm with start of " + formatStartTime(startTime));
+			alarmTimes.add(startTime);
+		}
+		@Override
+		boolean isAlarmAlreadyUp() {
+			if (alarmStarted) {
+				System.out.println("Alarm is already installed");
+				return true;
+			} else {
+				System.out.println("Alarm is not installed");
+				return false;
+			}
+		}
+
+		@Override
+		public DateTime getCurrentNYTime() {
+			System.out.println("Run Time="+formatStartTime(mockSystemTime)+ " hour="+mockSystemTime.getHourOfDay());
+			System.out.println("day of week="+mockSystemTime.getDayOfWeek()+ " Sat="+DateTimeConstants.SATURDAY+ " Sun="+DateTimeConstants.SUNDAY);
+			System.out.println("Test Time="+formatStartTime(mockSystemTime));
+			return mockSystemTime;
+		}
+	
+	}
+	
 	public void testIsMarketOpen() {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();
@@ -144,17 +188,20 @@ public class UpdateServiceTest extends AndroidTestCase {
 	public void testRestartAndShutdown() throws InterruptedException {
 		TestUpdateService service = new TestUpdateService();
 		service.onCreate();
+		MockAlarmSetup alarm = ((MockAlarmSetup)service.alarmSetup);
 		Intent dailyIntent = new Intent();
 		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_SCHEDULE);
 		service.onStartCommand(dailyIntent, 0, 0);
 		Thread.sleep(1000);
 		while (service.updater.isRunning()) {
-			service.mockSystemTime = service.mockSystemTime.hourOfDay().addToCopy(1);
-			service.updater.restart();
+			alarm.mockSystemTime = alarm.mockSystemTime.hourOfDay().addToCopy(1);
+			service.updater.restart(false);
 			Thread.sleep(1000);
 		}
 		assertEquals("Number of Process Calls",9, ((MockProcessor)service.processor).numberOfCalls);
 		assertEquals("Number of Notifier Calls",9, ((MockNotifier)service.notifier).numberOfCalls);
+		assertEquals("Progress Bar Start Calls", 9, service.progressBarStartCalls);
+		assertEquals("Progress Bar Stop Calls", 9, service.progressBarStopCalls);
 
 	}
 
@@ -172,101 +219,115 @@ public class UpdateServiceTest extends AndroidTestCase {
 	
 	public void testSetAlarmBeforeMarketOpen() {
 		TestUpdateService service = new TestUpdateService();
-		service.hour = 5;
 		service.onCreate();
+		MockAlarmSetup alarm = ((MockAlarmSetup)service.alarmSetup);
+		alarm.hour = 5;
 		Intent dailyIntent = new Intent();
 		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_SCHEDULE);
 		service.onStartCommand(dailyIntent, 0, 0);
-		assertEquals("Number of set alarm calls",1, service.alarmTimes.size());
-		assertEquals("Hour of Start",9, service.alarmTimes.get(0).getHourOfDay());
-		assertEquals("Day of Month", service.day, service.alarmTimes.get(0).getDayOfMonth());
-		assertEquals("Month", service.month, service.alarmTimes.get(0).getMonthOfYear());
-		assertEquals("Year", service.year, service.alarmTimes.get(0).getYear());
+		assertEquals("Number of set alarm calls",1, alarm.alarmTimes.size());
+		assertEquals("Hour of Start",9, alarm.alarmTimes.get(0).getHourOfDay());
+		assertEquals("Day of Month", alarm.day, alarm.alarmTimes.get(0).getDayOfMonth());
+		assertEquals("Month", alarm.month, alarm.alarmTimes.get(0).getMonthOfYear());
+		assertEquals("Year", alarm.year, alarm.alarmTimes.get(0).getYear());
 	}
 
 	public void testSetAlarmBeforeMarketOpenWeekEnd() {
 		TestUpdateService service = new TestUpdateService();
-		service.hour = 5;
-		service.day = 29;
 		service.onCreate();
+		MockAlarmSetup alarm = ((MockAlarmSetup)service.alarmSetup);
+		alarm.hour = 5;
+		alarm.day = 29;
+		alarm.resetTime();
 		Intent dailyIntent = new Intent();
 		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_SCHEDULE);
 		service.onStartCommand(dailyIntent, 0, 0);
-		assertEquals("Number of set alarm calls",1, service.alarmTimes.size());
-		assertEquals("Hour of Start",9, service.alarmTimes.get(0).getHourOfDay());
-		assertEquals("Day of Month", 1, service.alarmTimes.get(0).getDayOfMonth());
-		assertEquals("Month", 7, service.alarmTimes.get(0).getMonthOfYear());
-		assertEquals("Year", service.year, service.alarmTimes.get(0).getYear());
+		assertEquals("Number of set alarm calls",1, alarm.alarmTimes.size());
+		assertEquals("Hour of Start",9, alarm.alarmTimes.get(0).getHourOfDay());
+		assertEquals("Day of Month", 1, alarm.alarmTimes.get(0).getDayOfMonth());
+		assertEquals("Month", 7, alarm.alarmTimes.get(0).getMonthOfYear());
+		assertEquals("Year", alarm.year, alarm.alarmTimes.get(0).getYear());
 	}
 
-	public void testSetAlarmAfterMarketClose() {
+	public void testSetAlarmAfterMarketClose() throws InterruptedException {
 		TestUpdateService service = new TestUpdateService();
-		service.hour = 17;
 		service.onCreate();
+		MockAlarmSetup alarm = ((MockAlarmSetup)service.alarmSetup);
+		alarm.hour = 17;
+		alarm.resetTime();
 		Intent dailyIntent = new Intent();
 		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_SCHEDULE);
 		service.onStartCommand(dailyIntent, 0, 0);
-		assertEquals("Number of set alarm calls",1, service.alarmTimes.size());
-		assertEquals("Hour of Start",9, service.alarmTimes.get(0).getHourOfDay());
-		assertEquals("Day of Month", service.day+1, service.alarmTimes.get(0).getDayOfMonth());
-		assertEquals("Month", service.month, service.alarmTimes.get(0).getMonthOfYear());
-		assertEquals("Year", service.year, service.alarmTimes.get(0).getYear());
+		Thread.sleep(2000);
+		assertEquals("Number of set alarm calls",1, alarm.alarmTimes.size());
+		assertEquals("Hour of Start",9, alarm.alarmTimes.get(0).getHourOfDay());
+		assertEquals("Day of Month", alarm.day+1, alarm.alarmTimes.get(0).getDayOfMonth());
+		assertEquals("Month", alarm.month, alarm.alarmTimes.get(0).getMonthOfYear());
+		assertEquals("Year", alarm.year, alarm.alarmTimes.get(0).getYear());
 	}
 
 	public void testSetAlarmAfterMarketCloseWeekEnd() {
 		TestUpdateService service = new TestUpdateService();
-		service.hour = 17;
-		service.day = 7;
 		service.onCreate();
+		MockAlarmSetup alarm = ((MockAlarmSetup)service.alarmSetup);
+		alarm.hour = 17;
+		alarm.day = 7;
+		alarm.resetTime();
 		Intent dailyIntent = new Intent();
 		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_SCHEDULE);
 		service.onStartCommand(dailyIntent, 0, 0);
-		assertEquals("Number of set alarm calls",1, service.alarmTimes.size());
-		assertEquals("Hour of Start",9, service.alarmTimes.get(0).getHourOfDay());
-		assertEquals("Day of Month", 10, service.alarmTimes.get(0).getDayOfMonth());
-		assertEquals("Month", service.month, service.alarmTimes.get(0).getMonthOfYear());
-		assertEquals("Year", service.year, service.alarmTimes.get(0).getYear());
+		assertEquals("Number of set alarm calls",1, alarm.alarmTimes.size());
+		assertEquals("Hour of Start",9, alarm.alarmTimes.get(0).getHourOfDay());
+		assertEquals("Day of Month", 10, alarm.alarmTimes.get(0).getDayOfMonth());
+		assertEquals("Month", alarm.month, alarm.alarmTimes.get(0).getMonthOfYear());
+		assertEquals("Year", alarm.year, alarm.alarmTimes.get(0).getYear());
 	}
 
 	public void testSetAlarmAfterMarketCloseMonthEnd() {
 		TestUpdateService service = new TestUpdateService();
-		service.hour = 17;
-		service.day = 28;
 		service.onCreate();
+		MockAlarmSetup alarm = ((MockAlarmSetup)service.alarmSetup);
+		alarm.hour = 17;
+		alarm.day = 28;
+		alarm.resetTime();
 		Intent dailyIntent = new Intent();
 		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_SCHEDULE);
 		service.onStartCommand(dailyIntent, 0, 0);
-		assertEquals("Number of set alarm calls",1, service.alarmTimes.size());
-		assertEquals("Hour of Start",9, service.alarmTimes.get(0).getHourOfDay());
-		assertEquals("Day of Month", 1, service.alarmTimes.get(0).getDayOfMonth());
-		assertEquals("Month", 7, service.alarmTimes.get(0).getMonthOfYear());
-		assertEquals("Year", service.year, service.alarmTimes.get(0).getYear());
+		assertEquals("Number of set alarm calls",1, alarm.alarmTimes.size());
+		assertEquals("Hour of Start",9, alarm.alarmTimes.get(0).getHourOfDay());
+		assertEquals("Day of Month", 1, alarm.alarmTimes.get(0).getDayOfMonth());
+		assertEquals("Month", 7, alarm.alarmTimes.get(0).getMonthOfYear());
+		assertEquals("Year", alarm.year, alarm.alarmTimes.get(0).getYear());
 	}
 	
 	public void testSetAlarmBeforeMarketOpenAlreadyRunning() {
 		TestUpdateService service = new TestUpdateService();
-		service.alarmStarted = true;
-		service.hour = 5;
 		service.onCreate();
+		MockAlarmSetup alarm = ((MockAlarmSetup)service.alarmSetup);
+		alarm.alarmStarted = true;
+		alarm.hour = 5;
+		alarm.resetTime();
 		Intent dailyIntent = new Intent();
 		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_SCHEDULE);
 		service.onStartCommand(dailyIntent, 0, 0);
-		assertEquals("Number of set alarm calls",0, service.alarmTimes.size());
+		assertEquals("Number of set alarm calls",1, alarm.alarmTimes.size());
 	}
 
 	public void testSetAlarmAfterMarketCloseAlreadyRunning() {
 		TestUpdateService service = new TestUpdateService();
-		service.alarmStarted = true;
-		service.hour = 17;
 		service.onCreate();
+		MockAlarmSetup alarm = ((MockAlarmSetup)service.alarmSetup);
+		alarm.alarmStarted = true;
+		alarm.hour = 17;
+		alarm.resetTime();
 		Intent dailyIntent = new Intent();
 		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_SCHEDULE);
 		service.onStartCommand(dailyIntent, 0, 0);
-		assertEquals("Number of set alarm calls",1, service.alarmTimes.size());
-		assertEquals("Hour of Start",9, service.alarmTimes.get(0).getHourOfDay());
-		assertEquals("Day of Month", service.day+1, service.alarmTimes.get(0).getDayOfMonth());
-		assertEquals("Month", service.month, service.alarmTimes.get(0).getMonthOfYear());
-		assertEquals("Year", service.year, service.alarmTimes.get(0).getYear());
+		assertEquals("Number of set alarm calls",1, alarm.alarmTimes.size());
+		assertEquals("Hour of Start",9, alarm.alarmTimes.get(0).getHourOfDay());
+		assertEquals("Day of Month", alarm.day+1, alarm.alarmTimes.get(0).getDayOfMonth());
+		assertEquals("Month", alarm.month, alarm.alarmTimes.get(0).getMonthOfYear());
+		assertEquals("Year", alarm.year, alarm.alarmTimes.get(0).getYear());
 	}
 
 }

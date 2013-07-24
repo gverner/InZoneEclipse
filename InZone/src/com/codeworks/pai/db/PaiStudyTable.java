@@ -34,7 +34,12 @@ public class PaiStudyTable {
 	  public static final String COLUMN_NOTICE_DATE = "notice_date";
 	  public static final String COLUMN_SMA_MONTH = "sma_month";
 	  public static final String COLUMN_SMA_LAST_MONTH = "sma_last_month";
-	  public static final String COLUMN_S_STDDEV_MONTH = "s_stddev_month";
+	  public static final String COLUMN_SMA_STDDEV_MONTH = "sma_stddev_month";
+	  public static final String COLUMN_SMA_WEEK = "sma_week";
+	  public static final String COLUMN_SMA_LAST_WEEK = "sma_last_week";
+	  public static final String COLUMN_SMA_STDDEV_WEEK = "sma_stddev_week";
+	  public static final String COLUMN_LAST_CLOSE = "last_close";
+	  public static final String COLUMN_CONTRACTS = "contracts";
 
 	  // Database creation SQL statement
 	  private static final String DATABASE_CREATE = "create table " 
@@ -60,8 +65,13 @@ public class PaiStudyTable {
 	      + COLUMN_STDDEV_MONTH + " real null, "
 	      + COLUMN_SMA_MONTH + " real null, " 
 	      + COLUMN_SMA_LAST_MONTH + " real null, "
-	      + COLUMN_S_STDDEV_MONTH + " real null, "
+	      + COLUMN_SMA_STDDEV_MONTH + " real null, "
+	      + COLUMN_SMA_WEEK + " real null, " 
+	      + COLUMN_SMA_LAST_WEEK + " real null, "
+	      + COLUMN_SMA_STDDEV_WEEK + " real null, "
 	      + COLUMN_AVG_TRUE_RANGE + " real null, "
+		  + COLUMN_LAST_CLOSE + " real null, "
+		  + COLUMN_CONTRACTS + " integer null, "
 	      + COLUMN_NOTICE + " integer null, "
 	      + COLUMN_NOTICE_DATE + " text null"
 	      + ");";

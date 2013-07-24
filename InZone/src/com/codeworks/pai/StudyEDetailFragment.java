@@ -56,7 +56,7 @@ public class StudyEDetailFragment extends Fragment {
 				PaiStudyTable.COLUMN_MA_WEEK, PaiStudyTable.COLUMN_MA_MONTH, PaiStudyTable.COLUMN_MA_LAST_WEEK, PaiStudyTable.COLUMN_MA_LAST_MONTH,
 				PaiStudyTable.COLUMN_PRICE, PaiStudyTable.COLUMN_PRICE_LAST_WEEK, PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_STDDEV_WEEK,
 				PaiStudyTable.COLUMN_STDDEV_MONTH, PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.COLUMN_SMA_MONTH,
-				PaiStudyTable.COLUMN_SMA_LAST_MONTH, PaiStudyTable.COLUMN_S_STDDEV_MONTH };
+				PaiStudyTable.COLUMN_SMA_LAST_MONTH, PaiStudyTable.COLUMN_SMA_STDDEV_MONTH };
 
 		Uri uri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + id);
 		Cursor cursor = getActivity().getContentResolver().query(uri, projection, null, null, null);
@@ -82,7 +82,7 @@ public class StudyEDetailFragment extends Fragment {
 				security.setPriceDate(cursor.getString(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PRICE_DATE)));
 				security.setSmaMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_MONTH)));
 				security.setSmaLastMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_LAST_MONTH)));
-				security.setS_stddevMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_S_STDDEV_MONTH)));
+				security.setSmaStddevMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_STDDEV_MONTH)));
 				((TextView) getView().findViewById(R.id.sdfSymbol)).setText(symbol);
 				((TextView) getView().findViewById(R.id.sdfName)).setText(security.getName());
 				populateView(security);
@@ -117,10 +117,16 @@ public class StudyEDetailFragment extends Fragment {
 		setDouble(getView(), rules.calcUpperSellZoneTop(Period.Month), R.id.sdfMonthlyUpperSellTop);
 		setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Month), R.id.sdfMonthlyUpperSellBottom);
 		setDouble(getView(), rules.calcUpperBuyZoneTop(Period.Month), R.id.sdfMonthlyUpperBuyTop);
-		setDouble(getView(), rules.calcUpperBuyZoneBottom(Period.Month), R.id.sdfMaMonthly);
+		setDouble(getView(), study.getMaMonth(), R.id.sdfMaMonthly);
 		setDouble(getView(), rules.calcLowerSellZoneBottom(Period.Month), R.id.sdfMonthlyLowerSellBottom);
 		setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Month), R.id.sdfMonthlyLowerBuyTop);
 		setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Month), R.id.sdfMonthlyLowerBuyBottom);
+		
+		setString(getView(), rules.inCash(), R.id.sdfInCashText);
+		setString(getView(), rules.inCashAndPut(), R.id.sdfInCashAndPutText);
+		setString(getView(), rules.inStock(), R.id.sdfInStockText);
+		setString(getView(), rules.inStockAndCall(), R.id.sdfInStockAndCallText);
+		
 
 	}
 
@@ -129,5 +135,9 @@ public class StudyEDetailFragment extends Fragment {
 		textView.setText(PaiStudy.format(value));
 		return textView;
 	}
-
+	TextView setString(View view, String value, int viewId) {
+		TextView textView = (TextView) view.findViewById(viewId);
+		textView.setText(value);
+		return textView;
+	}
 }

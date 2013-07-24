@@ -1,5 +1,6 @@
 package com.codeworks.pai.processor;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -25,7 +26,9 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		super.setUp();
 		processor = new ProcessorImpl(null, new MockDataReader());
 	}
-
+	public double round(double value) {
+		return new BigDecimal(value).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+	}
 	public void testStudyGenDTSell() throws ParseException {
 		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
@@ -35,7 +38,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		processor.calculateStudy(study, history);
 		logStudy(study);
 		assertEquals("Price", 9.10d, study.getPrice());
-		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
+		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
 		assertEquals("MA week", 12.76d, PaiUtils.round(study.getMaWeek()));
 		assertEquals("MA month", 20.19d, PaiUtils.round(study.getMaMonth()));
 		assertEquals("MA last week", 13.15d, PaiUtils.round(study.getMaLastWeek()));
@@ -60,7 +63,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		processor.calculateStudy(study, history);
 		logStudy(study);
 		assertEquals("Price", 8.00d, study.getPrice());
-		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
+		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
 		assertEquals("MA week", 12.66d, PaiUtils.round(study.getMaWeek()));
 		assertEquals("MA month", 20.08d, PaiUtils.round(study.getMaMonth()));
 		assertEquals("MA last week", 13.15d, PaiUtils.round(study.getMaLastWeek()));
@@ -84,7 +87,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		processor.calculateStudy(study, history);
 		logStudy(study);
 		assertEquals("Price", 41.10d, study.getPrice());
-		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
+		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
 		assertEquals("StdDev Week", 1.83d, PaiUtils.round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 7.53d, PaiUtils.round(study.getStddevMonth()));
 		assertEquals("MA week", 37.25d, PaiUtils.round(study.getMaWeek()));
@@ -109,7 +112,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		processor.calculateStudy(study, history);
 		logStudy(study);
 		assertEquals("Price", 37.50d, study.getPrice());
-		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
+		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
 		assertEquals("StdDev Week", 1.61d, PaiUtils.round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 7.27d, PaiUtils.round(study.getStddevMonth()));
 		assertEquals("MA week", 36.91d, PaiUtils.round(study.getMaWeek()));
@@ -134,7 +137,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		processor.calculateStudy(study, history);
 		logStudy(study);
 		assertEquals("Price", 36.50d, study.getPrice());
-		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
+		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
 		assertEquals("MA week", 36.82d, PaiUtils.round(study.getMaWeek()));
 		assertEquals("MA month", 29.39d, PaiUtils.round(study.getMaMonth()));
 		assertEquals("MA last week", 36.85d, PaiUtils.round(study.getMaLastWeek()));
@@ -183,7 +186,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		MockDataReader.buildSecurity(study, "S&P 500", MockDataReader.SPY_PRICE,"04/12/2013");
 		processor.calculateStudy(study, history);
 		assertEquals("Price", MockDataReader.SPY_PRICE, study.getPrice());
-		assertEquals("ATR", 0.0d, study.getAverageTrueRange());
+		assertEquals("ATR", 1.46d, round(study.getAverageTrueRange()));
 		assertEquals("StdDev Week", 5.56d, PaiUtils.round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 10.94d, PaiUtils.round(study.getStddevMonth()));
 		assertEquals("MA week", 151.08d, PaiUtils.round(study.getMaWeek()));

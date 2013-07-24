@@ -63,7 +63,6 @@ public class ATR {
 
 	public static double compute(List<Price> priceList, int noPeriods) {
 		ATR atr = new ATR(noPeriods);
-		Collections.sort(priceList);
 		int end = priceList.size();
 		List<Price> subList = priceList.subList(end - (noPeriods * 2), end);
 		Price prev = new Price();

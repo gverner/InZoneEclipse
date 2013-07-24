@@ -41,6 +41,7 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 
 	private Intent dailyIntent;
 	private int portfolioId = 1;
+	boolean serviceStartedByCreate = false;
 	// List<PaiStudy> quotes = new ArrayList<PaiStudy>();
 
 	/** Called when the activity is first created. */
@@ -51,6 +52,7 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 		dailyIntent = new Intent(this, UpdateService.class);
 		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_MANUAL);
 		startService(dailyIntent);
+		serviceStartedByCreate = true;
 		setContentView(R.layout.study_activity_frame);	
         // Set up the action bar.
         final ActionBar actionBar = getActionBar();
@@ -107,7 +109,9 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 	}		
 	  @Override
 	public void onStudySelected(Long studyId) {
-
+		if (studyId < 1) {
+			return;
+		}
 		StudyEDetailFragment fragment = (StudyEDetailFragment) getFragmentManager().findFragmentById(R.id.study_detail_frame);
 		if (fragment != null && fragment.isInLayout()) {
 
@@ -220,6 +224,12 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 	@Override
 	protected void onResume() {
 		super.onResume();
+		if (!serviceStartedByCreate) {
+			dailyIntent = new Intent(this, UpdateService.class);
+			dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_PRICE_UPDATE);
+			startService(dailyIntent);
+		}
+		serviceStartedByCreate = false;
 	}
 
 	public void showToast(final String toast)

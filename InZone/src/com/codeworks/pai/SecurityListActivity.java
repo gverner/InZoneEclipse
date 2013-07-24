@@ -23,7 +23,6 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
@@ -31,6 +30,7 @@ import android.widget.TextView;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.PriceHistoryTable;
 
 public class SecurityListActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor>, OnItemSelectedListener, OnSharedPreferenceChangeListener {
 	private static final String TAG = SecurityListActivity.class.getSimpleName();
@@ -140,10 +140,13 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 		// get the row the clicked button is in
 		RelativeLayout vwParentRow = (RelativeLayout) v.getParent();
 		TextView securityTextView = (TextView) vwParentRow.getChildAt(0);
+		TextView symbolTextView = (TextView) vwParentRow.getChildAt(1);
 		if (securityTextView != null) {
 			String securityId = securityTextView.getText().toString();
 			Log.d(TAG, "SecurityId1=" + securityId);
 			deleteSecurity(securityId);
+			String symbol = symbolTextView.getText().toString();
+			deleteHistory(symbol);
 		}
 	}
 
@@ -156,6 +159,16 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 		Log.d(TAG, "Uri=" + securityUri.toString() + " Delete Count=" + countDeleted);
 	}
 
+	private void deleteHistory(String symbol) {
+		if (symbol == null || symbol.length() == 0) {
+			return;
+		}
+		String selection = PriceHistoryTable.COLUMN_SYMBOL + " = ? ";
+		String[] selectionArgs = { symbol };
+		int countDeleted = getContentResolver().delete(PaiContentProvider.PRICE_HISTORY_URI, selection, selectionArgs);
+		Log.d(TAG, "History Delete Count=" + countDeleted);
+	}
+	
 	// Opens the second activity if an entry is clicked
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {

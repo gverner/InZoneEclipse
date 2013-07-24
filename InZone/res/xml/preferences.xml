@@ -5,6 +5,7 @@
         android:title="@string/pref_autoRestart"
         android:summary="@string/pref_autoRestartSumm"
         android:defaultValue="true" />
+
     <ListPreference
         android:key="pref_updateFrequencyType"
         android:title="@string/pref_updateFrequency"
@@ -12,4 +13,19 @@
         android:entries="@array/pref_updateFrequencyTypes_entries"
         android:entryValues="@array/pref_updateFrequencyTypes_values"
         android:defaultValue="3" />
-</PreferenceScreen>
+
+    <EditTextPreference
+        android:key="pref_portfolio1_name"
+        android:title="@string/pref_portfolio1_name"
+        android:dialogTitle="@string/pref_portfolio1_name"
+        android:defaultValue="@string/pref_portfolio1_title_defaultValue"
+        />
+    
+    <ListPreference
+        android:key="pref_portfolio1_type"
+        android:title="@string/pref_portfolio1_type"
+        android:dialogTitle="@string/pref_portfolio1_type"
+        android:entries="@array/pref_portfolio_type_entries"
+        android:entryValues="@array/pref_portfolio_type_values"
+        android:defaultValue="E" />
+    </PreferenceScreen>

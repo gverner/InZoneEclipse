@@ -2,7 +2,10 @@ package com.codeworks.pai.study;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 import junit.framework.TestCase;
 
@@ -15,10 +18,18 @@ import com.codeworks.pai.study.Grouper;
 import com.codeworks.pai.study.Period;
 
 public class EMATest extends TestCase {
+	SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy",Locale.US);
 	
-	
-	
-	public void testEma2Weekly() throws IOException {
+
+	/**
+	 * Note this test is based on a period end, usually we are not 
+	 * at a period end (weekend) and require the current price to
+	 * find it.
+	 *  
+	 * @throws IOException
+	 * @throws ParseException
+	 */
+	public void testEma2Weekly() throws IOException, ParseException {
 		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY);
 		Grouper grouper = new Grouper();
 		List<Price> weekly = grouper.periodList(history, Period.Week);
@@ -33,6 +44,42 @@ public class EMATest extends TestCase {
 		System.out.println("Weekly EMA ="+  decimal.toPlainString());
 		// Week April 1 through 5 Think Swim EMA 150.27
 		assertEquals(150.27d, decimal.doubleValue());
+	}
+
+	public void testEma2WeeklySPY2() throws IOException, ParseException {
+		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY2);
+		Price currentPrice = TestDataLoader.buildPrice(sdf.parse("07/22/2013"), 169.50D);
+		Grouper grouper = new Grouper();
+		List<Price> weekly = grouper.periodList(history, Period.Week, currentPrice);
+		EMA2 ema = new EMA2(20);
+		double smaValue = 0;
+		for (Price price : weekly) {
+			smaValue = ema.compute(price.getClose());
+		}
+		BigDecimal decimal = new BigDecimal(smaValue);
+		decimal = decimal.setScale(2,BigDecimal.ROUND_HALF_UP);
+		System.out.println("Last History Date"+weekly.get(weekly.size()-1).getDate());
+		System.out.println("Weekly EMA ="+  decimal.toPlainString());
+		// Week April 1 through 5 Think Swim EMA 150.27
+		assertEquals(161.46d, decimal.doubleValue());
+	}
+	
+	public void testEma2MonthySPY2() throws IOException, ParseException {
+		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY2);
+		Price currentPrice = TestDataLoader.buildPrice(sdf.parse("07/22/2013"), 169.50D);
+		Grouper grouper = new Grouper();
+		List<Price> monthly = grouper.periodList(history, Period.Month, currentPrice);
+		EMA2 ema = new EMA2(20);
+		double smaValue = 0;
+		for (Price price : monthly) {
+			smaValue = ema.compute(price.getClose());
+		}
+		BigDecimal decimal = new BigDecimal(smaValue);
+		decimal = decimal.setScale(2,BigDecimal.ROUND_HALF_UP);
+		System.out.println("Last History Date"+monthly.get(monthly.size()-1).getDate());
+		System.out.println("Monthly EMA ="+  decimal.toPlainString());
+		// Think Or Swim Monthly EMA for July 22 2013 147.30
+		assertEquals(147.29d, decimal.doubleValue());
 	}
 	
 	public void testEma2Monthy() throws IOException {

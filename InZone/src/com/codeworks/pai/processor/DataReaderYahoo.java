@@ -4,11 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StreamTokenizer;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,11 +16,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import javax.xml.transform.stream.StreamResult;
-
 import android.text.Html;
 import android.text.Spanned;
-import android.text.format.DateUtils;
 import android.util.Log;
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -253,7 +247,7 @@ public class DataReaderYahoo implements DataReader {
 		String endDay = Integer.toString(cal.get(Calendar.DAY_OF_MONTH));
 		String endMonth = Integer.toString(cal.get(Calendar.MONTH));
 		String endYear = Integer.toString(cal.get(Calendar.YEAR));
-		cal.add(Calendar.WEEK_OF_YEAR, -100);
+		cal.add(Calendar.WEEK_OF_YEAR, -300);
 		String startDay = Integer.toString(cal.get(Calendar.DAY_OF_MONTH));
 		String startMonth = Integer.toString(cal.get(Calendar.MONTH));
 		String startYear = Integer.toString(cal.get(Calendar.YEAR));

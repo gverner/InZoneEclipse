@@ -2,7 +2,7 @@ package com.codeworks.pai.db.model;
 
 import com.codeworks.pai.study.Period;
 
-public class SmaRules  implements Rules {
+public class SmaRules  extends RulesBase {
 	protected static double				ZONE_INNER			= 0.5d;
 	protected static double				ZONE_OUTER			= 2d;
 
@@ -10,7 +10,6 @@ public class SmaRules  implements Rules {
 	 * 
 	 */
 	private static final long	serialVersionUID	= 5444507227900171845L;
-	PaiStudy study;
 	
 	public SmaRules(PaiStudy study) {
 		this.study = study;
@@ -24,7 +23,7 @@ public class SmaRules  implements Rules {
 		if (Period.Week.equals(period)) {
 			return study.getMaWeek() + (study.getStddevWeek() * ZONE_OUTER);
 		} else {
-			return study.getSmaMonth() + (study.getS_stddevMonth() * ZONE_OUTER);
+			return study.getSmaMonth() + (study.getSmaStddevMonth() * ZONE_OUTER);
 		}
 	}
 
@@ -32,7 +31,7 @@ public class SmaRules  implements Rules {
 		if (Period.Week.equals(period)) {
 			return study.getMaWeek() + (study.getStddevWeek() * ZONE_INNER);
 		} else {
-			return study.getSmaMonth() + (study.getS_stddevMonth() * ZONE_INNER);
+			return study.getSmaMonth() + (study.getSmaStddevMonth() * ZONE_INNER);
 		}
 	}
 
@@ -56,7 +55,7 @@ public class SmaRules  implements Rules {
 		if (Period.Week.equals(period)) {
 			return study.getMaWeek() - (study.getStddevWeek() * ZONE_INNER);
 		} else {
-			return study.getSmaMonth() - (study.getS_stddevMonth() * ZONE_INNER);
+			return study.getSmaMonth() - (study.getSmaStddevMonth() * ZONE_INNER);
 		}
 	}
 
@@ -64,7 +63,7 @@ public class SmaRules  implements Rules {
 		if (Period.Week.equals(period)) {
 			return study.getMaWeek() - (study.getStddevWeek() * ZONE_OUTER);
 		} else {
-			return study.getSmaMonth() - (study.getS_stddevMonth() * ZONE_OUTER);
+			return study.getSmaMonth() - (study.getSmaStddevMonth() * ZONE_OUTER);
 		}
 	}
 
@@ -73,13 +72,13 @@ public class SmaRules  implements Rules {
 	}
 
 	public double calcBuyZoneBottom() {
-		if (study.getSmaMonth() == Double.NaN || study.getS_stddevMonth() == Double.NaN) {
+		if (study.getSmaMonth() == Double.NaN || study.getSmaStddevMonth() == Double.NaN) {
 			return 0;
 		}
 		if (isUpTrendWeekly()) {
 			return study.getSmaMonth();
 		} else {
-			return study.getSmaMonth() - (study.getS_stddevMonth() * ZONE_OUTER) - pierceOffset();
+			return study.getSmaMonth() - (study.getSmaStddevMonth() * ZONE_OUTER) - pierceOffset();
 		}
 	}
 
@@ -95,22 +94,22 @@ public class SmaRules  implements Rules {
 	}
 
 	public double calcSellZoneBottom() {
-		if (study.getSmaMonth() == Double.NaN || study.getS_stddevMonth() == Double.NaN) {
+		if (study.getSmaMonth() == Double.NaN || study.getSmaStddevMonth() == Double.NaN) {
 			return 0;
 		}
 		if (isUpTrendWeekly()) {
-			return study.getSmaMonth() + (study.getS_stddevMonth() * ZONE_OUTER);
+			return study.getSmaMonth() + (study.getSmaStddevMonth() * ZONE_OUTER);
 		} else {
-			return study.getSmaMonth() - (study.getS_stddevMonth() * ZONE_INNER);
+			return study.getSmaMonth() - (study.getSmaStddevMonth() * ZONE_INNER);
 		}
 	}
 
 	public double calcSellZoneTop() {
-		if (study.getSmaMonth() == Double.NaN || study.getS_stddevMonth() == Double.NaN) {
+		if (study.getSmaMonth() == Double.NaN || study.getSmaStddevMonth() == Double.NaN) {
 			return 0;
 		}
 		if (isUpTrendWeekly()) {
-			return study.getSmaMonth() + (study.getS_stddevMonth() * ZONE_OUTER) + pierceOffset();
+			return study.getSmaMonth() + (study.getSmaStddevMonth() * ZONE_OUTER) + pierceOffset();
 		} else {
 			return study.getSmaMonth();
 		}
@@ -185,5 +184,29 @@ public class SmaRules  implements Rules {
 		sb.append(" maLM=" + PaiStudy.format(study.getMaLastMonth()));
 		sb.append(" PLM=" + PaiStudy.format(study.getPriceLastMonth()));
 		return sb.toString();
+	}
+
+	@Override
+	public String inCash() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String inCashAndPut() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String inStock() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String inStockAndCall() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

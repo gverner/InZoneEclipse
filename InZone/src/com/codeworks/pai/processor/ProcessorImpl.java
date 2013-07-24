@@ -8,6 +8,8 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
+import org.joda.time.DateTimeComparator;
+
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -68,23 +70,52 @@ public class ProcessorImpl implements Processor {
 		return studies;
 	}
 	
+	/**
+	 * update Price all securities.
+	 * lookup current price only
+	 * 
+	 * @return
+	 * @throws InterruptedException
+	 */
+	public List<PaiStudy> updatePrice(String symbol) throws InterruptedException {
+		List<PaiStudy> studies = getSecurities(symbol);
+		updateCurrentPrice(studies);
+		for (PaiStudy security : studies) {
+			if (security.getPrice() != 0) {
+					saveStudyPrice(security);
+			} else {
+				security.setNotice(Notice.NO_PRICE);
+			}
+		}
+		return studies;
+	}
+	
 	void calculateStudy(PaiStudy security, List<Price> history) {
 		Collections.sort(history);
 
 		Grouper grouper = new Grouper();
 		{
+			appendCurrentPrice(history, security);
 			List<Price> weekly = grouper.periodList(history, Period.Week);
 			if (weekly.size() >= 20) {
 				security.setMaLastWeek(EMA2.compute(weekly, 20));
+				security.setSmaLastWeek(SMA.compute(weekly, 12));
 				security.setPriceLastWeek(weekly.get(weekly.size() - 1).getClose());
 
 				appendCurrentPrice(weekly, security);
+				
 				security.setMaWeek(EMA2.compute(weekly, 20));
 				security.setStddevWeek(StdDev.calculate(weekly, 20));
+
+				security.setSmaWeek(SMA.compute(weekly, 12));
+				security.setSmaStddevWeek(StdDev.calculate(weekly, 12));
+
 				if (DateUtils.isAfterMarketClose(security.getPriceDate(), Period.Week)) {
 					security.setMaLastWeek(security.getMaWeek());
+					security.setSmaLastWeek(security.getSmaWeek());
 					security.setPriceLastWeek(security.getPrice());
 				}
+				
 			} else {
 				Log.w(TAG,"Insufficent Weekly History only "+weekly.size()+" periods.");
 			}
@@ -95,19 +126,36 @@ public class ProcessorImpl implements Processor {
 				security.setMaLastMonth(EMA2.compute(monthly, 20));
 				security.setSmaLastMonth(SMA.compute(monthly, 12));
 				security.setPriceLastMonth(monthly.get(monthly.size() - 1).getClose());
+				
 				appendCurrentPrice(monthly, security);
+				
 				security.setMaMonth(EMA2.compute(monthly, 20));
-
 				security.setStddevMonth(StdDev.calculate(monthly, 20));
+
 				security.setSmaMonth(SMA.compute(monthly, 12));
-				security.setS_stddevMonth(StdDev.calculate(monthly, 12));
+				security.setSmaStddevMonth(StdDev.calculate(monthly, 12));
+
+				if (DateUtils.isAfterMarketClose(security.getPriceDate(), Period.Month)) {
+					security.setMaLastMonth(security.getMaMonth());
+					security.setSmaLastMonth(security.getSmaMonth());
+					security.setPriceLastMonth(security.getPrice());
+				}
+				
 			} else {
 				Log.w(TAG,"Insufficent Monthly History only "+monthly.size()+" periods.");
 			}
 		}
 		{
 			List<Price> daily = new ArrayList<Price>(history);
+			Collections.sort(daily);
 			if (daily.size() > 20) {
+				Price lastHistory = daily.get(daily.size()-1);
+				if (DateTimeComparator.getDateOnlyInstance().compare(security.getPriceDate(), lastHistory.getDate()) > 0) {
+//				if (security.getPriceDate().after(lastHistory.getDate())) {
+					security.setLastClose(lastHistory.getClose());
+				} else {
+					security.setLastClose(daily.get(daily.size()-2).getClose());
+				}
 				//appendCurrentPrice(daily,security);
 				security.setAverageTrueRange(ATR.compute(daily, 20));
 			}
@@ -117,18 +165,18 @@ public class ProcessorImpl implements Processor {
 	private void appendCurrentPrice(List<Price> weekly, PaiStudy security) {
 		if (weekly != null && weekly.size() > 0) {
 			Price lastHistory = weekly.get(weekly.size() - 1);
-			if (security.getPriceDate().compareTo(lastHistory.getDate()) == 0) {
+			if (DateUtils.isSameDay(security.getPriceDate(), lastHistory.getDate())) {
 				if (security.getPrice() != lastHistory.getClose()) {
 					lastHistory.setClose(security.getPrice());
 					lastHistory.setOpen(security.getOpen());
 					lastHistory.setLow(security.getLow());
 					lastHistory.setHigh(security.getHigh());
-					Log.d(TAG, "History and Price Close Differ Should not Happend=" + lastHistory.getDate() + " History Close" + lastHistory.getClose()+ " Current Price" + security.getPrice());
+					Log.d(TAG, "History and Price Close Differ Should not Happen=" + lastHistory.getDate() + " History Close" + lastHistory.getClose()+ " Current Price" + security.getPrice());
 				}
-			} else if (security.getPriceDate().after(weekly.get(weekly.size() - 1).getDate())) {
+			} else if (DateUtils.truncate(security.getPriceDate()).after(weekly.get(weekly.size() - 1).getDate())) {
 				Price lastPrice = new Price();
 				lastPrice.setClose(security.getPrice()); // current price is close in history
-				lastPrice.setDate(security.getPriceDate());
+				lastPrice.setDate(DateUtils.truncate(security.getPriceDate()));
 				lastPrice.setOpen(security.getOpen());
 				lastPrice.setLow(security.getLow());
 				lastPrice.setHigh(security.getHigh());
@@ -222,7 +270,7 @@ public class ProcessorImpl implements Processor {
 				Log.d(TAG, "Replacing Price History in database");
 				int rowsDeleted = getContentResolver().delete(PaiContentProvider.PRICE_HISTORY_URI, selection, selectionArgs);
 				Log.d(TAG, "Deleted " + rowsDeleted + " history rows");
-				for (Price price : history) {
+				for (Price price : history) try {
 					ContentValues values = new ContentValues();
 					values.put(PriceHistoryTable.COLUMN_ADJUSTED_CLOSE, price.getAdjustedClose());
 					values.put(PriceHistoryTable.COLUMN_CLOSE, price.getClose());
@@ -232,6 +280,8 @@ public class ProcessorImpl implements Processor {
 					values.put(PriceHistoryTable.COLUMN_OPEN, price.getOpen());
 					values.put(PriceHistoryTable.COLUMN_SYMBOL, symbol);
 					getContentResolver().insert(PaiContentProvider.PRICE_HISTORY_URI, values);
+				} catch (Exception e) {
+					Log.e(TAG,"Exception on Insert History ",e);
 				}
 			}
 		}
@@ -239,6 +289,15 @@ public class ProcessorImpl implements Processor {
 		return history;
 	}
 
+	void saveStudyPrice(PaiStudy study) {
+		ContentValues values = new ContentValues();
+		values.put(PaiStudyTable.COLUMN_PRICE, study.getPrice());
+		values.put(PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.priceDateFormat.format(study.getPriceDate()));
+		Log.d(TAG, "Updating Price Study " + study.toString());
+		Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + study.getSecurityId());
+		getContentResolver().update(studyUri, values, null, null);
+	}
+	
 	void saveStudy(PaiStudy study) {
 		ContentValues values = new ContentValues();
 		values.put(PaiStudyTable.COLUMN_MA_WEEK, study.getMaWeek());
@@ -255,11 +314,16 @@ public class ProcessorImpl implements Processor {
 		values.put(PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.priceDateFormat.format(study.getPriceDate()));
 		values.put(PaiStudyTable.COLUMN_SMA_MONTH, study.getSmaMonth());
 		values.put(PaiStudyTable.COLUMN_SMA_LAST_MONTH, study.getSmaLastMonth());
-		values.put(PaiStudyTable.COLUMN_S_STDDEV_MONTH, study.getS_stddevMonth());
+		values.put(PaiStudyTable.COLUMN_SMA_STDDEV_MONTH, study.getSmaStddevMonth());
 		values.put(PaiStudyTable.COLUMN_PORTFOLIO_ID, study.getPortfolioId());
 		values.put(PaiStudyTable.COLUMN_OPEN, study.getOpen());
 		values.put(PaiStudyTable.COLUMN_HIGH, study.getHigh());
 		values.put(PaiStudyTable.COLUMN_LOW, study.getLow());
+		values.put(PaiStudyTable.COLUMN_SMA_WEEK, study.getSmaWeek());
+		values.put(PaiStudyTable.COLUMN_SMA_LAST_WEEK,study.getSmaLastWeek());
+		values.put(PaiStudyTable.COLUMN_SMA_STDDEV_WEEK,study.getSmaStddevWeek());
+		values.put(PaiStudyTable.COLUMN_LAST_CLOSE,study.getLastClose());
+
 		
 		Log.d(TAG, "Updating Study " + study.toString());
 		Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + study.getSecurityId());
@@ -306,17 +370,15 @@ public class ProcessorImpl implements Processor {
 
 	List<PaiStudy> getSecurities(String inSymbol) {
 		List<PaiStudy> securities = new ArrayList<PaiStudy>();
-		String[] projection = { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_NAME, PaiStudyTable.COLUMN_MA_TYPE, PaiStudyTable.COLUMN_MA_WEEK, PaiStudyTable.COLUMN_MA_MONTH,
-				PaiStudyTable.COLUMN_MA_LAST_WEEK, PaiStudyTable.COLUMN_MA_LAST_MONTH, PaiStudyTable.COLUMN_PRICE, PaiStudyTable.COLUMN_PRICE_LAST_WEEK,
-				PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_STDDEV_WEEK, PaiStudyTable.COLUMN_STDDEV_MONTH,
-				PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE,
-				PaiStudyTable.COLUMN_PORTFOLIO_ID,
-				PaiStudyTable.COLUMN_OPEN,
-				PaiStudyTable.COLUMN_HIGH,
-				PaiStudyTable.COLUMN_LOW,
-				PaiStudyTable.COLUMN_SMA_MONTH,
-				PaiStudyTable.COLUMN_SMA_LAST_MONTH,
-				PaiStudyTable.COLUMN_S_STDDEV_MONTH};
+		String[] projection = { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_NAME, PaiStudyTable.COLUMN_MA_TYPE,
+				PaiStudyTable.COLUMN_MA_WEEK, PaiStudyTable.COLUMN_MA_MONTH, PaiStudyTable.COLUMN_MA_LAST_WEEK, PaiStudyTable.COLUMN_MA_LAST_MONTH,
+				PaiStudyTable.COLUMN_PRICE, PaiStudyTable.COLUMN_PRICE_LAST_WEEK, PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_STDDEV_WEEK,
+				PaiStudyTable.COLUMN_STDDEV_MONTH, PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.COLUMN_PORTFOLIO_ID,
+				PaiStudyTable.COLUMN_OPEN, PaiStudyTable.COLUMN_HIGH, PaiStudyTable.COLUMN_LOW, PaiStudyTable.COLUMN_SMA_MONTH,
+				PaiStudyTable.COLUMN_SMA_LAST_MONTH, PaiStudyTable.COLUMN_SMA_STDDEV_MONTH, PaiStudyTable.COLUMN_SMA_WEEK, PaiStudyTable.COLUMN_SMA_LAST_WEEK,
+				PaiStudyTable.COLUMN_SMA_STDDEV_WEEK, PaiStudyTable.COLUMN_LAST_CLOSE, PaiStudyTable.COLUMN_CONTRACTS, 
+				PaiStudyTable.COLUMN_SMA_WEEK,PaiStudyTable.COLUMN_SMA_LAST_WEEK,PaiStudyTable.COLUMN_SMA_STDDEV_WEEK,PaiStudyTable.COLUMN_LAST_CLOSE
+		};
 		String selection = null;
 		String[] selectionArgs = null;
 		if (inSymbol != null && inSymbol.length() > 0) {
@@ -349,10 +411,15 @@ public class ProcessorImpl implements Processor {
 						security.setPortfolioId(cursor.getInt(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PORTFOLIO_ID)));
 						security.setSmaMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_MONTH)));
 						security.setSmaLastMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_LAST_MONTH)));
-						security.setS_stddevMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_S_STDDEV_MONTH)));
+						security.setSmaStddevMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_STDDEV_MONTH)));
 						security.setOpen(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_OPEN)));
 						security.setHigh(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_HIGH)));
 						security.setLow(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_LOW)));
+						security.setSmaWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_WEEK)));
+						security.setSmaLastWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_LAST_WEEK)));
+						security.setSmaStddevWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_STDDEV_WEEK)));
+						security.setLastClose(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_LAST_CLOSE)));
+				
 						securities.add(security);
 
 					} while (cursor.moveToNext());

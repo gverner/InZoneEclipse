@@ -9,12 +9,16 @@ import android.R.color;
 import android.app.Activity;
 import android.app.ListFragment;
 import android.app.LoaderManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +27,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +36,7 @@ import com.codeworks.pai.db.PaiStudyTable;
 import com.codeworks.pai.db.model.EmaRules;
 import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Rules;
+import com.codeworks.pai.processor.UpdateService;
 
 public class StudyEListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final String		TAG					= StudyActivity.class.getSimpleName();
@@ -40,9 +46,10 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 	// private Cursor cursor;
 	private PaiCursorAdapter		adapter;
 	SimpleDateFormat				lastUpdatedFormat	= new SimpleDateFormat("MM/dd/yyyy hh:mmaa", Locale.US);
-
+	
 	private OnItemSelectedListener	listener;
 	private long portfolioId = 1;
+	View footerView;
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -60,7 +67,7 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 		View headerView = View.inflate(getActivity(), R.layout.study_e_list_header, null);
 		list.addHeaderView(headerView);
 		
-		View footerView = View.inflate(getActivity(), R.layout.studylist_footer, null);
+		footerView = View.inflate(getActivity(), R.layout.studylist_footer, null);
 		list.addFooterView(footerView);
 		
 		//ListView list = getListView();
@@ -92,7 +99,6 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 		});
 		*/
 		fillData();
-
 	}
 
 	@Override
@@ -113,12 +119,32 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 	public void onResume() {
 		super.onResume();
 		adapter.notifyDataSetChanged();
+		// Register mMessageReceiver to receive messages.
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(UpdateService.BROADCAST_UPDATE_PROGRESS_BAR));
+
 	}
+
 	  @Override
 	public void onPause() {
+		// Unregister since the activity is not visible
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
 		super.onPause();
 	}
 
+	// handler for received Intents for the "ProgressBar status" even
+	BroadcastReceiver	mMessageReceiver	= new BroadcastReceiver() {
+												@Override
+												public void onReceive(Context context, Intent intent) {
+													Integer status = intent.getIntExtra(UpdateService.PROGRESS_BAR_STATUS, 0);
+													Log.d(TAG, "Received Broadcase with status: " + status);
+													ProgressBar progressBar = (ProgressBar) footerView.findViewById(R.id.progressBar1);
+													if (status == 0) {
+														progressBar.setVisibility(ProgressBar.VISIBLE);
+													} else {
+														progressBar.setVisibility(ProgressBar.INVISIBLE);
+													}
+												}
+											};
 
 	public interface OnItemSelectedListener {
 		public void onStudySelected(Long studyId);
@@ -164,7 +190,7 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 		String[] projection = new String[] { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_PRICE,
 				PaiStudyTable.COLUMN_PRICE_LAST_WEEK, PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_MA_WEEK, PaiStudyTable.COLUMN_MA_MONTH,
 				PaiStudyTable.COLUMN_MA_LAST_WEEK, PaiStudyTable.COLUMN_MA_LAST_MONTH, PaiStudyTable.COLUMN_STDDEV_WEEK, PaiStudyTable.COLUMN_STDDEV_MONTH,
-				PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE };
+				PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.COLUMN_LAST_CLOSE };
 		String selection = PaiStudyTable.COLUMN_PORTFOLIO_ID + " = ? ";
 		String[] selectionArgs = { Long.toString(portfolioId) };
 		Log.i(TAG, "Prepare Cursor Loader portfolio "+portfolioId);
@@ -209,6 +235,7 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				study.setStddevWeek(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_STDDEV_WEEK)));
 				study.setStddevMonth(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_STDDEV_MONTH)));
 				study.setAverageTrueRange(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_AVG_TRUE_RANGE)));
+				study.setLastClose(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_LAST_CLOSE)));
 				try {
 					study.setPriceDate(cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_PRICE_DATE)));
 				} catch (ParseException e) {
@@ -230,6 +257,16 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				// Price
 				TextView price = (TextView) view.findViewById(R.id.quoteList_Price);
 				price.setText(PaiStudy.format(study.getPrice()));
+				
+				double net = study.getPrice() - study.getLastClose();
+				TextView textNet = (TextView) view.findViewById(R.id.quoteList_net);
+				if (net < 0 ) {
+					textNet.setText(rules.formatNet(net));
+					textNet.setTextColor(getResources().getColor(R.color.net_negative));
+				} else {
+					textNet.setText(rules.formatNet(net));
+					textNet.setTextColor(getResources().getColor(R.color.net_positive));
+				}
 				TextView textBuyZoneBot = setDouble(view, rules.calcBuyZoneBottom(), R.id.quoteList_BuyZoneBottom);
 				TextView textBuyZoneTop = setDouble(view, rules.calcBuyZoneTop(), R.id.quoteList_BuyZoneTop);
 				if (rules.isPriceInBuyZone()) {
@@ -300,6 +337,5 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 			return customListView;
 		}
 	}
-
 
 }

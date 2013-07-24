@@ -10,7 +10,31 @@ import java.util.Locale;
 import com.codeworks.pai.db.model.Price;
 
 public class Grouper {
-
+	
+	/**
+	 * Adds currentPrice
+	 * 
+	 * In order to find the last week end or month end the current date's Price is required. 
+	 * Which would not be included in the history unless its a week end.
+	 * 
+	 * Also currentPrice is added to the returned period List as this is needed in calculations.
+	 * 
+	 * @param inHistory
+	 * @param period
+	 * @param currentPrice
+	 * @return
+	 */
+	public List<Price> periodList(List<Price> inHistory, Period period, Price currentPrice) {
+		Collections.sort(inHistory);
+		if (inHistory.get(inHistory.size() -1).getDate().before(currentPrice.getDate())) {
+			inHistory.add(currentPrice);
+		}
+		List<Price> groupList = periodList(inHistory, period);
+		if (groupList.get(groupList.size() -1).getDate().before(currentPrice.getDate())) {
+			groupList.add(currentPrice);
+		}
+		return groupList;
+	}
 	/**
 	 * periodList Loop through daily history and create list containing period
 	 * ending (weekly or monthly) days.
@@ -22,6 +46,7 @@ public class Grouper {
 	public List<Price> periodList(List<Price> inHistory, Period period) {
 		List<Price> history = new ArrayList<Price>(inHistory);
 		Collections.sort(history);
+
 		List<Price> periodList = new ArrayList<Price>();
 		int lastDay = -1;
 		Price lastPrice = null;
@@ -47,6 +72,23 @@ public class Grouper {
 				}
 			}
 		}
+		/*
+		if (Period.Week.equals(period)) {
+			Calendar cal = GregorianCalendar.getInstance(Locale.US);
+			int currentWeek = cal.get(Calendar.WEEK_OF_YEAR);
+			cal.setTime(lastPrice.getDate());
+			if (currentWeek > cal.get(Calendar.WEEK_OF_YEAR)) {
+				periodList.add(lastPrice);
+			}
+		}
+		if (Period.Month.equals(period)) {
+			Calendar cal = GregorianCalendar.getInstance(Locale.US);
+			int currentMonth = cal.get(Calendar.MONTH);
+			cal.setTime(lastPrice.getDate());
+			if (currentMonth > cal.get(Calendar.MONTH)) {
+				periodList.add(lastPrice);
+			}
+		}*/		
 		return periodList;
 	}
 

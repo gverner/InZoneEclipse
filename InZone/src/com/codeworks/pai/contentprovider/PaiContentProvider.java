@@ -221,8 +221,10 @@ public class PaiContentProvider extends ContentProvider {
 				PaiStudyTable.COLUMN_PRICE, PaiStudyTable.COLUMN_OPEN, PaiStudyTable.COLUMN_HIGH, PaiStudyTable.COLUMN_LOW, PaiStudyTable.COLUMN_PRICE_DATE,
 				PaiStudyTable.COLUMN_PRICE_LAST_WEEK, PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_STDDEV_WEEK,
 				PaiStudyTable.COLUMN_STDDEV_MONTH, PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_NOTICE, PaiStudyTable.COLUMN_NOTICE_DATE,
-				PaiStudyTable.COLUMN_SMA_MONTH, PaiStudyTable.COLUMN_SMA_LAST_MONTH, PaiStudyTable.COLUMN_S_STDDEV_MONTH,
-				PaiStudyTable.COLUMN_PORTFOLIO_ID};
+				PaiStudyTable.COLUMN_SMA_MONTH, PaiStudyTable.COLUMN_SMA_LAST_MONTH, PaiStudyTable.COLUMN_SMA_STDDEV_MONTH,
+				PaiStudyTable.COLUMN_PORTFOLIO_ID,
+				PaiStudyTable.COLUMN_SMA_WEEK,PaiStudyTable.COLUMN_SMA_LAST_WEEK,PaiStudyTable.COLUMN_SMA_STDDEV_WEEK,PaiStudyTable.COLUMN_LAST_CLOSE,PaiStudyTable.COLUMN_CONTRACTS
+};
 		if (projection != null) {
 			HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
 			HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));

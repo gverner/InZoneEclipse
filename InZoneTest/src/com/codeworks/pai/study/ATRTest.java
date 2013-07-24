@@ -2,6 +2,7 @@ package com.codeworks.pai.study;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 
 import android.test.AndroidTestCase;
@@ -14,7 +15,7 @@ public class ATRTest extends AndroidTestCase {
 
 	public void testAtr() throws IOException {
 		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY);
-
+		Collections.sort(history);
 		double value = 0;
 		value = ATR.compute(history, 20);
 		System.out.println("Daily ATR = "+format(value)+" for date "+history.get(history.size()-1).getDate());

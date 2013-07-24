@@ -20,8 +20,9 @@
     <string name="security_list_insert">Insert</string>
     <string name="deleteButtonDescription">Delete Security from list</string>
     <string name="portfolio">Portfolio</string>
-    <string name="studyHeaderSymbol">Symbol</string>
+    <string name="studyHeaderSymbol">Sym</string>
     <string name="studyHeaderLast">Last</string>
+    <string name="studyHeaderNet">Net</string>
     <string name="studyHeaderMa">EMA</string>
     <string name="studyHeaderSma">SMA</string>
     <string name="studyHeaderBuyZone">Buy</string>
@@ -68,4 +69,13 @@
    	<string name="sla_portfolio_name">Name</string> 
    	<string name="sla_maTypeEma">EMA</string> 
    	<string name="sla_maTypeSma">SMA</string> 
+   	<string name="pref_portfolio1_type">Type</string>
+   	<string name="pref_portfolio1_name">Portfolio #1</string>
+   	<string name="pref_portfolio1_title_defaultValue">Weekly</string>
+   	<string name="sdfInCashLabel">In Cash</string>
+   	<string name="sdfInCashAndPutLabel">In Cash and Short Puts</string>
+   	<string name="sdfInStockLabel">In Stock</string>
+   	<string name="sdfInStockAndCallLabel">In Stock and Short Call</string>
+   	<string name="sdfCurrentPositionLabel">Currently</string>
+   	<string name="sdfRuleTextLabel">Rule</string>
 </resources>

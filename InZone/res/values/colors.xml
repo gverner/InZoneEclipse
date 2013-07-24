@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+   <color name="net_negative">#CC0000</color>
+   <color name="net_positive">#1a6500</color> <!-- 1a6500  #669900 8cb990 -->
+</resources>

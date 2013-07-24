@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.codeworks.pai"
-    android:versionCode="18"
-    android:versionName="1.18" >
+    android:versionCode="24"
+    android:versionName="1.24" >
     
     <uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -27,7 +27,9 @@
         </activity>  
         
         <activity android:name="StudyDetailActivity"
-                  android:label="@string/study_detail_activity_window">
+                  android:label="@string/study_detail_activity_window"
+				  android:parentActivityName="StudyActivity">
+                  
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SECURITY_DETAIL" />
@@ -38,7 +40,9 @@
         </service>
                 
         <activity android:name="SecurityListActivity"
-                  android:label="@string/security_list_window">
+                  android:label="@string/security_list_window"
+				  android:parentActivityName="StudyActivity">
+                  
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="com.codeworks.pai.category.SECURITY_LIST" />
@@ -46,7 +50,9 @@
         </activity>  
                      
         <activity android:name="SecurityDetailActivity"
-                  android:label="@string/security_detail_window">
+                  android:label="@string/security_detail_window"
+				  android:parentActivityName="SecurityListActivity">
+                  
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="com.codeworks.pai.category.SECURITY_DETAIL" />
@@ -54,6 +60,7 @@
         </activity>    
 
         <activity android:name="SettingsActivity"
+				  android:parentActivityName="StudyActivity"
                   android:label="@string/settings_window">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

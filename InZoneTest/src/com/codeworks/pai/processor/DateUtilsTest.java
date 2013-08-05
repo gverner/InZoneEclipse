@@ -18,7 +18,7 @@ public class DateUtilsTest extends AndroidTestCase {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
 		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
 		Date date = sdf.parse("06/28/2013 16:00");
-		assertTrue(DateUtils.isAfterMarketClose(date, Period.Week));
+		assertTrue(DateUtils.isAfterOrEqualMarketClose(date, Period.Week));
 	}
 	
 	public void testFridayAt359pm() throws ParseException {
@@ -30,13 +30,13 @@ public class DateUtilsTest extends AndroidTestCase {
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(DateUtils.isAfterMarketClose(date, Period.Week));
+		assertFalse(DateUtils.isAfterOrEqualMarketClose(date, Period.Week));
 	}
 	public void testEndOfMonthAfter() throws ParseException {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
 		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
 		Date date = sdf.parse("06/28/2013 16:01");
-		assertTrue(DateUtils.isAfterMarketClose(date, Period.Month));
+		assertTrue(DateUtils.isAfterOrEqualMarketClose(date, Period.Month));
 	}
 	
 	public void testEndOfMonthBefore() throws ParseException {
@@ -48,6 +48,6 @@ public class DateUtilsTest extends AndroidTestCase {
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(DateUtils.isAfterMarketClose(date, Period.Month));
+		assertFalse(DateUtils.isAfterOrEqualMarketClose(date, Period.Month));
 	}	
 }

@@ -21,7 +21,7 @@ public class SmaRules  extends RulesBase {
 
 	public double calcUpperSellZoneBottom(Period period) {
 		if (Period.Week.equals(period)) {
-			return study.getMaWeek() + (study.getStddevWeek() * ZONE_OUTER);
+			return study.getSmaWeek() + (study.getSmaStddevWeek() * ZONE_OUTER);
 		} else {
 			return study.getSmaMonth() + (study.getSmaStddevMonth() * ZONE_OUTER);
 		}
@@ -29,7 +29,7 @@ public class SmaRules  extends RulesBase {
 
 	public double calcUpperBuyZoneTop(Period period) {
 		if (Period.Week.equals(period)) {
-			return study.getMaWeek() + (study.getStddevWeek() * ZONE_INNER);
+			return study.getSmaWeek() + (study.getSmaStddevWeek() * ZONE_INNER);
 		} else {
 			return study.getSmaMonth() + (study.getSmaStddevMonth() * ZONE_INNER);
 		}
@@ -37,7 +37,7 @@ public class SmaRules  extends RulesBase {
 
 	public double calcUpperBuyZoneBottom(Period period) {
 		if (Period.Week.equals(period)) {
-			return study.getMaWeek();
+			return study.getSmaWeek();
 		} else {
 			return study.getSmaMonth();
 		}
@@ -45,7 +45,7 @@ public class SmaRules  extends RulesBase {
 
 	public double calcLowerSellZoneTop(Period period) {
 		if (Period.Week.equals(period)) {
-			return study.getMaWeek();
+			return study.getSmaWeek();
 		} else {
 			return study.getSmaMonth();
 		}
@@ -53,7 +53,7 @@ public class SmaRules  extends RulesBase {
 
 	public double calcLowerSellZoneBottom(Period period) {
 		if (Period.Week.equals(period)) {
-			return study.getMaWeek() - (study.getStddevWeek() * ZONE_INNER);
+			return study.getSmaWeek() - (study.getSmaStddevWeek() * ZONE_INNER);
 		} else {
 			return study.getSmaMonth() - (study.getSmaStddevMonth() * ZONE_INNER);
 		}
@@ -61,7 +61,7 @@ public class SmaRules  extends RulesBase {
 
 	public double calcLowerBuyZoneTop(Period period) {
 		if (Period.Week.equals(period)) {
-			return study.getMaWeek() - (study.getStddevWeek() * ZONE_OUTER);
+			return study.getSmaWeek() - (study.getSmaStddevWeek() * ZONE_OUTER);
 		} else {
 			return study.getSmaMonth() - (study.getSmaStddevMonth() * ZONE_OUTER);
 		}
@@ -83,13 +83,13 @@ public class SmaRules  extends RulesBase {
 	}
 
 	public double calcBuyZoneTop() {
-		if (study.getMaWeek() == Double.NaN || study.getStddevWeek() == Double.NaN) {
+		if (study.getSmaWeek() == Double.NaN || study.getSmaStddevWeek() == Double.NaN) {
 			return 0;
 		}
 		if (isUpTrendWeekly()) {
-			return study.getMaWeek() + (study.getStddevWeek() * ZONE_INNER);
+			return study.getMaWeek() + (study.getSmaStddevWeek() * ZONE_INNER);
 		} else {
-			return study.getMaWeek() - (study.getStddevWeek() * ZONE_OUTER);
+			return study.getMaWeek() - (study.getSmaStddevWeek() * ZONE_OUTER);
 		}
 	}
 
@@ -129,11 +129,11 @@ public class SmaRules  extends RulesBase {
 	}
 
 	public boolean isUpTrendWeekly() {
-		return study.getMaLastWeek() <= study.getPriceLastWeek();
+		return study.getSmaLastWeek() <= study.getPriceLastWeek();
 	}
 
 	public boolean isUpTrendMonthly() {
-		return study.getMaLastMonth() <= study.getPriceLastMonth();
+		return study.getSmaMonth() <= study.getPrice();
 	}
 
 	public boolean isUpTrend(Period period) {
@@ -145,11 +145,11 @@ public class SmaRules  extends RulesBase {
 	}
 
 	public boolean isDownTrendWeekly() {
-		return study.getMaLastWeek() > study.getPriceLastWeek();
+		return study.getSmaLastWeek() > study.getPriceLastWeek();
 	}
 
 	public boolean isDownTrendMonthly() {
-		return study.getSmaLastMonth() > study.getPriceLastMonth();
+		return study.getSmaMonth() > study.getPrice();
 	}
 
 	public boolean isPossibleTrendTerminationWeekly() {
@@ -208,5 +208,15 @@ public class SmaRules  extends RulesBase {
 	public String inStockAndCall() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public boolean isWeeklyUpperSellZoneExpandedByMonthly() {
+		return false;
+	}
+
+	@Override
+	public boolean isWeeklyLowerBuyZoneCompressedByMonthly() {
+		return false;
 	}
 }

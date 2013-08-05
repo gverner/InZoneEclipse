@@ -84,6 +84,8 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 
 	}
 */
+
+	
 	public void testUng() throws InterruptedException {
 		insertSecurity(TestDataLoader.UNG);
 		studies = processor.process(TestDataLoader.UNG);

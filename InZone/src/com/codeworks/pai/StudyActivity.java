@@ -224,12 +224,14 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 	@Override
 	protected void onResume() {
 		super.onResume();
+		/*
 		if (!serviceStartedByCreate) {
 			dailyIntent = new Intent(this, UpdateService.class);
 			dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_PRICE_UPDATE);
 			startService(dailyIntent);
 		}
 		serviceStartedByCreate = false;
+		*/
 	}
 
 	public void showToast(final String toast)

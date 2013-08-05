@@ -20,6 +20,9 @@ public class PaiUtils {
 		return new BigDecimal(value).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 	}
 
+	public static double round(double value, int scale) {
+		return new BigDecimal(value).setScale(scale, BigDecimal.ROUND_HALF_UP).doubleValue();
+	}
 	
 	public static String getDefaultPortfolioName(Resources resources, int portfolioId) {
 		int tab_id = R.string.tab_protfolio_1;

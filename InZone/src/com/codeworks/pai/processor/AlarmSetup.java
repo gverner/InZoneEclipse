@@ -1,5 +1,10 @@
 package com.codeworks.pai.processor;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+import java.util.TimeZone;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
@@ -125,16 +130,18 @@ public class AlarmSetup extends Thread {
 		}
 		return alarmUp;
 	}
+	
+	String formatStartTime(DateTime startTime) {
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm aa", Locale.US);
+		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		return sdf.format(startTime.toDate());
+	}
+	 
 	/*
-	 * String formatStartTime(Calendar startTime) { SimpleDateFormat sdf = new
-	 * SimpleDateFormat("MM/dd/yyyy hh:mm aa Z", Locale.US);
-	 * sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern")); return
-	 * sdf.format(startTime.getTime()); }
-	 */
 	String formatStartTime(DateTime startTime) {
 		DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
 		return fmt.print(startTime);
-	}
+	}*/
 	void scheduleSetupNotice(DateTime startTime) {
 		Resources res = context.getApplicationContext().getResources();
 		notifier.sendNotice(50000L, res.getString(R.string.scheduleSetupSubject),

@@ -2,6 +2,9 @@ package com.codeworks.pai;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -36,6 +39,7 @@ import com.codeworks.pai.db.PaiStudyTable;
 import com.codeworks.pai.db.model.EmaRules;
 import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Rules;
+import com.codeworks.pai.processor.DateUtils;
 import com.codeworks.pai.processor.UpdateService;
 
 public class StudyEListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -119,6 +123,8 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 	public void onResume() {
 		super.onResume();
 		adapter.notifyDataSetChanged();
+		// if progress was active probably done.
+		setProgressBar(100);
 		// Register mMessageReceiver to receive messages.
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(UpdateService.BROADCAST_UPDATE_PROGRESS_BAR));
 
@@ -137,15 +143,19 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 												public void onReceive(Context context, Intent intent) {
 													Integer status = intent.getIntExtra(UpdateService.PROGRESS_BAR_STATUS, 0);
 													Log.d(TAG, "Received Broadcase with status: " + status);
-													ProgressBar progressBar = (ProgressBar) footerView.findViewById(R.id.progressBar1);
-													if (status == 0) {
-														progressBar.setVisibility(ProgressBar.VISIBLE);
-													} else {
-														progressBar.setVisibility(ProgressBar.INVISIBLE);
-													}
+													setProgressBar(status);
 												}
 											};
 
+	void setProgressBar(int value) {
+		ProgressBar progressBar = (ProgressBar) footerView.findViewById(R.id.progressBar1);
+		if (value == 0) {
+			progressBar.setVisibility(ProgressBar.VISIBLE);
+		} else {
+			progressBar.setVisibility(ProgressBar.INVISIBLE);
+		}
+	}
+											
 	public interface OnItemSelectedListener {
 		public void onStudySelected(Long studyId);
 	}
@@ -211,7 +221,8 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 
 	class PaiCursorAdapter extends CursorAdapter {
 		private LayoutInflater	mInflator;
-
+		private boolean weeklyZoneModifiedByMonthly = false;
+		
 		public PaiCursorAdapter(Context context) {
 			super(context, null, 0);
 			// Log.d("TAG", "CursorAdapter Constr..");
@@ -220,7 +231,6 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
-			// Log.d("TAG", "CursorAdapter BindView");
 			if (null != cursor) {
 				// Log.d("TAG", "CursorAdapter BindView:Cursor not null");
 
@@ -257,8 +267,12 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				// Price
 				TextView price = (TextView) view.findViewById(R.id.quoteList_Price);
 				price.setText(PaiStudy.format(study.getPrice()));
-				
-				double net = study.getPrice() - study.getLastClose();
+
+				double net = 0;
+				Calendar cal = GregorianCalendar.getInstance();
+				if (DateUtils.isSameDay(study.getPriceDate(), new Date()) || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+					net = study.getPrice() - study.getLastClose();
+				}
 				TextView textNet = (TextView) view.findViewById(R.id.quoteList_net);
 				if (net < 0 ) {
 					textNet.setText(rules.formatNet(net));
@@ -269,6 +283,10 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				}
 				TextView textBuyZoneBot = setDouble(view, rules.calcBuyZoneBottom(), R.id.quoteList_BuyZoneBottom);
 				TextView textBuyZoneTop = setDouble(view, rules.calcBuyZoneTop(), R.id.quoteList_BuyZoneTop);
+				/*
+				if (rules.isWeeklyLowerBuyZoneCompressedByMonthly()) {
+					textBuyZoneTop.setText("*"+textBuyZoneTop.getText());
+				}*/
 				if (rules.isPriceInBuyZone()) {
 					textBuyZoneBot.setBackgroundColor(Color.DKGRAY);
 					textBuyZoneTop.setBackgroundColor(Color.DKGRAY);
@@ -288,6 +306,10 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 
 				TextView textSellZoneBot = setDouble(view, rules.calcSellZoneBottom(), R.id.quoteList_SellZoneBottom);
 				TextView textSellZoneTop = setDouble(view, rules.calcSellZoneTop(), R.id.quoteList_SellZoneTop);
+				if (rules.isWeeklyUpperSellZoneExpandedByMonthly()) {
+					textSellZoneBot.setText("*"+textSellZoneBot.getText());
+					weeklyZoneModifiedByMonthly = true;
+				}
 				if (rules.isPriceInSellZone()) {
 					textSellZoneBot.setBackgroundColor(color.holo_green_dark);
 					textSellZoneTop.setBackgroundColor(color.holo_green_dark);
@@ -308,6 +330,9 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				TextView lastUpdated = (TextView) getActivity().findViewById(R.id.studyList_lastUpdated);
 				if (study.getPriceDate() != null && lastUpdated != null) {
 					lastUpdated.setText(lastUpdatedFormat.format(study.getPriceDate()));
+				}
+				if (weeklyZoneModifiedByMonthly) {
+					lastUpdated.setText(lastUpdated.getText()+" * value from monthly");
 				}
 
 			}

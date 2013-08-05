@@ -19,6 +19,10 @@ public interface Rules {
 	public abstract double calcLowerBuyZoneTop(Period period);
 
 	public abstract double calcLowerBuyZoneBottom(Period period);
+	
+	public abstract boolean isWeeklyUpperSellZoneExpandedByMonthly();
+
+	public abstract boolean isWeeklyLowerBuyZoneCompressedByMonthly();
 
 	public abstract double calcBuyZoneBottom();
 

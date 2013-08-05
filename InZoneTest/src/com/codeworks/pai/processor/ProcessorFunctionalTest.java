@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import android.test.AndroidTestCase;
 
@@ -202,7 +203,23 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("Sell", false, rules.isPriceInSellZone());
 
 	}
-
+	
+	public void testFridayCutoff() throws ParseException {
+		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
+		Rules rules = new EmaRules(study);
+		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY_FRIDAY_CLOSE);
+		// history.add(buildPrice(MockPaiStudyDataReader.SPY_PRICE,
+		// "04/13/2013"));
+		MockDataReader.buildSecurity(study, "S&P 500", 169.11D,"07/26/2013");
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mmaa Z", Locale.US);
+		sdf.setTimeZone(TimeZone.getTimeZone("Eastern/US"));
+		Date testDate = sdf.parse("07/26/2013 04:00pm EDT");
+		study.setPriceDate(testDate);
+		processor.calculateStudy(study, history);
+		assertEquals("MA week", 161.43d, PaiUtils.round(study.getMaWeek()));
+		assertEquals("MA last week", 161.43d, PaiUtils.round(study.getMaLastWeek()));
+	}
+	
 	Price buildPrice(double price, String priceDate) throws ParseException {
 		Price lastPrice = new Price();
 		lastPrice.setClose(price);

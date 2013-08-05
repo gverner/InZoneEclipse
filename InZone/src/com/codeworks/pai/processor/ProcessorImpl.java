@@ -110,7 +110,7 @@ public class ProcessorImpl implements Processor {
 				security.setSmaWeek(SMA.compute(weekly, 12));
 				security.setSmaStddevWeek(StdDev.calculate(weekly, 12));
 
-				if (DateUtils.isAfterMarketClose(security.getPriceDate(), Period.Week)) {
+				if (DateUtils.isAfterOrEqualMarketClose(security.getPriceDate(), Period.Week)) {
 					security.setMaLastWeek(security.getMaWeek());
 					security.setSmaLastWeek(security.getSmaWeek());
 					security.setPriceLastWeek(security.getPrice());
@@ -135,7 +135,7 @@ public class ProcessorImpl implements Processor {
 				security.setSmaMonth(SMA.compute(monthly, 12));
 				security.setSmaStddevMonth(StdDev.calculate(monthly, 12));
 
-				if (DateUtils.isAfterMarketClose(security.getPriceDate(), Period.Month)) {
+				if (DateUtils.isAfterOrEqualMarketClose(security.getPriceDate(), Period.Month)) {
 					security.setMaLastMonth(security.getMaMonth());
 					security.setSmaLastMonth(security.getSmaMonth());
 					security.setPriceLastMonth(security.getPrice());
@@ -225,7 +225,7 @@ public class ProcessorImpl implements Processor {
 				PriceHistoryTable.COLUMN_ADJUSTED_CLOSE };
 		String selection = PaiStudyTable.COLUMN_SYMBOL + " = ? ";
 		String[] selectionArgs = { symbol };
-		Log.d(TAG, "Reading Price from database");
+		Log.d(TAG, "Reading Price History from database "+symbol);
 		Cursor historyCursor = getContentResolver().query(PaiContentProvider.PRICE_HISTORY_URI, projection, selection, selectionArgs,
 				PriceHistoryTable.COLUMN_DATE);
 		boolean reloadHistory = true;
@@ -236,7 +236,7 @@ public class ProcessorImpl implements Processor {
 					String lastHistoryDate = historyCursor.getString(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_DATE));
 					if (lastHistoryDate.equals(lastProbableTradeDate())) {
 						double lastClose = historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_CLOSE));
-						Log.d(TAG, "Price History is upto date using data from database lastDate=" + lastHistoryDate + " last Clost "
+						Log.d(TAG, "Price History is upto date using data from database lastDate=" + lastHistoryDate + " last Close "
 								+ lastClose);
 						reloadHistory = false;
 						if (historyCursor.moveToFirst()) {
@@ -257,6 +257,8 @@ public class ProcessorImpl implements Processor {
 								history.add(price);
 							} while (historyCursor.moveToNext());
 						}
+					} else {
+						Log.d(TAG,"Last History Date "+lastHistoryDate+ " not equal Last Trade Date "+lastProbableTradeDate());
 					}
 				}
 			}
@@ -285,7 +287,7 @@ public class ProcessorImpl implements Processor {
 				}
 			}
 		}
-		Log.d(TAG, "Returning " + history.size() + " Price History records for sysbol s" + symbol);
+		Log.d(TAG, "Returning " + history.size() + " Price History records for symbol " + symbol);
 		return history;
 	}
 

@@ -4,14 +4,10 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
-import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -115,12 +111,12 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	public synchronized int onStartCommand(Intent updateIntent, int flags, int startId) {
 		long startMillis = System.currentTimeMillis();
 		if (updateIntent == null) {
-			Log.e(TAG,"onStartCommand receive null intent");
+			Log.e(TAG, "onStartCommand receive null intent");
 			return START_STICKY;
 		}
 		Bundle bundle = updateIntent.getExtras();
 		if (bundle == null) {
-			Log.e(TAG,"onStartCommand receive null bundle");
+			Log.e(TAG, "onStartCommand receive null bundle");
 			return START_STICKY;
 		}
 
@@ -133,7 +129,6 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 				scheduledStartNotice();
 			}
 			if (!updater.isRunning()) {
-
 				updater.start();
 				makeToast("Price Update Service Started", Toast.LENGTH_LONG);
 				Log.i(TAG, "on Starte'd");
@@ -141,19 +136,19 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 				updater.restart(false); // interrupt sleep and restart now
 				Log.i(TAG, "an Re-Starte'd");
 			}
-		if (!alarmSetup.isAlive() && !alarmSetup.isRunning()) {
-			try {
-				alarmSetup.start();
-			} catch (IllegalThreadStateException e) {
-				Log.e(TAG,"Alarm Setup already Running");
+			if (!alarmSetup.isAlive() && !alarmSetup.isRunning()) {
+				try {
+					alarmSetup.start();
+				} catch (IllegalThreadStateException e) {
+					Log.e(TAG, "Alarm Setup already Running");
+				}
 			}
-		}
 
 		} else if (ACTION_ONE_TIME.equals(action)) {
 			Log.d(TAG, "One Time start");
 			String symbol = bundle.getString(SERVICE_SYMBOL);
 			new OneTimeUpdate(symbol).start();
-		} else 	if (ACTION_PRICE_UPDATE.equals(action)) {
+		} else if (ACTION_PRICE_UPDATE.equals(action)) {
 			Log.i(TAG, "Price Update start");
 			if (!updater.isRunning()) {
 				Log.i(TAG, "Price Update starting");
@@ -162,20 +157,21 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 				Log.i(TAG, "Price Update on Starte'd");
 			} else {
 				Log.i(TAG, "Price Update starting");
-				updater.restart(false); // TODO should be true for price only ..interrupt sleep and restart now
+				updater.restart(false); // TODO should be true for price only
+										// ..interrupt sleep and restart now
 				Log.i(TAG, "Price Update an Re-Starte'd");
 			}
 		} else {
 			Log.i(TAG, "on Starte'd by unknown");
 		}
-		Log.i(TAG,"On Start Command execution time ms="+(System.currentTimeMillis() - startMillis));
+		Log.i(TAG, "On Start Command execution time ms=" + (System.currentTimeMillis() - startMillis));
 		return START_STICKY;
 	}
 
 	void scheduledStartNotice() {
 		Resources res = getApplicationContext().getResources();
 		notifier.sendNotice(50000L, res.getString(R.string.scheduledStartSubject),
-				String.format(res.getString(R.string.scheduledStartMessage, formatStartTime(new DateTime()))));
+				String.format(res.getString(R.string.scheduledStartMessage)));
 	}
 
 	void updateServiceNotice(int messageKey) {

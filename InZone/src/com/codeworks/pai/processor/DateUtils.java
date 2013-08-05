@@ -1,5 +1,6 @@
 package com.codeworks.pai.processor;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -20,22 +21,27 @@ public class DateUtils {
 	 * @param period
 	 * @return
 	 */
-	public static boolean isAfterMarketClose(Date date, Period period) {
+	public static boolean isAfterOrEqualMarketClose(Date date, Period period) {
+		boolean result = false;
 		if (Period.Week.equals(period)) {
 			Calendar cal = GregorianCalendar.getInstance(Locale.US);
 			cal.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
 
 			cal.setTime(date);
-			//System.out.println("hour1 "+cal.get(Calendar.HOUR_OF_DAY));
-			//System.out.println("minute1 "+cal.get(Calendar.MINUTE));
+			/*
+			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm z", Locale.US);
+			sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+			System.out.println(sdf.format(cal.getTime()));
+			System.out.println(sdf.format(date));
+			*/
 			
 			if ((cal.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY && cal.get(Calendar.HOUR_OF_DAY) >= MARKET_CLOSE_HOUR) || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
 					|| cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
-					|| (cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY && cal.get(Calendar.HOUR_OF_DAY) == MARKET_OPEN_HOUR && cal.get(Calendar.HOUR_OF_DAY) < MARKET_OPEN_MINUTE)
-					|| (cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY && cal.get(Calendar.HOUR_OF_DAY) < MARKET_OPEN_MINUTE)) {
-				return true;
+					|| (cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY && cal.get(Calendar.HOUR_OF_DAY) == MARKET_OPEN_HOUR && cal.get(Calendar.MINUTE) < MARKET_OPEN_MINUTE)
+					|| (cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY && cal.get(Calendar.MINUTE) < MARKET_OPEN_MINUTE)) {
+				result =  true;
 			} else {
-				return false;
+				result =  false;
 			}
 		} else if (Period.Month.equals(period)) {
 			Calendar cal = GregorianCalendar.getInstance(Locale.US);
@@ -57,9 +63,9 @@ public class DateUtils {
 			System.out.println(sdf.format(cal.getTime()));
 			System.out.println(sdf.format(date.getTime()));
 			*/
-			return date.after(cal.getTime());
+			result = date.compareTo(cal.getTime()) >= 0;
 		}
-		return false;
+		return result;
 	}
 	
     //-----------------------------------------------------------------------

@@ -40,18 +40,18 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		logStudy(study);
 		assertEquals("Price", 9.10d, study.getPrice());
 		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
-		assertEquals("MA week", 12.76d, PaiUtils.round(study.getMaWeek()));
-		assertEquals("MA month", 20.19d, PaiUtils.round(study.getMaMonth()));
-		assertEquals("MA last week", 13.15d, PaiUtils.round(study.getMaLastWeek()));
-		assertEquals("MA last month", 21.36d, PaiUtils.round(study.getMaLastMonth()));
-		assertEquals("StdDev Week", 1.81d, PaiUtils.round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 7.52d, PaiUtils.round(study.getStddevMonth()));
+		assertEquals("MA week", 12.49d, PaiUtils.round(study.getMaWeek()));
+		assertEquals("MA month", 19.21d, PaiUtils.round(study.getMaMonth()));
+		assertEquals("MA last week", 12.85d, PaiUtils.round(study.getMaLastWeek()));
+		assertEquals("MA last month", 20.27d, PaiUtils.round(study.getMaLastMonth()));
+		assertEquals("StdDev Week", 1.78d, PaiUtils.round(study.getStddevWeek()));
+		assertEquals("StdDev Month", 7.34d, PaiUtils.round(study.getStddevMonth()));
 		assertEquals("DT Monthly", true, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", true, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
 		assertEquals("TT", false, rules.isPossibleUptrendTermination());
 		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
-		assertEquals("Buy", true, rules.isPriceInBuyZone());
+		assertEquals("Buy", false, rules.isPriceInBuyZone());
 		assertEquals("Sell", false, rules.isPriceInSellZone());
 	}
 	
@@ -65,12 +65,12 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		logStudy(study);
 		assertEquals("Price", 8.00d, study.getPrice());
 		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
-		assertEquals("MA week", 12.66d, PaiUtils.round(study.getMaWeek()));
-		assertEquals("MA month", 20.08d, PaiUtils.round(study.getMaMonth()));
-		assertEquals("MA last week", 13.15d, PaiUtils.round(study.getMaLastWeek()));
-		assertEquals("MA last month", 21.36, PaiUtils.round(study.getMaLastMonth()));
-		assertEquals("StdDev Week", 1.94d, PaiUtils.round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 7.61d, PaiUtils.round(study.getStddevMonth()));
+		assertEquals("MA week", 12.39d, PaiUtils.round(study.getMaWeek()));
+		assertEquals("MA month", 19.11d, PaiUtils.round(study.getMaMonth()));
+		assertEquals("MA last week", 12.85d, PaiUtils.round(study.getMaLastWeek()));
+		assertEquals("MA last month", 20.27, PaiUtils.round(study.getMaLastMonth()));
+		assertEquals("StdDev Week", 1.90d, PaiUtils.round(study.getStddevWeek()));
+		assertEquals("StdDev Month", 7.43d, PaiUtils.round(study.getStddevMonth()));
 		assertEquals("DT Monthly", true, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", true, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
@@ -89,19 +89,19 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		logStudy(study);
 		assertEquals("Price", 41.10d, study.getPrice());
 		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
-		assertEquals("StdDev Week", 1.83d, PaiUtils.round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 7.53d, PaiUtils.round(study.getStddevMonth()));
-		assertEquals("MA week", 37.25d, PaiUtils.round(study.getMaWeek()));
-		assertEquals("MA month", 29.83d, PaiUtils.round(study.getMaMonth()));
-		assertEquals("MA last week", 36.85d, PaiUtils.round(study.getMaLastWeek()));
-		assertEquals("MA last month", 28.64d, PaiUtils.round(study.getMaLastMonth()));
+		assertEquals("StdDev Week", 1.80d, PaiUtils.round(study.getStddevWeek()));
+		assertEquals("StdDev Month", 7.36d, PaiUtils.round(study.getStddevMonth()));
+		assertEquals("MA week", 37.53d, PaiUtils.round(study.getMaWeek()));
+		assertEquals("MA month", 30.81d, PaiUtils.round(study.getMaMonth()));
+		assertEquals("MA last week", 37.15d, PaiUtils.round(study.getMaLastWeek()));
+		assertEquals("MA last month", 29.73d, PaiUtils.round(study.getMaLastMonth()));
 		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
 		assertEquals("TT", false, rules.isPossibleUptrendTermination());
 		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
 		assertEquals("Buy", false, rules.isPriceInBuyZone());
-		assertEquals("Sell", true, rules.isPriceInSellZone());
+		assertEquals("Sell", false, rules.isPriceInSellZone());
 	}
 	
 	public void testStudyGenBuy() throws ParseException {
@@ -114,12 +114,12 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		logStudy(study);
 		assertEquals("Price", 37.50d, study.getPrice());
 		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
-		assertEquals("StdDev Week", 1.61d, PaiUtils.round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 7.27d, PaiUtils.round(study.getStddevMonth()));
-		assertEquals("MA week", 36.91d, PaiUtils.round(study.getMaWeek()));
-		assertEquals("MA month", 29.49d, PaiUtils.round(study.getMaMonth()));
-		assertEquals("MA last week", 36.85d, PaiUtils.round(study.getMaLastWeek()));
-		assertEquals("MA last month", 28.64d, PaiUtils.round(study.getMaLastMonth()));
+		assertEquals("StdDev Week", 1.60d, PaiUtils.round(study.getStddevWeek()));
+		assertEquals("StdDev Month", 7.12d, PaiUtils.round(study.getStddevMonth()));
+		assertEquals("MA week", 37.18d, PaiUtils.round(study.getMaWeek()));
+		assertEquals("MA month", 30.47d, PaiUtils.round(study.getMaMonth()));
+		assertEquals("MA last week", 37.15d, PaiUtils.round(study.getMaLastWeek()));
+		assertEquals("MA last month", 29.73d, PaiUtils.round(study.getMaLastMonth()));
 		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
@@ -139,12 +139,12 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		logStudy(study);
 		assertEquals("Price", 36.50d, study.getPrice());
 		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
-		assertEquals("MA week", 36.82d, PaiUtils.round(study.getMaWeek()));
-		assertEquals("MA month", 29.39d, PaiUtils.round(study.getMaMonth()));
-		assertEquals("MA last week", 36.85d, PaiUtils.round(study.getMaLastWeek()));
-		assertEquals("MA last month", 28.64d, PaiUtils.round(study.getMaLastMonth()));
+		assertEquals("MA week", 37.09d, PaiUtils.round(study.getMaWeek()));
+		assertEquals("MA month", 30.37d, PaiUtils.round(study.getMaMonth()));
+		assertEquals("MA last week", 37.15d, PaiUtils.round(study.getMaLastWeek()));
+		assertEquals("MA last month", 29.73d, PaiUtils.round(study.getMaLastMonth()));
 		assertEquals("StdDev Week", 1.61d, PaiUtils.round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 7.21d, PaiUtils.round(study.getStddevMonth()));
+		assertEquals("StdDev Month", 7.07d, PaiUtils.round(study.getStddevMonth()));
 		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
 		assertEquals("TT", true, rules.isPossibleTrendTerminationWeekly());

@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
@@ -92,17 +93,18 @@ public class ProcessorImpl implements Processor {
 	
 	void calculateStudy(PaiStudy security, List<Price> history) {
 		Collections.sort(history);
+		List<Price> daily = new ArrayList<Price>(history);
 
 		Grouper grouper = new Grouper();
 		{
-			appendCurrentPrice(history, security);
+			appendCurrentPrice(history, security, Period.Day);
 			List<Price> weekly = grouper.periodList(history, Period.Week);
 			if (weekly.size() >= 20) {
 				security.setMaLastWeek(EMA2.compute(weekly, 20));
 				security.setSmaLastWeek(SMA.compute(weekly, 12));
 				security.setPriceLastWeek(weekly.get(weekly.size() - 1).getClose());
 
-				appendCurrentPrice(weekly, security);
+				appendCurrentPrice(weekly, security, Period.Week);
 				
 				security.setMaWeek(EMA2.compute(weekly, 20));
 				security.setStddevWeek(StdDev.calculate(weekly, 20));
@@ -127,7 +129,7 @@ public class ProcessorImpl implements Processor {
 				security.setSmaLastMonth(SMA.compute(monthly, 12));
 				security.setPriceLastMonth(monthly.get(monthly.size() - 1).getClose());
 				
-				appendCurrentPrice(monthly, security);
+				appendCurrentPrice(monthly, security, Period.Month);
 				
 				security.setMaMonth(EMA2.compute(monthly, 20));
 				security.setStddevMonth(StdDev.calculate(monthly, 20));
@@ -146,25 +148,28 @@ public class ProcessorImpl implements Processor {
 			}
 		}
 		{
-			List<Price> daily = new ArrayList<Price>(history);
 			Collections.sort(daily);
 			if (daily.size() > 20) {
+				
 				Price lastHistory = daily.get(daily.size()-1);
 				if (DateTimeComparator.getDateOnlyInstance().compare(security.getPriceDate(), lastHistory.getDate()) > 0) {
-//				if (security.getPriceDate().after(lastHistory.getDate())) {
+					Log.d(TAG,"This is Expected that history doesn't contains last price");
 					security.setLastClose(lastHistory.getClose());
 				} else {
+					Log.d(TAG,"This is Unexpected that history contains last price, it must be after markect close.");
 					security.setLastClose(daily.get(daily.size()-2).getClose());
 				}
 				//appendCurrentPrice(daily,security);
+				 
 				security.setAverageTrueRange(ATR.compute(daily, 20));
 			}
 		}
 	}
 
-	private void appendCurrentPrice(List<Price> weekly, PaiStudy security) {
+	private void appendCurrentPrice(List<Price> weekly, PaiStudy security, Period period) {
 		if (weekly != null && weekly.size() > 0) {
 			Price lastHistory = weekly.get(weekly.size() - 1);
+			/*
 			if (DateUtils.isSameDay(security.getPriceDate(), lastHistory.getDate())) {
 				if (security.getPrice() != lastHistory.getClose()) {
 					lastHistory.setClose(security.getPrice());
@@ -173,7 +178,9 @@ public class ProcessorImpl implements Processor {
 					lastHistory.setHigh(security.getHigh());
 					Log.d(TAG, "History and Price Close Differ Should not Happen=" + lastHistory.getDate() + " History Close" + lastHistory.getClose()+ " Current Price" + security.getPrice());
 				}
-			} else if (DateUtils.truncate(security.getPriceDate()).after(weekly.get(weekly.size() - 1).getDate())) {
+			} else*/
+			Date truncateDate = DateUtils.truncate(security.getPriceDate()); 
+			if (truncateDate.after(lastHistory.getDate())) {
 				Price lastPrice = new Price();
 				lastPrice.setClose(security.getPrice()); // current price is close in history
 				lastPrice.setDate(DateUtils.truncate(security.getPriceDate()));
@@ -181,7 +188,9 @@ public class ProcessorImpl implements Processor {
 				lastPrice.setLow(security.getLow());
 				lastPrice.setHigh(security.getHigh());
 				weekly.add(lastPrice);
-				Log.d(TAG, "Last History Date=" + lastHistory.getDate() + " Add Current Price Date" + security.getPriceDate());
+				Log.d(TAG, "Last History "+period.name()+" Date=" + lastHistory.getDate() + " Add Current Price Date " + truncateDate);
+			} else {
+				Log.d(TAG, "Last History "+period.name()+" Date=" + lastHistory.getDate() + " Don't Add Current Price Date " + truncateDate);
 			}
 		}
 	}
@@ -234,7 +243,7 @@ public class ProcessorImpl implements Processor {
 			if (historyCursor != null) {
 				if (historyCursor.moveToLast()) {
 					String lastHistoryDate = historyCursor.getString(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_DATE));
-					if (lastHistoryDate.equals(lastProbableTradeDate())) {
+					if (lastHistoryDate.compareTo(lastProbableTradeDate()) >= 0) {
 						double lastClose = historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_CLOSE));
 						Log.d(TAG, "Price History is upto date using data from database lastDate=" + lastHistoryDate + " last Close "
 								+ lastClose);

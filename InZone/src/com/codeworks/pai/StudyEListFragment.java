@@ -270,7 +270,7 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 
 				double net = 0;
 				Calendar cal = GregorianCalendar.getInstance();
-				if (DateUtils.isSameDay(study.getPriceDate(), new Date()) || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+				if ((study.getPriceDate() != null && DateUtils.isSameDay(study.getPriceDate(), new Date())) || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
 					net = study.getPrice() - study.getLastClose();
 				}
 				TextView textNet = (TextView) view.findViewById(R.id.quoteList_net);

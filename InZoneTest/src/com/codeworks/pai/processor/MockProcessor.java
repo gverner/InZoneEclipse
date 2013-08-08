@@ -29,8 +29,7 @@ public class MockProcessor implements Processor {
 
 	@Override
 	public List<PaiStudy> updatePrice(String symbol) throws InterruptedException {
-		// TODO Auto-generated method stub
-		return null;
+		return new ArrayList<PaiStudy>();
 	}
 
 }

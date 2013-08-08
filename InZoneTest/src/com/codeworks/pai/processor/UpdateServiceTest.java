@@ -90,6 +90,9 @@ public class UpdateServiceTest extends AndroidTestCase {
 							if (key == R.string.servicePausedMessage) {
 								return "Value for Mock key R.string.servicePausedMessage";
 							}
+							if (key == R.string.scheduledStartMessage) {
+								return "Value for Mock key R.string.scheduledStartMessage";
+							}
 							throw new NotFoundException(String.valueOf(key));
 						}
 						@Override

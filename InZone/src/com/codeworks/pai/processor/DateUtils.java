@@ -118,7 +118,7 @@ public class DateUtils {
     public static Date truncate(Date date) {
         Calendar cal1 = Calendar.getInstance();
         cal1.setTime(date);
-        cal1.set(Calendar.HOUR, 0);
+        cal1.set(Calendar.HOUR_OF_DAY, 0);
         cal1.set(Calendar.MINUTE, 0);
         cal1.set(Calendar.SECOND, 0);
         cal1.set(Calendar.MILLISECOND, 0);

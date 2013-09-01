@@ -80,11 +80,16 @@ public class TestDataLoader {
 			throw new RuntimeException(e);
 		}
 	}
-	
-	public static List<Price> generateHistory(double startPrice, double endPrice, int days) throws ParseException {
-		double diff = endPrice - startPrice;
+
+	private static Date getGeneratedHistoryLastDate() throws ParseException {
 		SimpleDateFormat sdf  = new SimpleDateFormat("MM/dd/yyyy",Locale.US);
 		Date startDate = sdf.parse("06/15/2013");
+		return startDate;
+	}
+
+	public static List<Price> generateHistory(double startPrice, double endPrice, int days) throws ParseException {
+		double diff = endPrice - startPrice;
+		Date startDate = getGeneratedHistoryLastDate();
 		double perday = PaiUtils.round(diff / days);
 		List<Price> history = new ArrayList<Price>();
 		Calendar cal = GregorianCalendar.getInstance(Locale.US);

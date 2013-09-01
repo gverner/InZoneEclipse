@@ -521,4 +521,10 @@ public class EmaRules extends RulesBase {
 		}
 		return rule;
 	}
+
+	@Override
+	public MaType getMaType() {
+		return MaType.E;
+	}
+
 }

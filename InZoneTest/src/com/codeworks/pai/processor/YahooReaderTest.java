@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import org.apache.http.impl.cookie.DateUtils;
 
 import android.test.AndroidTestCase;
 
@@ -125,13 +124,14 @@ public class YahooReaderTest extends AndroidTestCase {
 	}
 
 	public void testBuildHistoryUrl() {
-		String url = reader.buildHistoryUrl("SPY");
+		String url = reader.buildHistoryUrl("SPY", 300);
 		System.out.println(url);
 	}
 	
 	public void testReadHistory() {
+		long startTime = System.currentTimeMillis();
 		List<Price> history = reader.readHistory("SPY");
-		System.out.println("history size="+history.size());
+		System.out.println("history size="+history.size() + " exeuction time in ms = " + (System.currentTimeMillis()- startTime));
 		assertTrue(history.size() > 200);
 	}	
 	
@@ -146,5 +146,12 @@ public class YahooReaderTest extends AndroidTestCase {
 		System.out.println("history size="+history.size());
 		assertTrue(history.size() == 0);
 	}	
+	
+	public void testReadLatestDate() {
+		Date latestDate = reader.latestHistoryDate("SPY");
+		System.out.println("Latest Hitory Date ="+latestDate);
+		assertNotNull(latestDate);
+		assertTrue(DateUtils.toDatabaseFormat(latestDate).compareTo(DateUtils.lastProbableTradeDate()) >= 0);
+	}
 	
 }

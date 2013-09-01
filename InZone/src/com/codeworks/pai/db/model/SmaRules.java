@@ -3,8 +3,8 @@ package com.codeworks.pai.db.model;
 import com.codeworks.pai.study.Period;
 
 public class SmaRules  extends RulesBase {
-	protected static double				ZONE_INNER			= 0.5d;
-	protected static double				ZONE_OUTER			= 2d;
+	public static double				ZONE_INNER			= 0.5d;
+	public static double				ZONE_OUTER			= 2d;
 
 	/**
 	 * 
@@ -72,13 +72,13 @@ public class SmaRules  extends RulesBase {
 	}
 
 	public double calcBuyZoneBottom() {
-		if (study.getSmaMonth() == Double.NaN || study.getSmaStddevMonth() == Double.NaN) {
+		if (study.getSmaWeek() == Double.NaN || study.getSmaStddevMonth() == Double.NaN) {
 			return 0;
 		}
 		if (isUpTrendWeekly()) {
-			return study.getSmaMonth();
+			return calcUpperBuyZoneBottom(Period.Week);
 		} else {
-			return study.getSmaMonth() - (study.getSmaStddevMonth() * ZONE_OUTER) - pierceOffset();
+			return calcLowerBuyZoneBottom(Period.Week);
 		}
 	}
 
@@ -87,31 +87,28 @@ public class SmaRules  extends RulesBase {
 			return 0;
 		}
 		if (isUpTrendWeekly()) {
-			return study.getMaWeek() + (study.getSmaStddevWeek() * ZONE_INNER);
+			return study.getSmaWeek() + (study.getSmaStddevWeek() * ZONE_INNER);
 		} else {
-			return study.getMaWeek() - (study.getSmaStddevWeek() * ZONE_OUTER);
+			return study.getSmaWeek() - (study.getSmaStddevWeek() * ZONE_OUTER);
 		}
 	}
 
 	public double calcSellZoneBottom() {
-		if (study.getSmaMonth() == Double.NaN || study.getSmaStddevMonth() == Double.NaN) {
-			return 0;
-		}
 		if (isUpTrendWeekly()) {
-			return study.getSmaMonth() + (study.getSmaStddevMonth() * ZONE_OUTER);
+			return calcUpperSellZoneBottom(Period.Week);
 		} else {
-			return study.getSmaMonth() - (study.getSmaStddevMonth() * ZONE_INNER);
+			return calcLowerSellZoneBottom(Period.Week);
 		}
 	}
 
 	public double calcSellZoneTop() {
-		if (study.getSmaMonth() == Double.NaN || study.getSmaStddevMonth() == Double.NaN) {
+		if (study.getSmaMonth() == Double.NaN || study.getSmaStddevWeek() == Double.NaN) {
 			return 0;
 		}
 		if (isUpTrendWeekly()) {
-			return study.getSmaMonth() + (study.getSmaStddevMonth() * ZONE_OUTER) + pierceOffset();
+			return calcUpperSellZoneTop(Period.Week);
 		} else {
-			return study.getSmaMonth();
+			return calcLowerSellZoneTop(Period.Week);
 		}
 	}
 
@@ -219,4 +216,9 @@ public class SmaRules  extends RulesBase {
 	public boolean isWeeklyLowerBuyZoneCompressedByMonthly() {
 		return false;
 	}
+	@Override
+	public MaType getMaType() {
+		return MaType.S;
+	}
+
 }

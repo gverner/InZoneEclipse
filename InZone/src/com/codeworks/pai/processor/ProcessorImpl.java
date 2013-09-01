@@ -112,10 +112,13 @@ public class ProcessorImpl implements Processor {
 				security.setSmaWeek(SMA.compute(weekly, 12));
 				security.setSmaStddevWeek(StdDev.calculate(weekly, 12));
 
-				if (DateUtils.isAfterOrEqualMarketClose(security.getPriceDate(), Period.Week)) {
+				if (DateUtils.isDateBetweenPeriodCloseAndOpen(security.getPriceDate(), Period.Week)) {
 					security.setMaLastWeek(security.getMaWeek());
 					security.setSmaLastWeek(security.getSmaWeek());
 					security.setPriceLastWeek(security.getPrice());
+					Log.i(TAG,"IS AFTER OR EQUAL MARKET CLOSE FOR "+security.getSymbol());
+				} else {
+					Log.i(TAG,"IS NOT AFTER OR EQUAL MARKET CLOSE FOR "+security.getSymbol());
 				}
 				
 			} else {
@@ -137,7 +140,7 @@ public class ProcessorImpl implements Processor {
 				security.setSmaMonth(SMA.compute(monthly, 12));
 				security.setSmaStddevMonth(StdDev.calculate(monthly, 12));
 
-				if (DateUtils.isAfterOrEqualMarketClose(security.getPriceDate(), Period.Month)) {
+				if (DateUtils.isDateBetweenPeriodCloseAndOpen(security.getPriceDate(), Period.Month)) {
 					security.setMaLastMonth(security.getMaMonth());
 					security.setSmaLastMonth(security.getSmaMonth());
 					security.setPriceLastMonth(security.getPrice());
@@ -153,10 +156,10 @@ public class ProcessorImpl implements Processor {
 				
 				Price lastHistory = daily.get(daily.size()-1);
 				if (DateTimeComparator.getDateOnlyInstance().compare(security.getPriceDate(), lastHistory.getDate()) > 0) {
-					Log.d(TAG,"This is Expected that history doesn't contains last price");
+					Log.d(TAG,"Daily price history doesn't contains last price market must be open");
 					security.setLastClose(lastHistory.getClose());
 				} else {
-					Log.d(TAG,"This is Unexpected that history contains last price, it must be after markect close.");
+					Log.d(TAG,"Daily price history contains last price, it must be after markect close.");
 					security.setLastClose(daily.get(daily.size()-2).getClose());
 				}
 				//appendCurrentPrice(daily,security);
@@ -229,6 +232,12 @@ public class ProcessorImpl implements Processor {
 	}
 
 	List<Price> getPriceHistory(String symbol) {
+		String lastOnlineHistoryDbDate = DateUtils.lastProbableTradeDate();
+		Date latestHistoryDate = reader.latestHistoryDate(symbol);
+		if (latestHistoryDate != null) {
+			lastOnlineHistoryDbDate = DateUtils.toDatabaseFormat(latestHistoryDate);
+		}
+		long readDbHistoryStartTime = System.currentTimeMillis();
 		String[] projection = { PriceHistoryTable.COLUMN_SYMBOL, PriceHistoryTable.COLUMN_CLOSE, PriceHistoryTable.COLUMN_DATE,
 				PriceHistoryTable.COLUMN_HIGH, PriceHistoryTable.COLUMN_LOW, PriceHistoryTable.COLUMN_OPEN,
 				PriceHistoryTable.COLUMN_ADJUSTED_CLOSE };
@@ -243,7 +252,7 @@ public class ProcessorImpl implements Processor {
 			if (historyCursor != null) {
 				if (historyCursor.moveToLast()) {
 					String lastHistoryDate = historyCursor.getString(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_DATE));
-					if (lastHistoryDate.compareTo(lastProbableTradeDate()) >= 0) {
+					if (lastHistoryDate.compareTo(lastOnlineHistoryDbDate) >= 0) {
 						double lastClose = historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_CLOSE));
 						Log.d(TAG, "Price History is upto date using data from database lastDate=" + lastHistoryDate + " last Close "
 								+ lastClose);
@@ -267,16 +276,21 @@ public class ProcessorImpl implements Processor {
 							} while (historyCursor.moveToNext());
 						}
 					} else {
-						Log.d(TAG,"Last History Date "+lastHistoryDate+ " not equal Last Trade Date "+lastProbableTradeDate());
+						Log.d(TAG,"Last History Date "+lastHistoryDate+ " not equal Last on line History Date "+ lastOnlineHistoryDbDate);
 					}
 				}
 			}
 		} finally {
 			historyCursor.close();
 		}
+		Log.d(TAG, "Time to read db history ms = " + (System.currentTimeMillis()-readDbHistoryStartTime) + " Obsolete "+reloadHistory);
+
 		if (reloadHistory) {
+			long readHistoryStartTime = System.currentTimeMillis();
 			Log.d(TAG, "Price History is out-of-date reloading from history provider");
 			history = reader.readHistory(symbol);
+			Log.d(TAG, "Time to read on line history ms = " + (System.currentTimeMillis()-readHistoryStartTime));
+			long dbUpdateStartTime = System.currentTimeMillis();
 			if (history != null && history.size() > 0) {
 				Log.d(TAG, "Replacing Price History in database");
 				int rowsDeleted = getContentResolver().delete(PaiContentProvider.PRICE_HISTORY_URI, selection, selectionArgs);
@@ -294,7 +308,9 @@ public class ProcessorImpl implements Processor {
 				} catch (Exception e) {
 					Log.e(TAG,"Exception on Insert History ",e);
 				}
+				Log.d(TAG, "Time to delete/insert history ms = " + (System.currentTimeMillis()-dbUpdateStartTime));
 			}
+			
 		}
 		Log.d(TAG, "Returning " + history.size() + " Price History records for symbol " + symbol);
 		return history;
@@ -366,18 +382,6 @@ public class ProcessorImpl implements Processor {
 		}
 	}
 
-	/**
-	 * last Probable Trade date because we don't have a holiday table.
-	 * 
-	 * @return
-	 */
-	String lastProbableTradeDate() {
-		Calendar cal = GregorianCalendar.getInstance();
-		do {
-			cal.add(Calendar.DAY_OF_MONTH, -1);
-		} while (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY);
-		return dbStringDateFormat.format(cal.getTime());
-	}
 
 	List<PaiStudy> getSecurities(String inSymbol) {
 		List<PaiStudy> securities = new ArrayList<PaiStudy>();

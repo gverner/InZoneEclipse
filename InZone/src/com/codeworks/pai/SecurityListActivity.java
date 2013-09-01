@@ -2,13 +2,9 @@ package com.codeworks.pai;
 
 import android.app.ListActivity;
 import android.app.LoaderManager;
-import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
@@ -18,28 +14,19 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SimpleCursorAdapter;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.PaiStudyTable;
 import com.codeworks.pai.db.PriceHistoryTable;
 
-public class SecurityListActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor>, OnItemSelectedListener, OnSharedPreferenceChangeListener {
+public class SecurityListActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final String TAG = SecurityListActivity.class.getSimpleName();
 
 	public static final String ARG_PORTFOLIO_ID	= "com.codeworks.pai.PortfolioId";
-
-	
-	EditText mPortfolioNameText;
-	Spinner mStrategy;
 	
 	// private Cursor cursor;
 	private SimpleCursorAdapter adapter;
@@ -51,33 +38,49 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.security_list);
 		
-		mPortfolioNameText = (EditText) findViewById(R.id.sla_portfolio_name);
+		TextView mPortfolioNameText = (TextView) findViewById(R.id.sla_portfolio_name);
 		
-		mStrategy = (Spinner) findViewById(R.id.sla_strategy);
+		TextView mStrategy = (TextView) findViewById(R.id.sla_strategy);
+		/*
 		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
 		        R.array.spinner_moving_average, android.R.layout.simple_spinner_item);
 		// Specify the layout to use when the list of choices appears
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mStrategy.setAdapter(adapter);
+		*/
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
 			portfolioId = extras.getInt(ARG_PORTFOLIO_ID);
 		}		
 
+		String portfolioName = PaiUtils.getPortfolioName(this, portfolioId);
+		mPortfolioNameText.setText(portfolioName);
+
+		String strategy = PaiUtils.getStrategy(this, portfolioId);
+		Resources resources = getResources();
+		if ("E".equals(strategy)) {
+			mStrategy.setText(resources.getString(R.string.sla_maTypeEma));
+		} else {
+			mStrategy.setText(resources.getString(R.string.sla_maTypeSma));
+		}
+
+		
+		/*
 		Resources resources = getResources();
 		portfolioPreferenceName = PaiUtils.PREF_PORTFOLIO_KEY + portfolioId;
 		SharedPreferences sharedPreferences = getSharedPreferences(PaiUtils.PREF_FILE, MODE_PRIVATE);
 		String portfolioName = PaiUtils.getPortfolioName(resources, sharedPreferences, portfolioId);
 		mPortfolioNameText.setText(portfolioName);
-
 		if (sharedPreferences.getString(PaiUtils.PREF_PORTFOLIO_MA_TYPE+portfolioId, portfolioId == 1 ? PaiUtils.MA_TYPE_EMA : PaiUtils.MA_TYPE_SMA).equals(PaiUtils.MA_TYPE_EMA) ) {
 			mStrategy.setSelection(0);
 		} else {
 			mStrategy.setSelection(1);
 		}
-		
 		sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 		mStrategy.setOnItemSelectedListener(this);
+
+		*/
+		
 		
 		fillData();
 	}
@@ -95,17 +98,16 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.security_list_insert:
-			saveChange();
 			createSecurity();
 			return true;
 		case R.id.menu_item_done:
-			saveChange();
             setResult(RESULT_OK);
             finish();
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
+
+	/*
     public void onItemSelected(AdapterView<?> parent, View view, 
             int pos, long id) {
         // An item was selected. You can retrieve the selected item using
@@ -119,16 +121,12 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
     public void onNothingSelected(AdapterView<?> parent) {
         // Another interface callback
     }
-
 	void saveChange() {
 		String portfolioName = mPortfolioNameText.getText().toString();
 		SharedPreferences sharedPreferences = getSharedPreferences(PaiUtils.PREF_FILE, MODE_PRIVATE);
 		PaiUtils.savePortfolioName(getResources(), sharedPreferences, portfolioId, portfolioName);
-		/*
-		Editor editor = sharedPreferences.edit();
-		editor.putBoolean(PREF_EMA_RADIO_CHECKED, mEmaRadioButton.isChecked());
-		editor.commit();*/
 	}
+	*/
 	
 	private void createSecurity() {
 		Intent i = new Intent(this, SecurityDetailActivity.class);
@@ -214,16 +212,4 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 		adapter.swapCursor(null);
 	}
 
-	@Override
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		if ((PaiUtils.PREF_PORTFOLIO_MA_TYPE+portfolioId).equals(key)) {
-			String maType = sharedPreferences.getString(PaiUtils.PREF_PORTFOLIO_MA_TYPE+portfolioId, portfolioId == 1 ? PaiUtils.MA_TYPE_EMA : PaiUtils.MA_TYPE_SMA);
-			String selection = PaiStudyTable.COLUMN_PORTFOLIO_ID + " = ?";
-			String[] selectionArgs = { Integer.toString(portfolioId) };
-			ContentValues values = new ContentValues();
-			values.put(PaiStudyTable.COLUMN_MA_TYPE, String.valueOf(maType.charAt(0)));
-			getContentResolver().update(PaiContentProvider.PAI_STUDY_URI, values, selection, selectionArgs);
-		}
-		
-	}
 }

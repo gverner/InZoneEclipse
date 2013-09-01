@@ -66,7 +66,8 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 
         // For each of the sections in the app, add a tab to the action bar.
  		Resources resources = getResources();
-		SharedPreferences sharedPreferences = getSharedPreferences(PaiUtils.PREF_FILE, MODE_PRIVATE);
+		//SharedPreferences sharedPreferences = getSharedPreferences(PaiUtils.PREF_FILE, MODE_PRIVATE);
+		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		for (int i = 1; i < 4; i++) {
 			String portfolioName = PaiUtils.getPortfolioName(resources, sharedPreferences, i);
 			actionBar.addTab(actionBar.newTab().setText(portfolioName).setTabListener(this));

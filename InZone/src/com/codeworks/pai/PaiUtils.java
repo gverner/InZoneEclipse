@@ -6,13 +6,17 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
+import android.preference.PreferenceManager;
 
 public class PaiUtils {
-	public static String PREF_PORTFOLIO_KEY = "pref_portfolio_key";
 	public static String    PREF_FILE = "com.codeworks.inzone.preferences";
 	//public static String    PREF_PORTFOLIO = "com.codeworks.pai.preference.portfolio.name";
+	//public static String PREF_PORTFOLIO_KEY = "pref_portfolio_key";
+	public static String PREF_PORTFOLIO_KEY = "pref_portfolio_name";
 	
-	public static final String PREF_PORTFOLIO_MA_TYPE = "com.codeworks.inzone.portfolio_ma_type";
+	//public static final String PREF_PORTFOLIO_MA_TYPE = "com.codeworks.inzone.portfolio_ma_type";
+	public static final String PREF_PORTFOLIO_MA_TYPE = "pref_portfolio_type";
+	
 	public static final String MA_TYPE_EMA = "E";
 	public static final String MA_TYPE_SMA = "S";
 	
@@ -50,9 +54,16 @@ public class PaiUtils {
 		String portfolioName = sharedPreferences.getString(PREF_PORTFOLIO_KEY+portfolioId, preferenceName);
 		return portfolioName;
 	}
+
+	public static String getPortfolioName(Activity activity, int portfolioId) {
+		SharedPreferences sharedPreferences = getSharedPreferences(activity);
+		Resources resources = activity.getResources(); // default portfolio name stored in resources
+		return getPortfolioName(resources, sharedPreferences, portfolioId);
+	}
 	
 	public static SharedPreferences getSharedPreferences(Activity activity) {
-		SharedPreferences sharedPreferences = activity.getSharedPreferences(PaiUtils.PREF_FILE, Activity.MODE_PRIVATE);
+		//SharedPreferences sharedPreferences = activity.getSharedPreferences(PaiUtils.PREF_FILE, Activity.MODE_PRIVATE);
+		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
 		return sharedPreferences;
 	}
 	

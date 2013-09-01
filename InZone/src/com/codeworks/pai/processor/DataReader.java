@@ -1,5 +1,6 @@
 package com.codeworks.pai.processor;
 
+import java.util.Date;
 import java.util.List;
 
 import com.codeworks.pai.db.model.PaiStudy;
@@ -12,5 +13,7 @@ public interface DataReader {
 	public abstract List<Price> readHistory(String symbol);
 
 	public abstract boolean readRTPrice(PaiStudy security);
+	
+	public abstract Date latestHistoryDate(String symbol);
 
 }

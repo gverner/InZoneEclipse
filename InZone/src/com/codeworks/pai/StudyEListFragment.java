@@ -37,13 +37,14 @@ import android.widget.Toast;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.PaiStudyTable;
 import com.codeworks.pai.db.model.EmaRules;
+import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.processor.DateUtils;
 import com.codeworks.pai.processor.UpdateService;
 
 public class StudyEListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
-	private static final String		TAG					= StudyActivity.class.getSimpleName();
+	private static final String		TAG					= StudyEListFragment.class.getSimpleName();
 
 	public static final String	ARG_PORTFOLIO_ID	= "com.codeworks.pai.portfolioId";
 
@@ -200,7 +201,7 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 		String[] projection = new String[] { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_PRICE,
 				PaiStudyTable.COLUMN_PRICE_LAST_WEEK, PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_MA_WEEK, PaiStudyTable.COLUMN_MA_MONTH,
 				PaiStudyTable.COLUMN_MA_LAST_WEEK, PaiStudyTable.COLUMN_MA_LAST_MONTH, PaiStudyTable.COLUMN_STDDEV_WEEK, PaiStudyTable.COLUMN_STDDEV_MONTH,
-				PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.COLUMN_LAST_CLOSE };
+				PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.COLUMN_LAST_CLOSE, PaiStudyTable.COLUMN_LOW };
 		String selection = PaiStudyTable.COLUMN_PORTFOLIO_ID + " = ? ";
 		String[] selectionArgs = { Long.toString(portfolioId) };
 		Log.i(TAG, "Prepare Cursor Loader portfolio "+portfolioId);
@@ -235,6 +236,7 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				// Log.d("TAG", "CursorAdapter BindView:Cursor not null");
 
 				PaiStudy study = new PaiStudy(cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_SYMBOL)));
+				study.setMaType(MaType.E);
 				study.setPrice(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_PRICE)));
 				study.setPriceLastWeek(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_PRICE_LAST_WEEK)));
 				study.setPriceLastMonth(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_PRICE_LAST_MONTH)));
@@ -246,6 +248,7 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				study.setStddevMonth(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_STDDEV_MONTH)));
 				study.setAverageTrueRange(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_AVG_TRUE_RANGE)));
 				study.setLastClose(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_LAST_CLOSE)));
+				study.setLow(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_LOW)));
 				try {
 					study.setPriceDate(cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_PRICE_DATE)));
 				} catch (ParseException e) {
@@ -267,6 +270,10 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				// Price
 				TextView price = (TextView) view.findViewById(R.id.quoteList_Price);
 				price.setText(PaiStudy.format(study.getPrice()));
+				
+				if (rules.hasTradedBelowMAToday()) {
+					price.setTextColor(getResources().getColor(R.color.net_negative));
+				}
 
 				double net = 0;
 				Calendar cal = GregorianCalendar.getInstance();
@@ -287,22 +294,10 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				if (rules.isWeeklyLowerBuyZoneCompressedByMonthly()) {
 					textBuyZoneTop.setText("*"+textBuyZoneTop.getText());
 				}*/
-				if (rules.isPriceInBuyZone()) {
-					textBuyZoneBot.setBackgroundColor(Color.DKGRAY);
-					textBuyZoneTop.setBackgroundColor(Color.DKGRAY);
-					textBuyZoneBot.setTextColor(Color.GREEN);
-					textBuyZoneTop.setTextColor(Color.GREEN);
-				} else if (rules.isPossibleUptrendTermination()) {
-					textBuyZoneBot.setBackgroundColor(color.holo_orange_light);
-					textBuyZoneTop.setBackgroundColor(color.holo_orange_light);
-					textBuyZoneBot.setTextColor(Color.MAGENTA);
-					textBuyZoneTop.setTextColor(Color.MAGENTA);
-				} else {
-					textBuyZoneBot.setBackgroundColor(color.background_light);
-					textBuyZoneTop.setBackgroundColor(color.background_light);
-					textBuyZoneBot.setTextColor(Color.BLACK);
-					textBuyZoneTop.setTextColor(Color.BLACK);
-				}
+				textBuyZoneBot.setBackgroundColor(rules.getBuyZoneBackgroundColor());
+				textBuyZoneTop.setBackgroundColor(rules.getBuyZoneBackgroundColor());
+				textBuyZoneBot.setTextColor(rules.getBuyZoneTextColor());
+				textBuyZoneTop.setTextColor(rules.getBuyZoneTextColor());
 
 				TextView textSellZoneBot = setDouble(view, rules.calcSellZoneBottom(), R.id.quoteList_SellZoneBottom);
 				TextView textSellZoneTop = setDouble(view, rules.calcSellZoneTop(), R.id.quoteList_SellZoneTop);
@@ -310,22 +305,11 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 					textSellZoneBot.setText("*"+textSellZoneBot.getText());
 					weeklyZoneModifiedByMonthly = true;
 				}
-				if (rules.isPriceInSellZone()) {
-					textSellZoneBot.setBackgroundColor(color.holo_green_dark);
-					textSellZoneTop.setBackgroundColor(color.holo_green_dark);
-					textSellZoneBot.setTextColor(Color.GREEN);
-					textSellZoneTop.setTextColor(Color.GREEN);
-				} else if (rules.isPossibleDowntrendTermination()) {
-					textSellZoneBot.setBackgroundColor(color.holo_orange_light);
-					textSellZoneTop.setBackgroundColor(color.holo_orange_light);
-					textSellZoneBot.setTextColor(Color.MAGENTA);
-					textSellZoneTop.setTextColor(Color.MAGENTA);
-				} else {
-					textSellZoneBot.setBackgroundColor(color.background_light);
-					textSellZoneTop.setBackgroundColor(color.background_light);
-					textSellZoneBot.setTextColor(Color.BLACK);
-					textSellZoneTop.setTextColor(Color.BLACK);
-				}
+
+				textSellZoneBot.setBackgroundColor(rules.getSellZoneBackgroundColor());
+				textSellZoneBot.setTextColor(rules.getSellZoneTextColor());
+				textSellZoneTop.setBackgroundColor(rules.getSellZoneBackgroundColor());
+				textSellZoneTop.setTextColor(rules.getSellZoneTextColor());
 
 				TextView lastUpdated = (TextView) getActivity().findViewById(R.id.studyList_lastUpdated);
 				if (study.getPriceDate() != null && lastUpdated != null) {

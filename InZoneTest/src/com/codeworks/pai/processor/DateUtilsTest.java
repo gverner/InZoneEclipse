@@ -18,7 +18,7 @@ public class DateUtilsTest extends AndroidTestCase {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
 		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
 		Date date = sdf.parse("06/28/2013 16:00");
-		assertTrue(DateUtils.isAfterOrEqualMarketClose(date, Period.Week));
+		assertTrue(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
 	}
 	
 	public void testFridayAt359pm() throws ParseException {
@@ -30,25 +30,73 @@ public class DateUtilsTest extends AndroidTestCase {
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(DateUtils.isAfterOrEqualMarketClose(date, Period.Week));
-	}
-	public void testEndOfMonthAfter() throws ParseException {
-		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
-		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
-		Date date = sdf.parse("06/28/2013 16:01");
-		assertTrue(DateUtils.isAfterOrEqualMarketClose(date, Period.Month));
+		assertFalse(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
 	}
 	
-	public void testEndOfMonthBefore() throws ParseException {
+	public void testMondayAT120pm() throws ParseException {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
 		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
-		// TODO Test Breaks every month
-		Date date = sdf.parse("07/26/2013 16:00");
+		Date date = sdf.parse("08/19/2013 13:20");
 		Calendar cal = GregorianCalendar.getInstance();
 		cal.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
 		cal.setTime(date);
 		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
 		System.out.println("minute "+cal.get(Calendar.MINUTE));
-		assertFalse(DateUtils.isAfterOrEqualMarketClose(date, Period.Month));
+		assertFalse(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
+	}
+
+	public void testMondayAT140pm() throws ParseException {
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
+		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		Date date = sdf.parse("08/19/2013 13:40");
+		Calendar cal = GregorianCalendar.getInstance();
+		cal.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		cal.setTime(date);
+		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
+		System.out.println("minute "+cal.get(Calendar.MINUTE));
+		assertFalse(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Week));
+	}
+	
+	public void testEndOfMonthAfter() throws ParseException {
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
+		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		Date date = sdf.parse("06/28/2013 16:01");
+		assertTrue(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
+	}
+	
+	public void testEndOfMonthBefore() throws ParseException {
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
+		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		// TODO Test Breaks every month - This should be fixed
+		Date date = sdf.parse("06/26/2013 16:00");
+		Calendar cal = GregorianCalendar.getInstance();
+		cal.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		cal.setTime(date);
+		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
+		System.out.println("minute "+cal.get(Calendar.MINUTE));
+		assertFalse(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
+	}	
+	public void testEndOfMonthNext() throws ParseException {
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
+		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		Date date = sdf.parse("07/01/2013 9:29");
+		Calendar cal = GregorianCalendar.getInstance();
+		cal.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		cal.setTime(date);
+		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
+		System.out.println("minute "+cal.get(Calendar.MINUTE));
+		assertFalse(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
+	}	
+
+	public void testEndOfMonthNextOpen() throws ParseException {
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.US);
+		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		Date date = sdf.parse("07/01/2013 9:30");
+		Calendar cal = GregorianCalendar.getInstance();
+		cal.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		cal.setTime(date);
+		System.out.println("hour "+cal.get(Calendar.HOUR_OF_DAY));
+		System.out.println("minute "+cal.get(Calendar.MINUTE));
+		assertFalse(DateUtils.isDateBetweenPeriodCloseAndOpen(date, Period.Month));
 	}	
 }

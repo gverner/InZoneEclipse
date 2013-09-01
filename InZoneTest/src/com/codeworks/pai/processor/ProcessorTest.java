@@ -12,6 +12,7 @@ import com.codeworks.pai.db.PaiStudyTable;
 import com.codeworks.pai.db.model.EmaRules;
 import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Rules;
+import com.codeworks.pai.db.model.SmaRules;
 import com.codeworks.pai.mock.MockDataReader;
 import com.codeworks.pai.mock.TestDataLoader;
 
@@ -160,7 +161,29 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		assertEquals("Sell", false, rules.isPriceInSellZone());
 
 	}
+	
+	public void testSmaSpy() throws InterruptedException {
+		insertSecurity(TestDataLoader.SPY);
+		studies = processor.process(TestDataLoader.SPY);
+		PaiStudy study = getStudy(TestDataLoader.SPY);
+		Rules rules = new EmaRules(study);
+		assertEquals("Price", MockDataReader.SPY_PRICE, study.getPrice());
+		assertEquals("ATR", 1.46d, round(study.getAverageTrueRange()));
+		assertEquals("MA last week", 153.04d, round(study.getSmaLastWeek()));
+		assertEquals("MA last month", 142.85d, round(study.getSmaLastMonth()));
+		assertEquals("MA week", 153.91d, round(study.getSmaWeek()));
+		assertEquals("MA month", 144.42d, round(study.getSmaMonth())); // as of 4/12
+		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
+		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
+		assertEquals("StdDev Week", round((158.99-153.91d)/2), round(study.getSmaStddevWeek()));
+		assertEquals("StdDev Month", 7.89d, round(study.getSmaStddevMonth()));
+		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
+		assertEquals("TT", false, rules.isPossibleUptrendTermination());
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("Buy", false, rules.isPriceInBuyZone());
+		assertEquals("Sell", false, rules.isPriceInSellZone());
 
+	}
 	public void testQQQ() throws InterruptedException {
 		insertSecurity(TestDataLoader.QQQ);
 		studies = processor.process(null);
@@ -169,20 +192,43 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		Rules rules = new EmaRules(study);
 		assertEquals("Price", MockDataReader.QQQ_PRICE, study.getPrice());
 		assertEquals("ATR", 0.75, round(study.getAverageTrueRange()));
-		assertEquals("StdDev Week", 1.42d, round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 4.64d, round(study.getStddevMonth()));
-		assertEquals("MA week", 67.37d, round(study.getMaWeek()));
-		assertEquals("MA month", 63.79d, round(study.getMaMonth()));
+		assertEquals("MA week", 67.57d, round(study.getMaWeek()));
+		assertEquals("MA month", 63.99d, round(study.getMaMonth()));
 		assertEquals("MA last week", 67.32d, round(study.getMaLastWeek()));
 		assertEquals("MA last month", 63.36d, round(study.getMaLastMonth()));
+		assertEquals("StdDev Week", 1.55d, round(study.getStddevWeek()));
+		assertEquals("StdDev Month", 4.75d, round(study.getStddevMonth()));
 		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
 		assertEquals("TT", false, rules.isPossibleUptrendTermination());
 		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
-		assertEquals("Buy", true, rules.isPriceInBuyZone());
+		assertEquals("Buy", false, rules.isPriceInBuyZone());
 		assertEquals("Sell", false, rules.isPriceInSellZone());
+	}
+	
+	public void testSmaQQQ() throws InterruptedException {
+		insertSecurity(TestDataLoader.QQQ);
+		studies = processor.process(null);
 
+		PaiStudy study = getStudy(TestDataLoader.QQQ);
+	
+		Rules smaRules = new SmaRules(study);
+		assertEquals("Price", MockDataReader.QQQ_PRICE, study.getPrice());
+		assertEquals("ATR", 0.75, round(study.getAverageTrueRange()));
+		assertEquals("MA week", 68.13d, round(study.getSmaWeek()));
+		assertEquals("MA month", 66.38d, round(study.getSmaMonth()));
+		assertEquals("MA last week", 67.89d, round(study.getSmaLastWeek()));
+		assertEquals("MA last month", 66.11d, round(study.getSmaLastMonth()));
+		assertEquals("StdDev Week", 0.82d, round(study.getSmaStddevWeek()));
+		assertEquals("StdDev Month", 2.20d, round(study.getSmaStddevMonth()));
+		assertEquals("DT Monthly", false, smaRules.isDownTrendMonthly());
+		assertEquals("DT Weekly", true, smaRules.isDownTrendWeekly());
+		assertEquals("TT", true, smaRules.isPossibleTrendTerminationWeekly());
+		assertEquals("TT", false, smaRules.isPossibleUptrendTermination());
+		assertEquals("TT", true, smaRules.isPossibleDowntrendTermination());
+		assertEquals("Buy", false, smaRules.isPriceInBuyZone());
+		assertEquals("Sell", true, smaRules.isPriceInSellZone());		
 	}
 
 	/*

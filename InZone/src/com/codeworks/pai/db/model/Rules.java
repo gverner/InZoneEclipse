@@ -1,5 +1,7 @@
 package com.codeworks.pai.db.model;
 
+import android.graphics.Color;
+
 import com.codeworks.pai.study.Period;
 
 public interface Rules {
@@ -35,6 +37,8 @@ public interface Rules {
 	public abstract boolean isPriceInBuyZone();
 
 	public abstract boolean isPriceInSellZone();
+	
+	public abstract boolean hasTradedBelowMAToday();
 
 	public abstract boolean isUpTrendWeekly();
 
@@ -61,5 +65,16 @@ public interface Rules {
 	public abstract String inStock();
 	
 	public abstract String inStockAndCall();
-
+	
+	public abstract MaType getMaType();
+	
+	public abstract int getBuyZoneTextColor();
+	
+	public abstract int getBuyZoneBackgroundColor();
+	
+	public abstract int getSellZoneTextColor();
+	
+	public abstract int getSellZoneBackgroundColor();
+	
+	public abstract String getAlertText();
 }

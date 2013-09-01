@@ -15,59 +15,87 @@ public class DateUtils {
 	public static final int MARKET_OPEN_HOUR = 9;
 	public static final int MARKET_OPEN_MINUTE = 30;
 
+	public static SimpleDateFormat dbStringDateFormat = new SimpleDateFormat("yyyyMMdd", Locale.US);
+
 	/**
-	 * NOTE: doesn't know holidays
-	 * @param date
+	 * Is the DateTeme equal to or after Period (Week Or Month)  close and less than market open.
+	 * Date passed in should be date time of a price
+	 * 
+	 * <li> Week : true if date and time between Friday's close and  Monday's open.
+	 * <li> Month: true if date and time between last market day of month and first day of next month.
+	 * 
+	 * <li> NOTE: doesn't know holidays
+	 * @param priceDate
 	 * @param period
 	 * @return
 	 */
-	public static boolean isAfterOrEqualMarketClose(Date date, Period period) {
+	public static boolean isDateBetweenPeriodCloseAndOpen(Date priceDate, Period period) {
 		boolean result = false;
 		if (Period.Week.equals(period)) {
 			Calendar cal = GregorianCalendar.getInstance(Locale.US);
 			cal.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
 
-			cal.setTime(date);
-			/*
+			cal.setTime(priceDate);
+			
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm z", Locale.US);
 			sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
 			System.out.println(sdf.format(cal.getTime()));
-			System.out.println(sdf.format(date));
-			*/
+			System.out.println(sdf.format(priceDate));
+			
 			
 			if ((cal.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY && cal.get(Calendar.HOUR_OF_DAY) >= MARKET_CLOSE_HOUR) || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
 					|| cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
-					|| (cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY && cal.get(Calendar.HOUR_OF_DAY) == MARKET_OPEN_HOUR && cal.get(Calendar.MINUTE) < MARKET_OPEN_MINUTE)
-					|| (cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY && cal.get(Calendar.MINUTE) < MARKET_OPEN_MINUTE)) {
+					|| (cal.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY && cal.get(Calendar.HOUR_OF_DAY) == MARKET_OPEN_HOUR && cal.get(Calendar.MINUTE) < MARKET_OPEN_MINUTE)) { 
 				result =  true;
 			} else {
 				result =  false;
 			}
 		} else if (Period.Month.equals(period)) {
-			Calendar cal = GregorianCalendar.getInstance(Locale.US);
-			cal.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
-			cal.setTime(date);
-
-			cal.add(Calendar.MONTH, 1);
-			cal.set(Calendar.DAY_OF_MONTH, 1);
-			do {
-				cal.add(Calendar.DAY_OF_MONTH, -1);
-			} while (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY);
-			cal.set(Calendar.HOUR_OF_DAY, MARKET_CLOSE_HOUR);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND,0);
-			/*
+			Calendar monthEnd = getMonthClose(priceDate);
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm z", Locale.US);
 			sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
-			System.out.println(sdf.format(cal.getTime()));
-			System.out.println(sdf.format(date.getTime()));
-			*/
-			result = date.compareTo(cal.getTime()) >= 0;
+			System.out.println(sdf.format(monthEnd.getTime()));
+			System.out.println(sdf.format(priceDate.getTime()));
+			
+			result = (priceDate.compareTo(monthEnd.getTime()) >= 0);
 		}
 		return result;
 	}
 	
+	/*
+	 * Note: Doesn't Know marked Holidays
+	 */
+	static Calendar getMonthClose(Date date) {
+		Calendar monthEnd = GregorianCalendar.getInstance(Locale.US);
+		monthEnd.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		monthEnd.setTime(date);
+
+		monthEnd.add(Calendar.MONTH, 1);
+		monthEnd.set(Calendar.DAY_OF_MONTH, 1);
+		do {
+			monthEnd.add(Calendar.DAY_OF_MONTH, -1);
+		} while (monthEnd.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || monthEnd.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY);
+		monthEnd.set(Calendar.HOUR_OF_DAY, MARKET_CLOSE_HOUR);
+		monthEnd.set(Calendar.MINUTE, 0);
+		monthEnd.set(Calendar.SECOND, 0);
+		monthEnd.set(Calendar.MILLISECOND,0);
+		return monthEnd;
+	}
+	/*
+	 * Note: Doesn't Know marked Holidays
+	 */
+	static Calendar getNextMonthOpen(Date date) {
+		Calendar periodStart = GregorianCalendar.getInstance(Locale.US);
+		periodStart.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
+		periodStart.setTime(date);
+		periodStart.add(Calendar.MONTH, 1);
+		periodStart.set(Calendar.DAY_OF_MONTH, 1);
+		periodStart.set(Calendar.HOUR_OF_DAY, MARKET_OPEN_HOUR);
+		periodStart.set(Calendar.MINUTE, MARKET_OPEN_MINUTE);
+		periodStart.set(Calendar.SECOND, 0);
+		periodStart.set(Calendar.MILLISECOND,0);
+		return periodStart;
+	}
     //-----------------------------------------------------------------------
     /**
      * <p>Checks if two date objects are on the same day ignoring time.</p>
@@ -124,4 +152,22 @@ public class DateUtils {
         cal1.set(Calendar.MILLISECOND, 0);
         return cal1.getTime();
     }
+    
+	/**
+	 * last Probable Trade date because we don't have a holiday table.
+	 * 
+	 * @return
+	 */
+	public static String lastProbableTradeDate() {
+		Calendar cal = GregorianCalendar.getInstance();
+		do {
+			cal.add(Calendar.DAY_OF_MONTH, -1);
+		} while (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY);
+		return dbStringDateFormat.format(cal.getTime());
+	}
+	
+	public static String toDatabaseFormat(Date date) {
+		return dbStringDateFormat.format(date);
+	}
+
 }

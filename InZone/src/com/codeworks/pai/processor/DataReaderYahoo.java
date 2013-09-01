@@ -213,7 +213,7 @@ public class DataReaderYahoo implements DataReader {
 		List<Price> history = new ArrayList<Price>();
 		List<String[]> results;
 		try {
-			String url = buildHistoryUrl(symbol);
+			String url = buildHistoryUrl(symbol, 300);
 			results = downloadUrl(url);
 			int counter = 0;
 			for (String[] line : results) {
@@ -231,9 +231,9 @@ public class DataReaderYahoo implements DataReader {
 					price.setLow(parseDouble(line[3], "Low"));
 					price.setClose(parseDouble(line[4], "Close"));
 					price.setAdjustedClose(parseDouble(line[6], "AdjustedClose"));
-					if (counter % 20 == 0) {
-						Log.d(TAG, symbol + " " + line[0] + " " + line[1]);
-					}
+					//if (counter % 20 == 0) {
+					//	Log.d(TAG, symbol + " " + line[0] + " " + line[1]);
+					//}
 				}
 			}
 		} catch (Exception e) {
@@ -242,12 +242,40 @@ public class DataReaderYahoo implements DataReader {
 		return history;
 	}
 
-	String buildHistoryUrl(String symbol) {
+	/**
+	 * Returns the latest history date for Symbol,
+	 * 
+	 * @param symbol
+	 * @return will return null on failure
+	 */
+	public Date latestHistoryDate(String symbol) {
+		long startTime = System.currentTimeMillis();
+		Date latestDate = null;
+		List<String[]> results;
+		try {
+			String url = buildHistoryUrl(symbol, 7);
+			results = downloadUrl(url);
+			for (String[] line : results) {
+				if (!"Date".equals(line[0])) { // skip header
+					Date theDate = parseDate(line[0], "Date");
+					if (latestDate == null || latestDate.before(theDate)) {
+						latestDate = theDate;
+					}
+				}
+			}
+		} catch (Exception e) {
+			Log.d(TAG, "readLatestHistoryDate " + e.getMessage(), e);
+		}
+		Log.d(TAG, "Milliseconds to retrieve latest history date="+(System.currentTimeMillis() - startTime));
+		return latestDate;
+	}
+	
+	String buildHistoryUrl(String symbol, int lengthInDays) {
 		Calendar cal = GregorianCalendar.getInstance();
 		String endDay = Integer.toString(cal.get(Calendar.DAY_OF_MONTH));
 		String endMonth = Integer.toString(cal.get(Calendar.MONTH));
 		String endYear = Integer.toString(cal.get(Calendar.YEAR));
-		cal.add(Calendar.WEEK_OF_YEAR, -300);
+		cal.add(Calendar.WEEK_OF_YEAR, -Math.abs(lengthInDays));
 		String startDay = Integer.toString(cal.get(Calendar.DAY_OF_MONTH));
 		String startMonth = Integer.toString(cal.get(Calendar.MONTH));
 		String startYear = Integer.toString(cal.get(Calendar.YEAR));

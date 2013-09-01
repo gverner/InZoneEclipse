@@ -56,7 +56,7 @@ public class StudyEDetailFragment extends Fragment {
 				PaiStudyTable.COLUMN_MA_WEEK, PaiStudyTable.COLUMN_MA_MONTH, PaiStudyTable.COLUMN_MA_LAST_WEEK, PaiStudyTable.COLUMN_MA_LAST_MONTH,
 				PaiStudyTable.COLUMN_PRICE, PaiStudyTable.COLUMN_PRICE_LAST_WEEK, PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_STDDEV_WEEK,
 				PaiStudyTable.COLUMN_STDDEV_MONTH, PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.COLUMN_SMA_MONTH,
-				PaiStudyTable.COLUMN_SMA_LAST_MONTH, PaiStudyTable.COLUMN_SMA_STDDEV_MONTH };
+				PaiStudyTable.COLUMN_SMA_LAST_MONTH, PaiStudyTable.COLUMN_SMA_STDDEV_MONTH, PaiStudyTable.COLUMN_LOW, PaiStudyTable.COLUMN_HIGH };
 
 		Uri uri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + id);
 		Cursor cursor = getActivity().getContentResolver().query(uri, projection, null, null, null);
@@ -83,6 +83,9 @@ public class StudyEDetailFragment extends Fragment {
 				security.setSmaMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_MONTH)));
 				security.setSmaLastMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_LAST_MONTH)));
 				security.setSmaStddevMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_STDDEV_MONTH)));
+				security.setLow(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_LOW)));
+				security.setHigh(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_HIGH)));
+				
 				((TextView) getView().findViewById(R.id.sdfSymbol)).setText(symbol);
 				((TextView) getView().findViewById(R.id.sdfName)).setText(security.getName());
 				populateView(security);
@@ -104,6 +107,8 @@ public class StudyEDetailFragment extends Fragment {
 			rules = new SmaRules(study);
 		}
 		setDouble(getView(), study.getPrice(), R.id.sdfPrice);
+		setDouble(getView(), study.getLow(), R.id.sdfLow);
+		setDouble(getView(), study.getHigh(), R.id.sdfHigh);
 		setDouble(getView(), study.getAverageTrueRange() / 4, R.id.sdfAtr25);
 		setDouble(getView(), study.getMaWeek() + (study.getAverageTrueRange() / 4), R.id.sdfPricePlusAtr25);
 		setDouble(getView(), rules.calcUpperSellZoneTop(Period.Week), R.id.sdfWeeklyUpperSellTop);
@@ -121,7 +126,12 @@ public class StudyEDetailFragment extends Fragment {
 		setDouble(getView(), rules.calcLowerSellZoneBottom(Period.Month), R.id.sdfMonthlyLowerSellBottom);
 		setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Month), R.id.sdfMonthlyLowerBuyTop);
 		setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Month), R.id.sdfMonthlyLowerBuyBottom);
-		
+
+		String alertText = rules.getAlertText();
+		if (alertText.length() > 0) {
+			setString(getView(), getResources().getString(R.string.sdfAlertNameLabel), R.id.sdfAlertName);
+			setString(getView(), alertText, R.id.sdfAlertText);
+		}
 		setString(getView(), rules.inCash(), R.id.sdfInCashText);
 		setString(getView(), rules.inCashAndPut(), R.id.sdfInCashAndPutText);
 		setString(getView(), rules.inStock(), R.id.sdfInStockText);

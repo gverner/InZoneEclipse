@@ -7,6 +7,7 @@ import java.util.Date;
 
 import com.codeworks.pai.db.PaiStudyTable;
 import com.codeworks.pai.processor.Notice;
+import com.codeworks.pai.study.Period;
 
 public class PaiStudy implements Serializable {
 
@@ -93,6 +94,23 @@ public class PaiStudy implements Serializable {
 		return maWeek;
 	}
 
+	
+	public double getMovingAverage(Period period) {
+		if (MaType.E.equals(maType)) {
+			if (Period.Week.equals(period)) {
+				return getMaWeek();
+			} else {
+				return getMaMonth();
+			}
+		} else {
+			if (Period.Week.equals(period)) {
+				return getSmaWeek();
+			} else {
+				return getSmaMonth();
+			}
+		}
+	}
+	
 	public String getName() {
 		return name;
 	}

@@ -101,7 +101,7 @@ public class ProcessorImpl implements Processor {
 			List<Price> weekly = grouper.periodList(history, Period.Week);
 			if (weekly.size() >= 20) {
 				security.setMaLastWeek(EMA2.compute(weekly, 20));
-				security.setSmaLastWeek(SMA.compute(weekly, 12));
+				security.setSmaLastWeek(SMA.compute(weekly, 20));
 				security.setPriceLastWeek(weekly.get(weekly.size() - 1).getClose());
 
 				appendCurrentPrice(weekly, security, Period.Week);
@@ -109,8 +109,8 @@ public class ProcessorImpl implements Processor {
 				security.setMaWeek(EMA2.compute(weekly, 20));
 				security.setStddevWeek(StdDev.calculate(weekly, 20));
 
-				security.setSmaWeek(SMA.compute(weekly, 12));
-				security.setSmaStddevWeek(StdDev.calculate(weekly, 12));
+				security.setSmaWeek(SMA.compute(weekly, 20));
+				security.setSmaStddevWeek(StdDev.calculate(weekly, 20));
 
 				if (DateUtils.isDateBetweenPeriodCloseAndOpen(security.getPriceDate(), Period.Week)) {
 					security.setMaLastWeek(security.getMaWeek());

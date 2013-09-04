@@ -17,6 +17,7 @@ import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
+import com.codeworks.pai.processor.Notice;
 import com.codeworks.pai.study.Period;
 
 public class StudyEDetailFragment extends Fragment {
@@ -56,7 +57,7 @@ public class StudyEDetailFragment extends Fragment {
 				PaiStudyTable.COLUMN_MA_WEEK, PaiStudyTable.COLUMN_MA_MONTH, PaiStudyTable.COLUMN_MA_LAST_WEEK, PaiStudyTable.COLUMN_MA_LAST_MONTH,
 				PaiStudyTable.COLUMN_PRICE, PaiStudyTable.COLUMN_PRICE_LAST_WEEK, PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_STDDEV_WEEK,
 				PaiStudyTable.COLUMN_STDDEV_MONTH, PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.COLUMN_SMA_MONTH,
-				PaiStudyTable.COLUMN_SMA_LAST_MONTH, PaiStudyTable.COLUMN_SMA_STDDEV_MONTH, PaiStudyTable.COLUMN_LOW, PaiStudyTable.COLUMN_HIGH };
+				PaiStudyTable.COLUMN_SMA_LAST_MONTH, PaiStudyTable.COLUMN_SMA_STDDEV_MONTH, PaiStudyTable.COLUMN_LOW, PaiStudyTable.COLUMN_HIGH};
 
 		Uri uri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + id);
 		Cursor cursor = getActivity().getContentResolver().query(uri, projection, null, null, null);
@@ -127,10 +128,16 @@ public class StudyEDetailFragment extends Fragment {
 		setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Month), R.id.sdfMonthlyLowerBuyTop);
 		setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Month), R.id.sdfMonthlyLowerBuyBottom);
 
-		String alertText = rules.getAlertText();
-		if (alertText.length() > 0) {
+		rules.updateNotice();
+		StringBuilder alertMsg = new StringBuilder();
+		if (!Notice.NONE.equals(study.getNotice())) {
+			alertMsg.append(String.format(getResources().getString(study.getNotice().getMessage()), study.getSymbol()));
+			alertMsg.append("\n");
+		}
+		alertMsg.append(rules.getAdditionalAlerts(getResources()));
+		if (alertMsg.length() > 0) {
 			setString(getView(), getResources().getString(R.string.sdfAlertNameLabel), R.id.sdfAlertName);
-			setString(getView(), alertText, R.id.sdfAlertText);
+			setString(getView(), alertMsg.toString(), R.id.sdfAlertText);
 		}
 		setString(getView(), rules.inCash(), R.id.sdfInCashText);
 		setString(getView(), rules.inCashAndPut(), R.id.sdfInCashAndPutText);

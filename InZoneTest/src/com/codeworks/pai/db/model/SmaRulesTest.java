@@ -53,10 +53,10 @@ public class SmaRulesTest extends TestCase {
 	public void testSpyRules() {
 		SmaRules rules = new SmaRules(spyStudy);
 		PaiStudy study = spyStudy;
-		assertEquals(spyStudy.getSmaWeek() ,rules.calcBuyZoneBottom());
-		assertEquals(spyStudy.getSmaWeek() + (spyStudy.getSmaStddevWeek() * SmaRules.ZONE_INNER), rules.calcBuyZoneTop());
-		assertEquals(spyStudy.getSmaWeek() + (spyStudy.getSmaStddevWeek() * SmaRules.ZONE_OUTER) ,rules.calcSellZoneBottom());
-		assertEquals(spyStudy.getSmaWeek() + (spyStudy.getSmaStddevWeek() * SmaRules.ZONE_OUTER) + rules.pierceOffset(),rules.calcSellZoneTop());
+		assertEquals(spyStudy.getSmaMonth() , PaiUtils.round(rules.calcBuyZoneBottom()));
+		assertEquals(spyStudy.getSmaWeek(), rules.calcBuyZoneTop());
+		assertEquals(spyStudy.getSmaMonth() + (spyStudy.getSmaStddevMonth() * SmaRules.ZONE_OUTER) ,rules.calcSellZoneBottom());
+		assertEquals(spyStudy.getSmaMonth() + (spyStudy.getSmaStddevMonth() * SmaRules.ZONE_OUTER) + rules.pierceOffset(),rules.calcSellZoneTop());
 		assertTrue(rules.isUpTrendMonthly());
 		assertTrue(rules.isUpTrendWeekly());
 		assertEquals(153.91d, rules.calcLowerSellZoneTop(Period.Week));
@@ -79,14 +79,12 @@ public class SmaRulesTest extends TestCase {
 	public void testGldRules() {
 		SmaRules rules = new SmaRules(gldStudy);
 		PaiStudy study = gldStudy;
-		assertEquals(156.46d,rules.calcSellZoneTop());
-		assertEquals(156.46d - (gldStudy.getSmaStddevWeek() * SmaRules.ZONE_INNER), rules.calcSellZoneBottom());
-		assertEquals(156.46d - (gldStudy.getSmaStddevWeek() * SmaRules.ZONE_OUTER) ,rules.calcBuyZoneTop());
-		assertEquals(156.46d - ((gldStudy.getSmaStddevWeek() * SmaRules.ZONE_OUTER) + rules.pierceOffset()),rules.calcBuyZoneBottom());
-		assertEquals(rules.calcSellZoneTop(), rules.calcLowerSellZoneTop(Period.Week));
-		assertEquals(rules.calcSellZoneBottom(), rules.calcLowerSellZoneBottom(Period.Week));
-		assertEquals(rules.calcBuyZoneTop(), rules.calcLowerBuyZoneTop(Period.Week));
-		assertEquals(rules.calcBuyZoneBottom(), rules.calcLowerBuyZoneBottom(Period.Week));
+		assertEquals(163.08d, PaiUtils.round(rules.calcSellZoneTop()));
+		assertEquals(gldStudy.getSmaMonth() + (gldStudy.getSmaStddevMonth() * SmaRules.ZONE_OUTER), rules.calcSellZoneBottom());
+		assertEquals(gldStudy.getSmaWeek(), rules.calcBuyZoneTop());
+		assertEquals(gldStudy.getSmaMonth(), rules.calcBuyZoneBottom());
+		assertEquals(rules.calcSellZoneTop(), rules.calcUpperSellZoneTop(Period.Month));
+		assertEquals(rules.calcSellZoneBottom(), rules.calcUpperSellZoneBottom(Period.Month));
 		assertEquals(gldStudy.getSmaWeek() ,rules.calcUpperBuyZoneBottom(Period.Week));
 		assertEquals(gldStudy.getSmaWeek() + (gldStudy.getSmaStddevWeek() * SmaRules.ZONE_INNER), rules.calcUpperBuyZoneTop(Period.Week));
 		assertEquals(gldStudy.getSmaWeek() + (gldStudy.getSmaStddevWeek() * SmaRules.ZONE_OUTER) ,rules.calcUpperSellZoneBottom(Period.Week));
@@ -113,7 +111,7 @@ public class SmaRulesTest extends TestCase {
 		assertTrue(rules.hasTradedBelowMAToday());
 		SmaRules smaRules = new SmaRules(study);
 		assertTrue(smaRules.isUpTrend(Period.Week));
-		assertTrue(smaRules.hasTradedBelowMAToday());
+		assertFalse(smaRules.hasTradedBelowMAToday());
 		study.setLow(study.getMaWeek() + 0.01d );
 		assertFalse(rules.hasTradedBelowMAToday());
 		smaRules = new SmaRules(study);

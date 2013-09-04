@@ -17,6 +17,7 @@ import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
+import com.codeworks.pai.processor.Notice;
 import com.codeworks.pai.study.Period;
 
 public class StudySDetailFragment extends Fragment {
@@ -57,7 +58,7 @@ public class StudySDetailFragment extends Fragment {
 				PaiStudyTable.COLUMN_PRICE, PaiStudyTable.COLUMN_PRICE_LAST_WEEK, PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_STDDEV_WEEK,
 				PaiStudyTable.COLUMN_STDDEV_MONTH, PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.COLUMN_SMA_MONTH,
 				PaiStudyTable.COLUMN_SMA_LAST_MONTH, PaiStudyTable.COLUMN_SMA_STDDEV_MONTH, PaiStudyTable.COLUMN_SMA_STDDEV_WEEK,
-				PaiStudyTable.COLUMN_SMA_WEEK, PaiStudyTable.COLUMN_SMA_LAST_WEEK };
+				PaiStudyTable.COLUMN_SMA_WEEK, PaiStudyTable.COLUMN_SMA_LAST_WEEK , PaiStudyTable.COLUMN_LOW, PaiStudyTable.COLUMN_HIGH};
 
 		Uri uri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + id);
 		Cursor cursor = getActivity().getContentResolver().query(uri, projection, null, null, null);
@@ -87,6 +88,8 @@ public class StudySDetailFragment extends Fragment {
 				security.setSmaStddevWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_STDDEV_WEEK)));
 				security.setSmaWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_WEEK)));
 				security.setSmaLastWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_LAST_WEEK)));
+				security.setLow(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_LOW)));
+				security.setHigh(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_HIGH)));
 				
 				((TextView) getView().findViewById(R.id.sdfSymbol)).setText(symbol);
 				((TextView) getView().findViewById(R.id.sdfName)).setText(security.getName());
@@ -109,8 +112,39 @@ public class StudySDetailFragment extends Fragment {
 			rules = new SmaRules(study);
 		}
 		setDouble(getView(), study.getPrice(), R.id.sdfPrice);
+		setDouble(getView(), study.getLow(), R.id.sdfLow);
+		setDouble(getView(), study.getHigh(), R.id.sdfHigh);		
 		setDouble(getView(), study.getAverageTrueRange() / 4, R.id.sdfAtr25);
 		setDouble(getView(), study.getMaWeek() + (study.getAverageTrueRange() / 4), R.id.sdfPricePlusAtr25);
+		
+		/*
+		double highMovingAverage = Math.max(study.getSmaWeek(), study.getMaWeek());
+		double emaBuyZoneTop = study.getMaWeek() + (study.getStddevWeek() * SmaRules.ZONE_INNER);
+		double smaBuyZoneTop = study.getSmaWeek() + (study.getSmaStddevWeek() * SmaRules.ZONE_INNER);
+		double highTop = Math.max(smaBuyZoneTop, emaBuyZoneTop);
+		double buyZoneTop  = Math.max(highMovingAverage, highTop);
+		if (study.getSmaWeek() < study.getMaWeek()) {
+			setDouble(getView(), emaBuyZoneTop, R.id.sdfBuyZone4Value);
+			setString(getView(), "EMA Top", R.id.sdfBuyZone4);
+			setDouble(getView(), smaBuyZoneTop, R.id.sdfBuyZone3Value);
+			setString(getView(), "SMA Top", R.id.sdfBuyZone3);
+			setDouble(getView(), study.getMaWeek(), R.id.sdfBuyZone2Value);
+			setString(getView(), "EMA Bot", R.id.sdfBuyZone2);
+			setDouble(getView(), study.getSmaWeek(), R.id.sdfMaWeekly);
+		} else {
+			setDouble(getView(), emaBuyZoneTop, R.id.sdfBuyZone4Value);
+			setString(getView(), "EMA Top", R.id.sdfBuyZone4);
+			setDouble(getView(), smaBuyZoneTop, R.id.sdfBuyZone3Value);
+			setString(getView(), "SMA Top", R.id.sdfBuyZone3);
+			setDouble(getView(), study.getMaWeek(), R.id.sdfBuyZone2Value);
+			setString(getView(), "EMA Bot", R.id.sdfBuyZone2);
+			setDouble(getView(), study.getSmaWeek(), R.id.sdfMaWeekly);
+			
+		}*/
+
+		setDouble(getView(), study.getSmaWeek(), R.id.sdfMaWeekly);
+		
+		/*
 		setDouble(getView(), rules.calcUpperSellZoneTop(Period.Week), R.id.sdfWeeklyUpperSellTop);
 		setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Week), R.id.sdfWeeklyUpperSellBottom);
 		setDouble(getView(), rules.calcUpperBuyZoneTop(Period.Week), R.id.sdfWeeklyUpperBuyTop);
@@ -118,15 +152,31 @@ public class StudySDetailFragment extends Fragment {
 		setDouble(getView(), rules.calcLowerSellZoneBottom(Period.Week), R.id.sdfWeeklyLowerSellBottom);
 		setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Week), R.id.sdfWeeklyLowerBuyTop);
 		setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Week), R.id.sdfWeeklyLowerBuyBottom);
-
-		setDouble(getView(), rules.calcUpperSellZoneTop(Period.Month), R.id.sdfMonthlyUpperSellTop);
-		setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Month), R.id.sdfMonthlyUpperSellBottom);
-		setDouble(getView(), rules.calcUpperBuyZoneTop(Period.Month), R.id.sdfMonthlyUpperBuyTop);
+	    */
+		setDouble(getView(), rules.calcUpperSellZoneTop(Period.Month), R.id.sdfMonthlySellTop);
+		setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Month), R.id.sdfMonthlySellBottom);
+		//setDouble(getView(), rules.calcUpperBuyZoneTop(Period.Month), R.id.sdfMonthlyUpperBuyTop);
 		setDouble(getView(), rules.calcUpperBuyZoneBottom(Period.Month), R.id.sdfMaMonthly);
-		setDouble(getView(), rules.calcLowerSellZoneBottom(Period.Month), R.id.sdfMonthlyLowerSellBottom);
-		setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Month), R.id.sdfMonthlyLowerBuyTop);
-		setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Month), R.id.sdfMonthlyLowerBuyBottom);
+		//setDouble(getView(), rules.calcLowerSellZoneBottom(Period.Month), R.id.sdfMonthlyLowerSellBottom);
+		setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Month), R.id.sdfMonthlyPDL1);
+		setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Month), R.id.sdfMonthlyPDL2);
 
+		rules.updateNotice();
+		StringBuilder alertMsg = new StringBuilder();
+		if (!Notice.NONE.equals(study.getNotice())) {
+			alertMsg.append(String.format(getResources().getString(study.getNotice().getMessage()), study.getSymbol()));
+			alertMsg.append("\n");
+		}
+		alertMsg.append(rules.getAdditionalAlerts(getResources()));
+		if (alertMsg.length() > 0) {
+			setString(getView(), getResources().getString(R.string.sdfAlertNameLabel), R.id.sdfAlertName);
+			setString(getView(), alertMsg.toString(), R.id.sdfAlertText);
+		}
+		
+		setString(getView(), rules.inCash(), R.id.sdfInCashText);
+		setString(getView(), rules.inCashAndPut(), R.id.sdfInCashAndPutText);
+		setString(getView(), rules.inStock(), R.id.sdfInStockText);
+		setString(getView(), rules.inStockAndCall(), R.id.sdfInStockAndCallText);
 	}
 
 	TextView setDouble(View view, double value, int viewId) {
@@ -134,5 +184,9 @@ public class StudySDetailFragment extends Fragment {
 		textView.setText(PaiStudy.format(value));
 		return textView;
 	}
-
+	TextView setString(View view, String value, int viewId) {
+		TextView textView = (TextView) view.findViewById(viewId);
+		textView.setText(value);
+		return textView;
+	}
 }

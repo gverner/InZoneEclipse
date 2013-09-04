@@ -11,9 +11,10 @@
 
         <TextView
             android:id="@+id/sdfSymbol"
+            android:layout_marginLeft="3dp" 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="SYM" />
+            android:text="@string/sdfLabelSymbol" />
 
         <TextView
             android:id="@+id/sdfName"
@@ -23,128 +24,62 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" >
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal" >
-
-            <TextView
-                android:id="@+id/sdfPriceLabel"
-                android:layout_width="80dp"
-                android:layout_height="wrap_content"
-                android:gravity="right"
-                android:text="@string/sdfPriceLabel"
-                android:textIsSelectable="true" />
-
-            <TextView
-                android:id="@+id/sdfAtr25Label"
-                android:layout_width="80dp"
-                android:layout_height="wrap_content"
-                android:gravity="right"
-                android:text="@string/sdfAtr24Label"
-                android:textIsSelectable="true" />
-
-            <TextView
-                android:id="@+id/sdfPricePlusAtr25Label"
-                android:layout_width="80dp"
-                android:layout_height="wrap_content"
-                android:gravity="right"
-                android:text="@string/sdfPricePlusAtr25Label"
-                android:textIsSelectable="true" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal" >
-
-            <TextView
-                android:id="@+id/sdfPrice"
-                android:layout_width="80dp"
-                android:layout_height="wrap_content"
-                android:gravity="right"
-                android:textIsSelectable="true" />
-
-            <TextView
-                android:id="@+id/sdfAtr25"
-                android:layout_width="80dp"
-                android:layout_height="wrap_content"
-                android:gravity="right"
-                android:textIsSelectable="true" />
-
-            <TextView
-                android:id="@+id/sdfPricePlusAtr25"
-                android:layout_width="80dp"
-                android:layout_height="wrap_content"
-                android:gravity="right"
-                android:textIsSelectable="true" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
         android:layout_marginTop="5dp"
         android:orientation="horizontal" >
 
-        <LinearLayout
-            android:layout_marginLeft="45dp"
+       <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="25dp"
             android:orientation="vertical" >
 
             <TextView
-                android:id="@+id/sdfUpperSelTop"
+                android:id="@+id/sdfUpperTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Zone\n " />
+                android:text="@string/sdfLabelHeadingZone" />
 
             <View
                 android:layout_width="fill_parent"
                 android:layout_height="1dp"
                 android:background="#ff0000" />
-
+            
             <TextView
-                android:id="@+id/sdfUpperSelTop"
+                android:id="@+id/sdfSellZoneTop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0dp"
-                android:text="WS" />
-
+                android:text="@string/sdfLabelZoneWS"/>
+            
+            <TextView
+                android:id="@+id/sdfSellZoneBottom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""/>
+            
             <View
                 android:layout_width="fill_parent"
                 android:layout_height="1dp"
-                android:layout_marginTop="19dp"
                 android:background="#00ff00" />
-
+            
+  
             <TextView
-                android:id="@+id/sdfUpperSelBottom"
+                android:id="@+id/sdfBuyZone2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="0dp"
-                android:text="WB" />
+                android:text="@string/sdfLabelZoneWBWeekly" />
 
             <TextView
-                android:id="@+id/sdfUpperBuyTop"
+                android:id="@+id/sdfBuyZone1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="0dp"
-                android:text="MA"
+                android:layout_marginLeft="25dp"
+                android:text="@string/sdfLabelZoneWBMonthy"
                 android:textIsSelectable="true" />
 
-            <TextView
-                android:id="@+id/sdfLowerWS"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="0dp"
-                android:text="" />
 
             <View
                 android:layout_width="fill_parent"
@@ -152,94 +87,23 @@
                 android:background="#00ff00" />
 
             <TextView
-                android:id="@+id/sdfLowerWB"
+                android:id="@+id/sdfLabelZonePDL1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="19dp"
-                android:text="" />
+                android:text="@string/sdfLabelZonePDL1" />
 
+            <TextView
+                android:id="@+id/sdfLableZonePDL2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sdfLabelZonePDL2" />
+            
             <View
                 android:layout_width="fill_parent"
                 android:layout_height="1dp"
                 android:background="#ff0000" />
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="80dp"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-            android:orientation="vertical" >
-
-            <TextView
-                android:id="@+id/sdfColumnHeading3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="right"
-                android:text="@string/sdfEColumnHeader3" />
-
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="#ff0000" />
-
-            <TextView
-                android:id="@+id/sdfWeeklyUpperSellTop"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textIsSelectable="true" />
-
-            <TextView
-                android:id="@+id/sdfWeeklyUpperSellBottom"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textIsSelectable="true" />
-
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="#00ff00" />
-
-            <TextView
-                android:id="@+id/sdfWeeklyUpperBuyTop"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textIsSelectable="true" />
-
-            <TextView
-                android:id="@+id/sdfMaWeekly"
-                style="@style/divider"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textIsSelectable="true" />
-
-            <TextView
-                android:id="@+id/sdfWeeklyLowerSellBottom"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textIsSelectable="true" />
-
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="#00ff00" />
-
-            <TextView
-                android:id="@+id/sdfWeeklyLowerBuyTop"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textIsSelectable="true" />
-
-            <TextView
-                android:id="@+id/sdfWeeklyLowerBuyBottom"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textIsSelectable="true" />
-
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="#ff0000" />
-        </LinearLayout>
 
         <LinearLayout
             android:layout_width="80dp"
@@ -251,7 +115,6 @@
                 android:id="@+id/sdfColumnHeading4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="right"
                 android:text="@string/sdfEColumnHeader4" />
 
             <View
@@ -259,14 +122,15 @@
                 android:layout_height="1dp"
                 android:background="#ff0000" />
 
+
             <TextView
-                android:id="@+id/sdfMonthlyUpperSellTop"
+                android:id="@+id/sdfMonthlySellTop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textIsSelectable="true" />
-
+            
             <TextView
-                android:id="@+id/sdfMonthlyUpperSellBottom"
+                android:id="@+id/sdfMonthlySellBottom"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textIsSelectable="true" />
@@ -277,7 +141,7 @@
                 android:background="#00ff00" />
 
             <TextView
-                android:id="@+id/sdfMonthlyUpperBuyTop"
+                android:id="@+id/sdfMaWeekly"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textIsSelectable="true" />
@@ -289,11 +153,6 @@
                 android:layout_height="wrap_content"
                 android:textIsSelectable="true" />
 
-            <TextView
-                android:id="@+id/sdfMonthlyLowerSellBottom"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textIsSelectable="true" />
 
             <View
                 android:layout_width="fill_parent"
@@ -301,17 +160,17 @@
                 android:background="#00ff00" />
 
             <TextView
-                android:id="@+id/sdfMonthlyLowerBuyTop"
+                android:id="@+id/sdfMonthlyPDL1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textIsSelectable="true" />
 
             <TextView
-                android:id="@+id/sdfMonthlyLowerBuyBottom"
+                android:id="@+id/sdfMonthlyPDL2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textIsSelectable="true" />
-
+            
             <View
                 android:layout_width="fill_parent"
                 android:layout_height="1dp"
@@ -324,5 +183,252 @@
         android:layout_height="1dp"
         android:layout_marginTop="10dp"
         android:background="#000000" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/sdfPriceLabel"
+                android:layout_width="57dp"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:text="@string/sdfPriceLabel"
+                android:textIsSelectable="true" />
+
+            <TextView
+                android:id="@+id/sdfLowLabel"
+                android:layout_width="57dp"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:text="@string/sdfLowLabel"
+                android:textIsSelectable="true" />
+
+            <TextView
+                android:id="@+id/sdfHighLabel"
+                android:layout_width="57dp"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:text="@string/sdfHighLabel"
+                android:textIsSelectable="true" />
+            
+            <TextView
+                android:id="@+id/sdfAtr25Label"
+                android:layout_width="57dp"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:text="@string/sdfAtr24Label"
+                android:textIsSelectable="true" />
+
+            <TextView
+                android:id="@+id/sdfPricePlusAtr25Label"
+                android:layout_width="57dp"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:text="@string/sdfPricePlusAtr25Label"
+                android:textIsSelectable="true" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/sdfPrice"
+                android:layout_width="57dp"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textIsSelectable="true" />
+            <TextView
+                android:id="@+id/sdfLow"
+                android:layout_width="57dp"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textIsSelectable="true" />
+
+            <TextView
+                android:id="@+id/sdfHigh"
+                android:layout_width="57dp"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textIsSelectable="true" />
+
+            
+            <TextView
+                android:id="@+id/sdfAtr25"
+                android:layout_width="57dp"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textIsSelectable="true" />
+
+            <TextView
+                android:id="@+id/sdfPricePlusAtr25"
+                android:layout_width="57dp"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:textIsSelectable="true" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="10dp"
+        android:background="#000000" />
+
+    <LinearLayout
+        android:background="@drawable/gradientrow1"
+        android:layout_width="400dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/sdfCurrentPosition"
+            android:layout_marginLeft="3dp"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="@string/sdfCurrentPositionLabel"
+            android:textIsSelectable="true" />
+
+        <TextView
+            android:id="@+id/sdfRuleText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text="@string/sdfRuleTextLabel"
+            android:textIsSelectable="true" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <LinearLayout
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:id="@+id/sdfAlertRow"
+			    android:background="@drawable/gradientrow1"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:id="@+id/sdfAlertName"
+		            android:layout_marginLeft="3dp"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:textIsSelectable="true" />
+
+                <TextView
+                    android:id="@+id/sdfAlertText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:textIsSelectable="true" />
+            </LinearLayout>
+            
+            <LinearLayout
+                android:id="@+id/sdfInCashRow"
+			    android:background="@drawable/gradientrow1"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:id="@+id/sdfInCash"
+		            android:layout_marginLeft="3dp"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sdfInCashLabel"
+                    android:textIsSelectable="true" />
+
+                <TextView
+                    android:id="@+id/sdfInCashText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:textIsSelectable="true" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/sdfInCashAndPutRow"
+			    android:background="@drawable/gradientrow1"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:id="@+id/sdfInCashAndPut"
+                    android:layout_width="80dp"
+		            android:layout_marginLeft="3dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sdfInCashAndPutLabel"
+                    android:textIsSelectable="true" />
+
+                <TextView
+                    android:id="@+id/sdfInCashAndPutText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:textIsSelectable="true" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/sdfInStockRow"
+			    android:background="@drawable/gradientrow1"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:id="@+id/sdfInStock"
+		            android:layout_marginLeft="3dp"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sdfInStockLabel"
+                    android:textIsSelectable="true" />
+
+                <TextView
+                    android:id="@+id/sdfInStockText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:textIsSelectable="true" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/sdfInStockAndCallRow"
+			    android:background="@drawable/gradientrow1"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:id="@+id/sdfInStockAndCall"
+		            android:layout_marginLeft="3dp"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sdfInStockAndCallLabel"
+                    android:textIsSelectable="true" />
+
+                <TextView
+                    android:id="@+id/sdfInStockAndCallText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:textIsSelectable="true" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

@@ -17,6 +17,7 @@ import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.mock.MockDataReader;
 import com.codeworks.pai.mock.TestDataLoader;
+import com.codeworks.pai.study.Period;
 
 public class ProcessorFunctionalTest extends AndroidTestCase {
 	SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
@@ -49,8 +50,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("DT Monthly", true, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", true, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, rules.isPossibleUptrendTermination());
-		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("TT", false, rules.isPossibleUptrendTermination(Period.Week));
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
 		assertEquals("Buy", false, rules.isPriceInBuyZone());
 		assertEquals("Sell", false, rules.isPriceInSellZone());
 	}
@@ -74,8 +75,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("DT Monthly", true, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", true, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, rules.isPossibleUptrendTermination());
-		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("TT", false, rules.isPossibleUptrendTermination(Period.Week));
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
 		assertEquals("Buy", false, rules.isPriceInBuyZone());
 		assertEquals("Sell", false, rules.isPriceInSellZone());
 	}	
@@ -98,8 +99,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, rules.isPossibleUptrendTermination());
-		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("TT", false, rules.isPossibleUptrendTermination(Period.Week));
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
 		assertEquals("Buy", false, rules.isPriceInBuyZone());
 		assertEquals("Sell", true, rules.isPriceInSellZone());
 	}
@@ -123,8 +124,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, rules.isPossibleUptrendTermination());
-		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("TT", false, rules.isPossibleUptrendTermination(Period.Week));
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
 		assertEquals("Buy", true, rules.isPriceInBuyZone());
 		assertEquals("Sell", false, rules.isPriceInSellZone());
 	}
@@ -148,8 +149,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
 		assertEquals("TT", true, rules.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", true, rules.isPossibleUptrendTermination());
-		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("TT", true, rules.isPossibleUptrendTermination(Period.Week));
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
 		assertEquals("Buy", false, rules.isPriceInBuyZone());
 		assertEquals("Sell", false, rules.isPriceInSellZone());
 	}
@@ -197,8 +198,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
-		assertEquals("TT", false, rules.isPossibleUptrendTermination());
-		assertEquals("TT", false, rules.isPossibleDowntrendTermination());
+		assertEquals("TT", false, rules.isPossibleUptrendTermination(Period.Week));
+		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
 		assertEquals("Buy", false, rules.isPriceInBuyZone());
 		assertEquals("Sell", false, rules.isPriceInSellZone());
 

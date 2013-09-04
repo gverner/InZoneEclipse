@@ -1,6 +1,10 @@
 package com.codeworks.pai.db.model;
 
+import android.content.res.Resources;
+
 import com.codeworks.pai.PaiUtils;
+import com.codeworks.pai.R;
+import com.codeworks.pai.processor.Notice;
 import com.codeworks.pai.study.Period;
 
 public class EmaRules extends RulesBase {
@@ -317,28 +321,9 @@ public class EmaRules extends RulesBase {
 	 */
 	@Override
 	public boolean isPossibleTrendTerminationWeekly() {
-		return isPossibleDowntrendTermination() || isPossibleUptrendTermination();
+		return isPossibleDowntrendTermination(Period.Week) || isPossibleUptrendTermination(Period.Week);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.codeworks.pai.db.model.Rules#isPossibleUptrendTermination()
-	 */
-	@Override
-	public boolean isPossibleUptrendTermination() {
-		return (isUpTrendWeekly() && study.getPrice() < study.getMaWeek());
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.codeworks.pai.db.model.Rules#isPossibleDowntrendTermination()
-	 */
-	@Override
-	public boolean isPossibleDowntrendTermination() {
-		return (isDownTrendWeekly() && study.getPrice() > study.getMaWeek());
-	}
 
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -363,12 +348,47 @@ public class EmaRules extends RulesBase {
 	}
 
 	@Override
+	public String getAdditionalAlerts(Resources res) {
+		StringBuilder alert = new StringBuilder();
+
+		if (hasTradedBelowMAToday()) {
+			alert.append(res.getString(R.string.alert_has_traded_below_ma));
+		}
+		if (isWeeklyUpperSellZoneExpandedByMonthly()) {
+			if (alert.length() > 0) {
+				alert.append("\n");
+			}
+			alert.append(res.getString(R.string.alert_sell_zone_expanded_by_monthly));
+		}
+		return alert.toString();
+	}
+	
+	@Override
+	public void updateNotice() {
+		if (Notice.NO_PRICE.equals(study.getNotice())) {
+			// set by processor
+		} else if (Notice.INSUFFICIENT_HISTORY.equals(study.getNotice())) {
+			// set by processor
+		} else if (isPossibleDowntrendTermination(Period.Week)) {
+			study.setNotice(Notice.POSSIBLE_WEEKLY_DOWNTREND_TERMINATION);
+		} else if (isPossibleUptrendTermination(Period.Week)) {
+			study.setNotice(Notice.POSSIBLE_WEEKLY_UPTREND_TEMINATION);
+		} else if (isPriceInBuyZone()) {
+			study.setNotice(Notice.IN_BUY_ZONE);
+		} else if (isPriceInSellZone()) {
+			study.setNotice(Notice.IN_SELL_ZONE);
+		} else {
+			study.setNotice(Notice.NONE);
+		}
+	}
+
+	@Override
 	public String inCash() {
 		String rule = "";
 		if (isUpTrendWeekly()) {
 			double buyZoneTop = calcBuyZoneTop();
 			double AOBBUY = PaiUtils.round(Math.floor(buyZoneTop),0);
-			if (isPossibleUptrendTermination()) {
+			if (isPossibleUptrendTermination(Period.Week)) {
 				rule = "Place Stop Buy Order at moving average + 1/4 Average True Range(ATR)";
 			} else if (isPriceInBuyZone()) {
 				rule = "C: Sell Puts in the Buy Zone AOB " + Double.toString(AOBBUY) + "p\nA: Buy Stock";
@@ -381,7 +401,7 @@ public class EmaRules extends RulesBase {
 			if (isUpTrendMonthly()) {
 				double buyZoneTop = calcBuyZoneTop();
 				double AOBBUY = PaiUtils.round(Math.floor(buyZoneTop),0);
-				if (isPossibleDowntrendTermination()) {
+				if (isPossibleDowntrendTermination(Period.Week)) {
 					rule = "Wait for Weekly Close above moving average";
 				} else if (isPriceInBuyZone()) {
 					rule = "C: Sell Puts in the Buy Zone AOB " + Double.toString(AOBBUY) + "p\nA: Buy Stock";
@@ -391,7 +411,7 @@ public class EmaRules extends RulesBase {
 					rule = "Sell puts in the Buy Zone AOB " + Double.toString(AOBBUY) + "p";
 				}
 			} else { // Monthly DownTrend
-				if (isPossibleDowntrendTermination()) {
+				if (isPossibleDowntrendTermination(Period.Week)) {
 					rule = "Wait for Weekly Close above moving average";
 				} else {
 					rule = "Sell Puts at Proximal demand level (PDL)";
@@ -406,10 +426,10 @@ public class EmaRules extends RulesBase {
 	public String inCashAndPut() {
 		String rule = "";
 		if (isUpTrendWeekly()) {
-			if (isPossibleUptrendTermination()) {
+			if (isPossibleUptrendTermination(Period.Week)) {
 				rule = "Buy back Put nad Place Stock Stop Buy Order at moving average + 1/4 Average True Range(ATR)";
 			} else if (isPriceInBuyZone()) {
-				rule = "C: Going For the Ride \nA: Buy Back Put and Buy Stock";
+				rule = "C: Going For the Ride\nA: Buy Back Put and Buy Stock";
 			} else if (isPriceInSellZone()) {
 				rule = "Going for the Ride";
 			} else {
@@ -417,17 +437,17 @@ public class EmaRules extends RulesBase {
 			}
 		} else { // Weekly DownTrend
 			if (isUpTrendMonthly()) {
-				if (isPossibleDowntrendTermination()) {
+				if (isPossibleDowntrendTermination(Period.Week)) {
 					rule = "Wait for Weekly Close above moving average";
 				} else if (isPriceInBuyZone()) {
-					rule = "C: Going for the Ride \nA: Buy Stock";
+					rule = "C: Going for the Ride\nA: Buy Stock";
 				} else if (isPriceInSellZone()) {
 					rule = "Going for the Ride";
 				} else {
 					rule = "Going for the Ride";
 				}
 			} else { // Monthly DownTrend
-				if (isPossibleDowntrendTermination()) {
+				if (isPossibleDowntrendTermination(Period.Week)) {
 					rule = "Wait for Weekly Close above moving average";
 				} else {
 					rule = "Roll Puts, Buy back Puts and Sell Puts at Proximal Demand Level (PDL)";
@@ -443,7 +463,7 @@ public class EmaRules extends RulesBase {
 		if (isUpTrendWeekly()) {
 			double sellZoneBottom = calcSellZoneBottom();
 			double AOBSELL = PaiUtils.round(Math.ceil(sellZoneBottom),0);
-			if (isPossibleUptrendTermination()) {
+			if (isPossibleUptrendTermination(Period.Week)) {
 				rule = "Sell Stock and Place Stop Buy Order at moving average + 1/4 Average True Range(ATR)";
 			} else if (isPriceInBuyZone()) {
 				rule = "Be a willing Seller by Selling Calls in Sell Zone AOA " + Double.toString(AOBSELL) + "c";
@@ -455,7 +475,7 @@ public class EmaRules extends RulesBase {
 			}
 		} else { // Weekly DownTrend
 			if (isUpTrendMonthly()) {
-				if (isPossibleDowntrendTermination()) {
+				if (isPossibleDowntrendTermination(Period.Week)) {
 					rule = "C: Sell Stock\nA: Place Stop Loss order at bottom of lower Sell Zone " + PaiUtils.round(calcSellZoneBottom());
 				} else if (isPriceInBuyZone()) {
 					rule = "Going for the Ride";
@@ -465,7 +485,7 @@ public class EmaRules extends RulesBase {
 					rule = "Going for the Ride";
 				}
 			} else { // Monthly DownTrend
-				if (isPossibleDowntrendTermination()) {
+				if (isPossibleDowntrendTermination(Period.Week)) {
 					rule = "Sell Stock and Wait for Weekly Close above moving average";
 				} else if (isPriceInSellZone()) {
 					rule = "Sell Stock and Sell Puts at Proximal demand level (PDL)";
@@ -483,7 +503,7 @@ public class EmaRules extends RulesBase {
 	public String inStockAndCall() {
 		String rule = "";
 		if (isUpTrendWeekly()) {
-			if (isPossibleUptrendTermination()) {
+			if (isPossibleUptrendTermination(Period.Week)) {
 				rule = "Buy Back Calls, Sell Stock and Place Stop Buy Order at moving average + 1/4 Average True Range(ATR)";
 			} else if (isPriceInBuyZone()) {
 				rule = "Going for the Ride";
@@ -495,7 +515,7 @@ public class EmaRules extends RulesBase {
 			}
 		} else { // Weekly DownTrend
 			if (isUpTrendMonthly()) {
-				if (isPossibleDowntrendTermination()) {
+				if (isPossibleDowntrendTermination(Period.Week)) {
 					rule = "C: Buy Back Calls and Sell Stock\nA: Place Stop Loss order at bottom of lower Sell Zone at " + PaiUtils.round(calcSellZoneBottom())
 							+ " to Buy Back Calls and Sell Stock";
 				} else if (isPriceInBuyZone()) {
@@ -507,7 +527,7 @@ public class EmaRules extends RulesBase {
 					rule = "Going for the Ride";
 				}
 			} else { // Monthly DownTrend
-				if (isPossibleDowntrendTermination()) {
+				if (isPossibleDowntrendTermination(Period.Week)) {
 					rule = "Buy Back Calls, Sell Stock and Wait for Weekly Close above moving average";
 				} else if (isPriceInSellZone()) {
 					rule = "Buy Back Calls, Sell Stock and Sell Puts at Proximal demand level (PDL)";

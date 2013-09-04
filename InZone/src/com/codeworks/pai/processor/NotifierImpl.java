@@ -5,14 +5,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import com.codeworks.pai.StudyActivity;
-import com.codeworks.pai.R;
-import com.codeworks.pai.contentprovider.PaiContentProvider;
-import com.codeworks.pai.db.PaiStudyTable;
-import com.codeworks.pai.db.model.EmaRules;
-import com.codeworks.pai.db.model.PaiStudy;
-import com.codeworks.pai.db.model.Rules;
-
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
@@ -25,6 +17,14 @@ import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
+
+import com.codeworks.pai.R;
+import com.codeworks.pai.StudyActivity;
+import com.codeworks.pai.contentprovider.PaiContentProvider;
+import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.model.EmaRules;
+import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Rules;
 
 public class NotifierImpl implements Notifier {
 	private static final String TAG = NotifierImpl.class.getSimpleName();
@@ -44,24 +44,15 @@ public class NotifierImpl implements Notifier {
 
 		for (PaiStudy study : studies) {
 			Rules rules = new EmaRules(study);
-			if (Notice.NO_PRICE.equals(study.getNotice())) {
-				// set by processor
-			} else if (Notice.INSUFFICIENT_HISTORY.equals(study.getNotice())) {
-				// set by processor
-			} else	if (rules.isPossibleDowntrendTermination()) {
-				study.setNotice(Notice.POSSIBLE_WEEKLY_DOWNTREND_TERMINATION);
-			} else if (rules.isPossibleUptrendTermination()) {
-				study.setNotice(Notice.POSSIBLE_WEEKLY_UPTREND_TEMINATION);
-			} else if (rules.isPriceInBuyZone()) {
-				study.setNotice(Notice.IN_BUY_ZONE);
-			} else if (rules.isPriceInSellZone()) {
-				study.setNotice(Notice.IN_SELL_ZONE);
-			} else {
-				study.setNotice(Notice.NONE);
+			rules.updateNotice();
+			String additionalMessage = "";
+			if (rules.hasTradedBelowMAToday() && !Notice.POSSIBLE_WEEKLY_DOWNTREND_TERMINATION.equals(study.getNotice())) {
+				additionalMessage = 
+						String.format(res.getString(R.string.notice_has_traded_below_ma_text), study.getSymbol());
 			}
 			if (saveStudyNoticeIfChanged(study) && !Notice.NONE.equals(study.getNotice())) {
 				sendNotice(study.getSecurityId(), res.getString(study.getNotice().getSubject()),
-						String.format(res.getString(study.getNotice().getMessage()), study.getSymbol()));
+						String.format(res.getString(study.getNotice().getMessage()), study.getSymbol()) + "\n" + additionalMessage);
 			}
 		}
 	}

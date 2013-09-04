@@ -6,7 +6,6 @@ import java.util.Locale;
 
 import android.R.color;
 import android.graphics.Color;
-import android.util.Log;
 
 import com.codeworks.pai.study.Period;
 
@@ -35,7 +34,7 @@ public abstract class RulesBase implements Rules {
 	public int getBuyZoneTextColor() {
 		if (isPriceInBuyZone()) {
 			return Color.GREEN;
-		} else if (isPossibleUptrendTermination()) {
+		} else if (isPossibleUptrendTermination(Period.Week)) {
 			return Color.MAGENTA;
 		} else {
 			return Color.BLACK;
@@ -46,7 +45,7 @@ public abstract class RulesBase implements Rules {
 	public int getBuyZoneBackgroundColor() {
 		if (isPriceInBuyZone()) {
 			return Color.DKGRAY;
-		} else if (isPossibleUptrendTermination()) {
+		} else if (isPossibleUptrendTermination(Period.Week)) {
 			return color.holo_orange_light;
 		} else {
 			return color.background_light;
@@ -57,7 +56,7 @@ public abstract class RulesBase implements Rules {
 	public int getSellZoneTextColor() {
 		if (isPriceInSellZone()) {
 			return Color.GREEN;
-		} else if (isPossibleDowntrendTermination()) {
+		} else if (isPossibleDowntrendTermination(Period.Week)) {
 			return Color.MAGENTA;
 		} else {
 			return Color.BLACK;
@@ -69,44 +68,39 @@ public abstract class RulesBase implements Rules {
 	public int getSellZoneBackgroundColor() {
 		if (isPriceInSellZone()) {
 			return color.holo_green_dark;
-		} else if (isPossibleDowntrendTermination()) {
+		} else if (isPossibleDowntrendTermination(Period.Week)) {
 			return color.holo_orange_light;
 		} else {
 			return color.background_light;
 		}
 
 	}
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.codeworks.pai.db.model.Rules#isPossibleUptrendTermination()
+	 */
 	@Override
-	public String getAlertText() {
-		StringBuilder alert = new StringBuilder();
-		if (hasTradedBelowMAToday()) {
-			alert.append("has recently traded below moving average check stop loss selling");
+	public boolean isPossibleUptrendTermination(Period period) {
+		if (Period.Week.equals(period)) {
+			return (isUpTrendWeekly() && study.getPrice() < study.getMaWeek()); 
+		} else {
+			return (isUpTrendMonthly() && study.getPrice() < study.getMaMonth()); 
 		}
-		if (isPriceInSellZone()) {
-			if (alert.length() > 0) {
-				alert.append("\n");
-			}
-			alert.append("Price is in the Sell Zone");
-		}
-		if (isPriceInBuyZone()) {
-			if (alert.length() > 0) {
-				alert.append("\n");
-			}
-			alert.append("Price is in the Buy Zone");
-		}
-		if (isPossibleTrendTerminationWeekly()) {
-			if (alert.length() > 0) {
-				alert.append("\n");
-			}
-			alert.append("Possible Weekly Trend Termination");
-		}
-		if (isWeeklyUpperSellZoneExpandedByMonthly()) {
-			if (alert.length() > 0) {
-				alert.append("\n");
-			}
-			alert.append("Sell Zone is expanded by lower Monthly Range");
-		}
-		return alert.toString();
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.codeworks.pai.db.model.Rules#isPossibleDowntrendTermination()
+	 */
+	@Override
+	public boolean isPossibleDowntrendTermination(Period period) {
+		if (Period.Week.equals(period)) {
+			return (isDownTrendWeekly() && study.getPrice() > study.getMaWeek());
+		} else {
+			return (isDownTrendMonthly() && study.getPrice() > study.getMaMonth());
+		}
+	}
+
 }

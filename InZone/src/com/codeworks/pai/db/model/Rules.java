@@ -1,5 +1,6 @@
 package com.codeworks.pai.db.model;
 
+import android.content.res.Resources;
 import android.graphics.Color;
 
 import com.codeworks.pai.study.Period;
@@ -52,9 +53,9 @@ public interface Rules {
 
 	public abstract boolean isPossibleTrendTerminationWeekly();
 
-	public abstract boolean isPossibleUptrendTermination();
+	public abstract boolean isPossibleUptrendTermination(Period period);
 
-	public abstract boolean isPossibleDowntrendTermination();
+	public abstract boolean isPossibleDowntrendTermination(Period period);
 
 	public abstract String formatNet(double net);
 	
@@ -76,5 +77,7 @@ public interface Rules {
 	
 	public abstract int getSellZoneBackgroundColor();
 	
-	public abstract String getAlertText();
+	public abstract String getAdditionalAlerts(Resources res);
+	
+	public abstract void updateNotice();
 }

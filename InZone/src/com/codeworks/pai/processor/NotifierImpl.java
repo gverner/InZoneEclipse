@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
@@ -13,6 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
@@ -96,7 +98,38 @@ public class NotifierImpl implements Notifier {
 				.setContentTitle(title).setContentText(text);
 		mBuilder.setAutoCancel(true);
 		mBuilder.setOnlyAlertOnce(true);
+		mBuilder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+		mBuilder.setDefaults(Notification.DEFAULT_LIGHTS);
+/*
+ *    final Uri ringtone = Uri.parse(PreferenceManager.getDefaultSharedPreferences(this).getString("ringtone", getString(R.string.settings_default_ringtone)));
 
+    nb.setDefaults(Notification.DEFAULT_VIBRATE);
+    nb.setSound(ringtone);      
+    nb.setDefaults(Notification.DEFAULT_LIGHTS);
+ */
+		mBuilder.setContentIntent(createBackStackIntent());
+
+		NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		// mId allows you to update the notification later on.
+		mNotificationManager.notify(Long.valueOf(securityId).intValue(), mBuilder.build());
+
+	}
+
+	
+	public void sendServiceNotice(int notifyId, String title, String text, int numMessages) {
+		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.ic_launcher).setContentTitle(title)
+				.setContentText(text);
+		mBuilder.setAutoCancel(true);
+		mBuilder.setOnlyAlertOnce(true);
+		mBuilder.setContentText(text).setNumber(numMessages);
+		mBuilder.setContentIntent(createBackStackIntent());
+		// Because the ID remains unchanged, the existing notification is
+		// updated.
+		NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		mNotificationManager.notify(notifyId, mBuilder.build());
+	}
+
+	PendingIntent createBackStackIntent() {
 		// the started Activity.
 		// Creates an explicit intent for an Activity in your app
 		Intent resultIntent = new Intent(context, StudyActivity.class);
@@ -112,17 +145,8 @@ public class NotifierImpl implements Notifier {
 		stackBuilder.addNextIntent(resultIntent);
 
 		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-
-		// PendingIntent resultPendingIntent = PendingIntent.getActivity(this,
-		// 0, resultIntent, 0);
-		mBuilder.setContentIntent(resultPendingIntent);
-
-		NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		// mId allows you to update the notification later on.
-		mNotificationManager.notify(Long.valueOf(securityId).intValue(), mBuilder.build());
-
+		return resultPendingIntent;
 	}
-	
 	
 	ContentResolver getContentResolver() {
 		return context.getContentResolver();

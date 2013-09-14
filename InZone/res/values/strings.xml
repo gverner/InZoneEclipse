@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Zone</string>
+    <string name="app_name">InZone</string>
     <string name="action_settings">Settings</string>
     <string name="celsius">Celsius</string>
     <string name="fahrenheit">Fahrenheit</string>
@@ -43,6 +43,8 @@
     <string name="notice_no_price_text">No Price for %1$s</string>
     <string name="notice_insufficent_history">Insufficient History</string>
     <string name="notice_insufficent_history_text">Insufficient History for %1$s"</string>
+    <string name="notice_delayed_price">Delayed Price</string>
+    <string name="notice_delayed_price_text">Using Delayed Price for %1$s"</string>
     <string name="alert_possible_weekly_downtrend_termination">Price is above moving average.</string>
     <string name="alert_possible_weekly_uptrend_termination">Price is below moving average</string>
     <string name="alert_in_sell_zone">Price is in the Sell Zone</string>
@@ -51,6 +53,7 @@
     <string name="alert_sell_zone_expanded_by_monthly">Sell Zone is expanded by lower Monthly Range</string>
     <string name="alert_no_price">No Price</string>
     <string name="alert_insufficent_history">Insufficient History</string>
+    <string name="alert_delayed_price">Delayed Price</string>
     <string name="menu_item_done">Done</string>
     <string name="pref_autoRestart">Auto Restart Price Service</string>
     <string name="pref_autoRestartSumm">Keep Price Update and Notification Service running without need for user to start program</string>
@@ -60,7 +63,8 @@
     <string name="scheduledStartSubject">Started by Schedule</string>
     <string name="scheduledStartMessage">Started</string>
     <string name="scheduleSetupSubject">Schedule Setup</string>
-    <string name="scheduleSetupMessage">Start at %1$s</string>
+    <string name="scheduleStartMessage">Start at %1$s</string>
+    <string name="scheduleRepeatingMessage">Start at %1$s repeating every %1$s</string>
     <string name="updateServiceSubject">Update Service</string>
     <string name="serviceStoppedMessage">Stopped</string>
     <string name="serviceRunningMessage">Running</string>

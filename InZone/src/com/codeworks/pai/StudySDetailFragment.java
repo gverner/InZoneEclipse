@@ -108,8 +108,10 @@ public class StudySDetailFragment extends Fragment {
 		Rules rules;
 		if (MaType.E.equals(study.getMaType())) {
 			rules = new EmaRules(study);
+			Log.e(TAG,"INVALID SMA MA TYPE="+study.getMaType().name());
 		} else {
 			rules = new SmaRules(study);
+			Log.d(TAG,"Populate SMA Detail Page");
 		}
 		setDouble(getView(), study.getPrice(), R.id.sdfPrice);
 		setDouble(getView(), study.getLow(), R.id.sdfLow);

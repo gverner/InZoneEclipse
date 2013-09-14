@@ -45,7 +45,7 @@ public class DataReaderYahoo implements DataReader {
 		double quote = 0;
 		if (security != null && security.getSymbol() != null)
 		try {
-			String url = "http://download.finance.yahoo.com/d/quotes.csv?s=" + security.getSymbol() + "&f=sl1d1k1b2b1nt1&e=.csv";
+			String url = "http://download.finance.yahoo.com/d/quotes.csv?s=" + security.getSymbol() + "&f=sl1d1k1b2b1nt1gho&e=.csv";
 			results = downloadUrl(url);
 			for (String[] line : results) {
 				if (line.length >= 7) {
@@ -61,6 +61,9 @@ public class DataReaderYahoo implements DataReader {
 						found = true;
 					}
 					security.setPriceDate(parseDateTime(line[2] + " " + line[7], " Date Time"));
+					security.setLow(parseDouble(line[8],"Low"));
+					security.setHigh(parseDouble(line[9],"High"));
+					security.setOpen(parseDouble(line[10],"Open"));
 					Log.d(TAG, line[0] + " last=" + line[1] + " rtLast=" + line[3] + " rtBid=" + line[4] + " rtAsk=" + line[5]);
 				}
 			}
@@ -153,7 +156,7 @@ public class DataReaderYahoo implements DataReader {
 		if (pos > -1) {
 			int endPos = line.indexOf("<", pos+searchStr.length());
 			result = line.substring(pos + searchStr.length(), endPos);
-			Log.d(TAG, "SCAN FOUND " + result + " on line " + count + " in ms " + (System.currentTimeMillis() - start));
+			Log.d(TAG, "SCAN "+searchStr+" FOUND " + result + " on line " + count + " in ms " + (System.currentTimeMillis() - start));
 		}
 		return result;
 	}
@@ -224,13 +227,16 @@ public class DataReaderYahoo implements DataReader {
 				if (!"Date".equals(line[0])) { // skip header
 
 					Price price = new Price();
-					history.add(price);
-					price.setDate(parseDate(line[0], "Date"));
-					price.setOpen(parseDouble(line[1], "Open"));
-					price.setHigh(parseDouble(line[2], "High"));
-					price.setLow(parseDouble(line[3], "Low"));
-					price.setClose(parseDouble(line[4], "Close"));
-					price.setAdjustedClose(parseDouble(line[6], "AdjustedClose"));
+					Date priceDate = parseDate(line[0], "Date");
+					if (priceDate != null) { // must have valid date
+						history.add(price);
+						price.setDate(priceDate);
+						price.setOpen(parseDouble(line[1], "Open"));
+						price.setHigh(parseDouble(line[2], "High"));
+						price.setLow(parseDouble(line[3], "Low"));
+						price.setClose(parseDouble(line[4], "Close"));
+						price.setAdjustedClose(parseDouble(line[6], "AdjustedClose"));
+					} 
 					//if (counter % 20 == 0) {
 					//	Log.d(TAG, symbol + " " + line[0] + " " + line[1]);
 					//}

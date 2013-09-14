@@ -12,7 +12,8 @@ public enum Notice {
 	NO_PRICE(5, R.string.notice_no_price, R.string.notice_no_price_text, R.string.alert_no_price),
 	INSUFFICIENT_HISTORY(6, R.string.notice_insufficent_history, R.string.notice_insufficent_history_text, R.string.alert_insufficent_history),
 	HAS_TRADED_BELOW_MA(7, R.string.notice_has_traded_below_ma, R.string.notice_has_traded_below_ma_text, R.string.alert_has_traded_below_ma),
-	ZONE_EXPANDED_BY_MONTHLY(8,0,0, R.string.alert_sell_zone_expanded_by_monthly );
+	ZONE_EXPANDED_BY_MONTHLY(8,0,0, R.string.alert_sell_zone_expanded_by_monthly),
+	DELAYED_PRICE(9,0,0,R.string.alert_delayed_price);
 	int index;
 	int subject;
 	int message;

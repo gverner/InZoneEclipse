@@ -117,8 +117,9 @@ public class SecurityDetailActivity extends Activity {
 		if (symbol.length() == 0) {
 			return;
 		}
-		SharedPreferences sharedPreferences = getSharedPreferences(PaiUtils.PREF_FILE, MODE_PRIVATE);
-		String maType = sharedPreferences.getString(PaiUtils.PREF_PORTFOLIO_MA_TYPE+portfolioId, portfolioId == 1 ? PaiUtils.MA_TYPE_EMA : PaiUtils.MA_TYPE_SMA);
+		//SharedPreferences sharedPreferences = getSharedPreferences(PaiUtils.PREF_FILE, MODE_PRIVATE);
+		//String maType = sharedPreferences.getString(PaiUtils.PREF_PORTFOLIO_MA_TYPE+portfolioId, portfolioId == 1 ? PaiUtils.MA_TYPE_EMA : PaiUtils.MA_TYPE_SMA);
+		String maType = PaiUtils.getStrategy(this, portfolioId);
 		ContentValues values = new ContentValues();
 		values.put(PaiStudyTable.COLUMN_SYMBOL, symbol.trim());
 		values.put(PaiStudyTable.COLUMN_PORTFOLIO_ID, portfolioId);

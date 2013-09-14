@@ -369,6 +369,8 @@ public class EmaRules extends RulesBase {
 			// set by processor
 		} else if (Notice.INSUFFICIENT_HISTORY.equals(study.getNotice())) {
 			// set by processor
+		} else if (Notice.DELAYED_PRICE.equals(study.getNotice())) {
+			// set by processor
 		} else if (isPossibleDowntrendTermination(Period.Week)) {
 			study.setNotice(Notice.POSSIBLE_WEEKLY_DOWNTREND_TERMINATION);
 		} else if (isPossibleUptrendTermination(Period.Week)) {

@@ -38,6 +38,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	public static final String	ACTION_SCHEDULE					= "action_schedule";
 	public static final String	ACTION_ONE_TIME					= "action_one_time";
 	public static final String	ACTION_MANUAL					= "action_manual";
+	public static final String	ACTION_MANUAL_MENU				= "action_manual_menu";
 	public static final String	ACTION_PRICE_UPDATE				= "action_price_update";
 	public static final String	ACTION_SET_PROGRESS_BAR			= "action_set_progress_bar";
 
@@ -98,7 +99,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		sharedPref.unregisterOnSharedPreferenceChangeListener(this);
 
 		Log.d(TAG, "on Destroy'd");
-		updateServiceNotice(R.string.serviceStoppedMessage);
+		updateServiceNotice(R.string.serviceStoppedMessage, updater != null ? updater.getNumMessages(): 0);
 		makeToast("Price Update Service Stopped", Toast.LENGTH_LONG);
 	}
 
@@ -121,7 +122,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		}
 
 		String action = (String) bundle.get(SERVICE_ACTION);
-		if (ACTION_SCHEDULE.equals(action) || ACTION_MANUAL.equals(action)) {
+		if (ACTION_SCHEDULE.equals(action) || ACTION_MANUAL.equals(action) || ACTION_MANUAL_MENU.equals(action)) {
 			if (ACTION_MANUAL.equals(action)) {
 				Log.i(TAG, "Manual start");
 			} else {
@@ -133,7 +134,8 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 				makeToast("Price Update Service Started", Toast.LENGTH_LONG);
 				Log.i(TAG, "on Starte'd");
 			} else {
-				updater.restart(false); // interrupt sleep and restart now
+				
+				updater.restart(!ACTION_MANUAL_MENU.equals(action)); // read history if from MENU
 				Log.i(TAG, "an Re-Starte'd");
 			}
 			if (!alarmSetup.isAlive() && !alarmSetup.isRunning()) {
@@ -151,13 +153,13 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		} else if (ACTION_PRICE_UPDATE.equals(action)) {
 			Log.i(TAG, "Price Update start");
 			if (!updater.isRunning()) {
-				Log.i(TAG, "Price Update starting");
+				Log.i(TAG, "Start Price Update starting");
 				updater.priceOnly = true;
 				updater.start();
 				Log.i(TAG, "Price Update on Starte'd");
 			} else {
-				Log.i(TAG, "Price Update starting");
-				updater.restart(false); // TODO should be true for price only
+				Log.i(TAG, "Re-Start Price Update starting");
+				updater.restart(true); // TODO should be true for price only
 										// ..interrupt sleep and restart now
 				Log.i(TAG, "Price Update an Re-Starte'd");
 			}
@@ -174,10 +176,10 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 				String.format(res.getString(R.string.scheduledStartMessage)));
 	}
 
-	void updateServiceNotice(int messageKey) {
+	void updateServiceNotice(int messageKey, int numMessages) {
 		Resources res = getApplicationContext().getResources();
-		notifier.sendNotice(50002L, res.getString(R.string.updateServiceSubject),
-				res.getString(messageKey));
+		notifier.sendServiceNotice(50002, res.getString(R.string.updateServiceSubject),
+				res.getString(messageKey), numMessages);
 	}
 
 	/**
@@ -270,11 +272,15 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		static final long	DELAY	= 180000L;
 		boolean				running	= false;
 		boolean				priceOnly = false;
+		int					numMessages = 0;
 
 		public boolean isRunning() {
 			return running;
 		}
 
+		public int getNumMessages() {
+			return numMessages;
+		}
 		public void restart(boolean priceOnly) {
 			Log.d(TAG, "restart updater");
 			synchronized (lock) {
@@ -291,21 +297,21 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 			while (running) {
 				try {
 					startTime = System.currentTimeMillis();
-					updateServiceNotice(R.string.serviceRunningMessage);
+					updateServiceNotice(R.string.serviceRunningMessage, numMessages++);
 					progressBarStart();
 					Log.d(TAG, "Updater Running");
 					List<PaiStudy> studies;
 					if (priceOnly) {
 						studies = processor.updatePrice(null);
-						Log.i(TAG,"Price Only Update Runtime seconds="+(System.currentTimeMillis() - startTime) / 1000);
+						Log.i(TAG,"Price Only Update Runtime milliseconds="+(System.currentTimeMillis() - startTime));
 					} else {
 						studies = processor.process(null);
-						Log.i(TAG,"Complete Update Runtime seconds="+(System.currentTimeMillis() - startTime) / 1000);
+						Log.i(TAG,"Complete Update Runtime milliseconds="+(System.currentTimeMillis() - startTime));
 					}
 				
 					notifier.updateNotification(studies);
 					if (isMarketOpen()) {
-						updateServiceNotice(R.string.servicePausedMessage);
+						updateServiceNotice(R.string.servicePausedMessage, numMessages++);
 						progressBarStop();
 						synchronized (lock) {
 							// if notified true we missed a notify, so restart loop.

@@ -23,9 +23,11 @@ import android.util.Log;
 public class AlarmSetup extends Thread {
 	static final String	TAG					= AlarmSetup.class.getSimpleName();
 	static final int	DAILY_INTENT_ID		= 5453;
+	static final int	DAILY_START_INTENT_ID = 5473;
 	static final int	ONE_TIME_INTENT_ID	= 5463;
 
 	static int			RUN_START_HOUR		= 9;
+	static int			RUN_START_MINUTE    = 30;
 	static int			RUN_END_HOUR		= 17;
 
 	Context				context;
@@ -91,12 +93,13 @@ public class AlarmSetup extends Thread {
 				startTime = startTime.dayOfMonth().addToCopy(1);
 			}
 			startTime = startTime.hourOfDay().setCopy(RUN_START_HOUR);
-			setAlarm(startTime);
+			startTime = startTime.minuteOfHour().setCopy(RUN_START_MINUTE);
+			setStartAlarm(startTime);
 		} else if (hour >= RUN_START_HOUR) {
 			// run each hour
 			startTime = getCurrentNYTime();
 			if (!isAlarmAlreadyUp()) {
-				setAlarm(startTime);
+				setRepeatingAlarm(startTime);
 			}
 		} else {
 			// start today or next trade date at 9PM
@@ -104,24 +107,35 @@ public class AlarmSetup extends Thread {
 				startTime = startTime.dayOfMonth().addToCopy(1);
 			}
 			startTime = startTime.hourOfDay().setCopy(RUN_START_HOUR);
+			startTime = startTime.minuteOfHour().setCopy(RUN_START_MINUTE);
 			// if (!isAlarmAlreadyUp()) {
-			setAlarm(startTime);
+			setStartAlarm(startTime);
 			// }
 		}
 		Log.i(TAG, "Setup Alarm time ms=" + (System.currentTimeMillis() - startMillis));
 	}
 
-	void setAlarm(DateTime startTime) {
+	void setRepeatingAlarm(DateTime startTime) {
 		Intent dailyIntent = alarmScheduleIntent;
 		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_SCHEDULE);
 		PendingIntent pDailyIntent = PendingIntent.getService(context, DAILY_INTENT_ID, dailyIntent, 0);
 		AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		long interval = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
 		alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, startTime.getMillis(), interval, pDailyIntent);
+		Log.i(TAG, "Setup Alarm Manager to start REPEATING service at " + formatStartTime(startTime));
+		scheduleSetupNotice(startTime, 15);
+	}
+
+	void setStartAlarm(DateTime startTime) {
+		Intent dailyIntent = alarmScheduleIntent;
+		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_SCHEDULE);
+		PendingIntent pDailyIntent = PendingIntent.getService(context, DAILY_START_INTENT_ID, dailyIntent, 0);
+		AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+		alarm.set(AlarmManager.RTC_WAKEUP, startTime.getMillis(), pDailyIntent);
 		Log.i(TAG, "Setup Alarm Manager to start service at " + formatStartTime(startTime));
 		scheduleSetupNotice(startTime);
 	}
-
+	
 	boolean isAlarmAlreadyUp() {
 		boolean alarmUp = (PendingIntent.getService(context.getApplicationContext(), DAILY_INTENT_ID, alarmScheduleIntent, PendingIntent.FLAG_NO_CREATE) != null);
 
@@ -142,10 +156,16 @@ public class AlarmSetup extends Thread {
 		DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
 		return fmt.print(startTime);
 	}*/
+	void scheduleSetupNotice(DateTime startTime, int repeating) {
+		Resources res = context.getApplicationContext().getResources();
+		notifier.sendNotice(50000L, res.getString(R.string.scheduleSetupSubject),
+				String.format(res.getString(R.string.scheduleRepeatingMessage, formatStartTime(startTime)), repeating));
+	}
+
 	void scheduleSetupNotice(DateTime startTime) {
 		Resources res = context.getApplicationContext().getResources();
 		notifier.sendNotice(50000L, res.getString(R.string.scheduleSetupSubject),
-				String.format(res.getString(R.string.scheduleSetupMessage, formatStartTime(startTime))));
+				String.format(res.getString(R.string.scheduleStartMessage, formatStartTime(startTime))));
 	}
 
 	public DateTime getCurrentNYTime() {

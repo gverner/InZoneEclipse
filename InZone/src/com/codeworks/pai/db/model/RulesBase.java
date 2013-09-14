@@ -6,6 +6,7 @@ import java.util.Locale;
 
 import android.R.color;
 import android.graphics.Color;
+import android.util.Log;
 
 import com.codeworks.pai.study.Period;
 
@@ -26,7 +27,7 @@ public abstract class RulesBase implements Rules {
 	
 	@Override
 	public boolean hasTradedBelowMAToday() {
-//		Log.i(TAG, study.getSymbol()+" hasTradedBelowMAToday="+(isUpTrendWeekly() && study.getLow() <  study.getMovingAverage(Period.Week))+" low="+study.getLow()+" ma="+study.getMovingAverage(Period.Week));
+		Log.i(TAG, study.getSymbol()+" TradBelowMA="+(isUpTrendWeekly() && study.getLow() <  study.getMovingAverage(Period.Week))+" low="+study.getLow()+" ma="+study.getMovingAverage(Period.Week) + " maTyp="+study.getMaType().name() +" Id="+ study.getSecurityId());
 		return isUpTrendWeekly() && study.getLow() > 0 && study.getLow() <  study.getMovingAverage(Period.Week);
 	}
 	

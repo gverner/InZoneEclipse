@@ -18,6 +18,7 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -258,7 +259,7 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				// ImageView
 				// menuImage=(ImageView)arg0.findViewById(R.id.iv_ContactImg);
 				// menuImage.setImageResource(R.drawable.ic_launcher);
-				Rules rules = new EmaRules(study);
+				EmaRules rules = new EmaRules(study);
 				// Set Synbol
 				TextView symbol = (TextView) view.findViewById(R.id.quoteList_symbol);
 				symbol.setText(study.getSymbol());
@@ -273,6 +274,9 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				
 				if (rules.hasTradedBelowMAToday()) {
 					price.setTextColor(getResources().getColor(R.color.net_negative));
+				} else {
+					ColorStateList oldColors =  ema.getTextColors(); //get original colors from ema 
+					price.setTextColor(oldColors);
 				}
 
 				double net = 0;

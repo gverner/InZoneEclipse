@@ -66,6 +66,10 @@ public class Price implements Comparable<Price>, Serializable {
 
 	@Override
 	public int compareTo(Price another) {
-		return date.compareTo((Date) another.getDate());
+		if (date != null) {
+			return date.compareTo((Date) another.getDate());
+		} else {
+			return 0;
+		}
 	}
 }

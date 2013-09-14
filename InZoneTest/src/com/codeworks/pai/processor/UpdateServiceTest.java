@@ -154,11 +154,17 @@ public class UpdateServiceTest extends AndroidTestCase {
 		}
 		
 		@Override
-		void setAlarm(DateTime startTime) {
+		void setRepeatingAlarm(DateTime startTime) {
 			alarmStarted = true;
 			System.out.println("Call set Alarm with start of " + formatStartTime(startTime));
 			alarmTimes.add(startTime);
 		}
+		
+		void setStartAlarm(DateTime startTime) {
+			alarmStarted = true;
+			System.out.println("Call set Alarm with start of " + formatStartTime(startTime));
+			alarmTimes.add(startTime);
+		}		
 		@Override
 		boolean isAlarmAlreadyUp() {
 			if (alarmStarted) {

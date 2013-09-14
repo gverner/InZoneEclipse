@@ -2,12 +2,12 @@ package com.codeworks.pai.processor;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.joda.time.DateTimeComparator;
 
@@ -43,7 +43,7 @@ public class ProcessorImpl implements Processor {
 
 	/**
 	 * Process all securities.
-	 * lookup current price and calculates study
+	 * lookup current price and cal¯culates study
 	 * 
 	 * @param symbol when symbol is null all securities are processed.
 	 * @return
@@ -52,14 +52,24 @@ public class ProcessorImpl implements Processor {
 	public List<PaiStudy> process(String symbol) throws InterruptedException {
 		List<PaiStudy> studies = getSecurities(symbol);
 		updateCurrentPrice(studies);
+		String lastOnlineHistoryDbDate = getLastestOnlineHistoryDbDate("SPY");
+		List<Price> history = new ArrayList<Price>();
+		String lastSymbol = "";
 		for (PaiStudy security : studies) {
 			if (security.getPrice() != 0) {
-				List<Price> history = getPriceHistory(security.getSymbol());
+				if (!lastSymbol.equals(security.getSymbol())) { // cache history
+					history = getPriceHistory(security.getSymbol(),lastOnlineHistoryDbDate);
+					Collections.sort(history);
+					history = Collections.unmodifiableList(history);
+				} else {
+					Log.d(TAG, "Using History Cache for "+security.getSymbol());
+				}
+				lastSymbol = security.getSymbol();
 				if (history.size() >= 20) {
 					if (Thread.interrupted()) {
 						throw new InterruptedException();
 					}
-					calculateStudy(security, history);
+					calculateStudy(security, history); // shallow copy of cashed history because it is modified.
 					saveStudy(security);
 				} else {
 					security.setNotice(Notice.INSUFFICIENT_HISTORY);
@@ -91,9 +101,10 @@ public class ProcessorImpl implements Processor {
 		return studies;
 	}
 	
-	void calculateStudy(PaiStudy security, List<Price> history) {
-		Collections.sort(history);
-		List<Price> daily = new ArrayList<Price>(history);
+	void calculateStudy(PaiStudy security, List<Price> daily) {
+		// do not modify daily because it is cached.s
+		List<Price> history = new ArrayList<Price>(daily);
+		Log.d(TAG,"Daily price history start "+security.getSymbol()+" Price Date="+security.getPriceDate()+" ListHistoryDate="+daily.get(daily.size() -1).getDate());
 
 		Grouper grouper = new Grouper();
 		{
@@ -151,15 +162,14 @@ public class ProcessorImpl implements Processor {
 			}
 		}
 		{
-			Collections.sort(daily);
 			if (daily.size() > 20) {
 				
 				Price lastHistory = daily.get(daily.size()-1);
 				if (DateTimeComparator.getDateOnlyInstance().compare(security.getPriceDate(), lastHistory.getDate()) > 0) {
-					Log.d(TAG,"Daily price history doesn't contains last price market must be open");
+					Log.d(TAG,"Daily price history doesn't contains last price market must be open "+security.getSymbol()+" Price Date="+security.getPriceDate()+" ListHistoryDate="+lastHistory.getDate());
 					security.setLastClose(lastHistory.getClose());
 				} else {
-					Log.d(TAG,"Daily price history contains last price, it must be after markect close.");
+					Log.d(TAG,"Daily price history contains last price, it must be after markect close. "+security.getSymbol()+" Price Date="+security.getPriceDate()+" ListHistoryDate="+lastHistory.getDate());
 					security.setLastClose(daily.get(daily.size()-2).getClose());
 				}
 				//appendCurrentPrice(daily,security);
@@ -199,19 +209,34 @@ public class ProcessorImpl implements Processor {
 	}
 
 	private void updateCurrentPrice(List<PaiStudy> securities) throws InterruptedException {
+		Map<String,PaiStudy> cacheQuotes = new HashMap<String, PaiStudy>();
 		for (PaiStudy quote : securities) {
 			Log.d(TAG, quote.getSymbol());
 			String oldName = quote.getName();
-			if (!reader.readRTPrice(quote)) {
-				reader.readCurrentPrice(quote);
-				Log.w(TAG,"FAILED to get real time price using delayed Price");
-			} else {
-				if (quote.getPriceDate() == null) {
-					PaiStudy quote2 = new PaiStudy(quote.getSymbol());
+			PaiStudy cachedQuote = cacheQuotes.get(quote.getSymbol());
+			if (cachedQuote == null) {
+				if (!reader.readRTPrice(quote)) {
 					reader.readCurrentPrice(quote);
-					quote.setPriceDate(quote2.getPriceDate());
-					Log.w(TAG,"Using price Date from delayed Price");
+					quote.setNotice(Notice.DELAYED_PRICE);
+					Log.w(TAG, "FAILED to get real time price using delayed Price");
+				} else {
+					if (quote.getPriceDate() == null) {
+						PaiStudy quote2 = new PaiStudy(quote.getSymbol());
+						reader.readCurrentPrice(quote);
+						quote.setPriceDate(quote2.getPriceDate());
+						Log.w(TAG, "Using price Date from delayed Price");
+					} else {
+						cacheQuotes.put(quote.getSymbol(), quote);
+					}
 				}
+			} else { // from cache
+				Log.d(TAG,"Using cached quote "+quote.getSymbol());
+				quote.setPrice(cachedQuote.getPrice());
+				quote.setPriceDate(cachedQuote.getPriceDate());
+				quote.setOpen(cachedQuote.getOpen());
+				quote.setLow(cachedQuote.getLow());
+				quote.setHigh(cachedQuote.getHigh());
+				quote.setName(cachedQuote.getName());
 			}
 			// updating the name here, may need to move update to when security
 			// is added by user or kick off Processor at that time.
@@ -221,6 +246,7 @@ public class ProcessorImpl implements Processor {
 			if (Thread.interrupted()) {
 				throw new InterruptedException();
 			}
+			Log.d(TAG,"Price="+quote.getPrice()+" Low="+quote.getLow()+" High="+quote.getHigh()+ " Open="+quote.getOpen()+" Date="+quote.getPriceDate());
 		}
 	}
 
@@ -231,12 +257,7 @@ public class ProcessorImpl implements Processor {
 		getContentResolver().update(securityUri, values, null, null);
 	}
 
-	List<Price> getPriceHistory(String symbol) {
-		String lastOnlineHistoryDbDate = DateUtils.lastProbableTradeDate();
-		Date latestHistoryDate = reader.latestHistoryDate(symbol);
-		if (latestHistoryDate != null) {
-			lastOnlineHistoryDbDate = DateUtils.toDatabaseFormat(latestHistoryDate);
-		}
+	List<Price> getPriceHistory(String symbol, String lastOnlineHistoryDbDate) {
 		long readDbHistoryStartTime = System.currentTimeMillis();
 		String[] projection = { PriceHistoryTable.COLUMN_SYMBOL, PriceHistoryTable.COLUMN_CLOSE, PriceHistoryTable.COLUMN_DATE,
 				PriceHistoryTable.COLUMN_HIGH, PriceHistoryTable.COLUMN_LOW, PriceHistoryTable.COLUMN_OPEN,
@@ -314,6 +335,15 @@ public class ProcessorImpl implements Processor {
 		}
 		Log.d(TAG, "Returning " + history.size() + " Price History records for symbol " + symbol);
 		return history;
+	}
+
+	String getLastestOnlineHistoryDbDate(String symbol) {
+		String lastOnlineHistoryDbDate = DateUtils.lastProbableTradeDate();
+		Date latestHistoryDate = reader.latestHistoryDate(symbol);
+		if (latestHistoryDate != null) {
+			lastOnlineHistoryDbDate = DateUtils.toDatabaseFormat(latestHistoryDate);
+		}
+		return lastOnlineHistoryDbDate;
 	}
 
 	void saveStudyPrice(PaiStudy study) {
@@ -401,7 +431,7 @@ public class ProcessorImpl implements Processor {
 			selectionArgs = new String [] { inSymbol };
 			Log.d(TAG, "Selecting Single Security from database");
 		}
-		Cursor cursor = getContentResolver().query(PaiContentProvider.PAI_STUDY_URI, projection, selection, selectionArgs, null);
+		Cursor cursor = getContentResolver().query(PaiContentProvider.PAI_STUDY_URI, projection, selection, selectionArgs, PaiStudyTable.COLUMN_SYMBOL);
 		try {
 			if (cursor != null) {
 				if (cursor.moveToFirst())

@@ -21,5 +21,10 @@ public class MockNotifier implements Notifier {
 	public void sendNotice(long securityId, String title, String text) {
 		numberOfSendNoticeCalls++;
 	}
+	@Override
+	public void sendServiceNotice(int notifyId, String title, String text, int numMessages) {
+		numberOfSendNoticeCalls++;
+		
+	}
 
 }

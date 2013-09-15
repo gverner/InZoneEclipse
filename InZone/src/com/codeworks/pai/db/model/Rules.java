@@ -1,7 +1,6 @@
 package com.codeworks.pai.db.model;
 
 import android.content.res.Resources;
-import android.graphics.Color;
 
 import com.codeworks.pai.study.Period;
 
@@ -76,6 +75,8 @@ public interface Rules {
 	public abstract int getSellZoneTextColor();
 	
 	public abstract int getSellZoneBackgroundColor();
+	
+	public abstract String getTrendText(Resources res);
 	
 	public abstract String getAdditionalAlerts(Resources res);
 	

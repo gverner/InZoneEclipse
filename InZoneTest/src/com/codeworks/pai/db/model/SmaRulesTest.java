@@ -17,6 +17,7 @@ public class SmaRulesTest extends TestCase {
 		spyStudy = new PaiStudy("SPY");
 		// Numbers from 4/12/2013
 		spyStudy.setPrice(MockDataReader.SPY_PRICE);
+		spyStudy.setMaType(MaType.E);
 		spyStudy.setPriceLastWeek(155.16d);
 		spyStudy.setAverageTrueRange(1.46d);
 		spyStudy.setPriceLastMonth(156.67d);

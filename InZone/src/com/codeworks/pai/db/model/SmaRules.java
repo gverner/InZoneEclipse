@@ -12,11 +12,6 @@ public class SmaRules  extends RulesBase {
 	public static double				ZONE_INNER			= 0.5d;
 	public static double				ZONE_OUTER			= 2d;
 
-	/**
-	 * 
-	 */
-	private static final long	serialVersionUID	= 5444507227900171845L;
-	
 	public SmaRules(PaiStudy study) {
 		this.study = study;
 	}
@@ -115,28 +110,12 @@ public class SmaRules  extends RulesBase {
 												// calcSellZoneTop());
 	}
 
-	public boolean isUpTrendWeekly() {
-		return study.getSmaLastWeek() <= study.getPriceLastWeek();
-	}
-
-	public boolean isUpTrendMonthly() {
-		return study.getSmaMonth() <= study.getPrice();
-	}
-
 	public boolean isUpTrend(Period period) {
 		if (Period.Month.equals(period)) {
-			return study.getSmaLastMonth() <= study.getPriceLastMonth();
+			return study.getSmaMonth() <= study.getPrice();
 		} else {
-			return study.getMaLastWeek() <= study.getPriceLastWeek();
+			return study.getSmaLastWeek() <= study.getPriceLastWeek();
 		}
-	}
-
-	public boolean isDownTrendWeekly() {
-		return study.getSmaLastWeek() > study.getPriceLastWeek();
-	}
-
-	public boolean isDownTrendMonthly() {
-		return study.getSmaMonth() > study.getPrice();
 	}
 
 	public boolean isPossibleTrendTerminationWeekly() {

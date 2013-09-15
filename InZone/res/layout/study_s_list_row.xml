@@ -40,26 +40,29 @@
         android:textIsSelectable="false"
         android:textSize="12sp"
         android:textStyle="bold" />
-    <TextView
+    <ImageView
         android:id="@+id/quoteList_MonthyTrend"
         android:layout_width="10dp"
         android:layout_height="30dp"
-        android:paddingTop="9dip"
+        android:paddingTop="5dip"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/quoteList_symbol"
         android:gravity="right"
         android:textAlignment="center"
+        android:contentDescription="@string/content_desc_monthly_trend"
         android:textSize="12sp"
         android:textIsSelectable="false" />
-    <TextView
+    
+    <ImageView
         android:id="@+id/quoteList_WeeklyTrend"
         android:layout_width="10dp"
         android:layout_height="30dp"
-        android:paddingTop="9dip"
+        android:paddingTop="5dip"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/quoteList_MonthyTrend"
         android:gravity="right"
         android:textAlignment="center"
+        android:contentDescription="@string/content_desc_weekly_trend"
         android:textSize="12sp"
         android:textIsSelectable="false" />
 

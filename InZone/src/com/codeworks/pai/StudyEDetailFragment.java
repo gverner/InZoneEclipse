@@ -130,15 +130,29 @@ public class StudyEDetailFragment extends Fragment {
 		setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Month), R.id.sdfMonthlyLowerBuyTop);
 		setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Month), R.id.sdfMonthlyLowerBuyBottom);
 
+		
 		rules.updateNotice();
+		
 		StringBuilder alertMsg = new StringBuilder();
+		alertMsg.append(rules.getTrendText(getResources()));
+		boolean alert = false;
 		if (!Notice.NONE.equals(study.getNotice())) {
+			alert = true;
+			alertMsg.append("\n");
 			alertMsg.append(String.format(getResources().getString(study.getNotice().getMessage()), study.getSymbol()));
 			alertMsg.append("\n");
 		}
-		alertMsg.append(rules.getAdditionalAlerts(getResources()));
+		String addAlert = rules.getAdditionalAlerts(getResources());
+		if (addAlert != null && addAlert.length() > 0) {
+			alert = true;
+			alertMsg.append(addAlert);
+		}
 		if (alertMsg.length() > 0) {
-			setString(getView(), getResources().getString(R.string.sdfAlertNameLabel), R.id.sdfAlertName);
+			if (alert) {
+				setString(getView(), getResources().getString(R.string.sdfAlertNameLabel), R.id.sdfAlertName);
+			} else {
+				setString(getView(), getResources().getString(R.string.sdfStatusNameLabel), R.id.sdfAlertName);
+			}
 			setString(getView(), alertMsg.toString(), R.id.sdfAlertText);
 		}
 		setString(getView(), rules.inCash(), R.id.sdfInCashText);

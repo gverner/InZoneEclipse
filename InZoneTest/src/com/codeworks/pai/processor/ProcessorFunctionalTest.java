@@ -179,6 +179,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		System.out.println("stddev  month "+study.getStddevMonth());
 		
 	}
+	
 	public void testStudy() throws ParseException {
 		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
@@ -187,8 +188,9 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		// "04/13/2013"));
 		MockDataReader.buildSecurity(study, "S&P 500", MockDataReader.SPY_PRICE,MockDataReader.PRICE_CLOSE_DATE);
 		processor.calculateStudy(study, history);
+		logStudy(study);
 		assertEquals("Price", MockDataReader.SPY_PRICE, study.getPrice());
-		assertEquals("ATR", 1.46d, round(study.getAverageTrueRange()));
+		assertEquals("ATR", 2.1d, round(study.getAverageTrueRange()));
 		assertEquals("StdDev Week", 5.56d, PaiUtils.round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 10.94d, PaiUtils.round(study.getStddevMonth()));
 		assertEquals("MA week", 151.08d, PaiUtils.round(study.getMaWeek()));
@@ -202,7 +204,24 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
 		assertEquals("Buy", false, rules.isPriceInBuyZone());
 		assertEquals("Sell", false, rules.isPriceInSellZone());
+	}
 
+	public void testStudyMultiple() throws ParseException {
+		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
+		PaiStudy study2 = new PaiStudy(TestDataLoader.SPY);
+		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY);
+		MockDataReader.buildSecurity(study, "S&P 500", MockDataReader.SPY_PRICE,MockDataReader.PRICE_CLOSE_DATE);
+		MockDataReader.buildSecurity(study2, "S&P 500", MockDataReader.SPY_PRICE,MockDataReader.PRICE_CLOSE_DATE);
+		processor.calculateStudy(study, history);
+		processor.calculateStudy(study2, history);
+		logStudy(study);
+		logStudy(study2);
+		assertEquals(study.getAverageTrueRange(), study2.getAverageTrueRange());
+		assertEquals(study.getMaWeek(), study2.getMaWeek());
+		assertEquals(study.getMaMonth(), study2.getMaMonth());
+		assertEquals(study.getMaLastWeek(), study2.getMaLastWeek());
+		assertEquals(study.getMaLastMonth(), study2.getMaLastMonth());
+		
 	}
 	
 	public void testFridayCutoff() throws ParseException {

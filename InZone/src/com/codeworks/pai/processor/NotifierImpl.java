@@ -45,6 +45,8 @@ public class NotifierImpl implements Notifier {
 		Resources res = context.getResources();
 
 		for (PaiStudy study : studies) {
+			// TODO why is this always EMA rules.
+			
 			Rules rules = new EmaRules(study);
 			rules.updateNotice();
 			String additionalMessage = "";
@@ -52,7 +54,7 @@ public class NotifierImpl implements Notifier {
 				additionalMessage = 
 						String.format(res.getString(R.string.notice_has_traded_below_ma_text), study.getSymbol());
 			}
-			if (saveStudyNoticeIfChanged(study) && !Notice.NONE.equals(study.getNotice())) {
+			if (saveStudyNoticeIfChanged(study) && !Notice.NONE.equals(study.getNotice()) && study.getNotice().getSubject() != 0 && study.getNotice().getMessage() != 0) {
 				sendNotice(study.getSecurityId(), res.getString(study.getNotice().getSubject()),
 						String.format(res.getString(study.getNotice().getMessage()), study.getSymbol()) + "\n" + additionalMessage);
 			}

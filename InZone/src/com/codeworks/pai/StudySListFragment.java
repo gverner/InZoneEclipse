@@ -26,6 +26,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.CursorAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -314,15 +315,13 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 			return textView;
 		}
 
-		TextView setTrend(View view, boolean isUptrend, int viewId) {
-			TextView textView = (TextView) view.findViewById(viewId);
+		void setTrend(View inView, boolean isUptrend, int viewId) {
+			ImageView imageView = (ImageView) inView.findViewById(viewId);
 			if (isUptrend) {
-				textView.setText("U");
+				imageView.setImageResource(R.drawable.ic_market_up);
 			} else {
-				textView.setText("D");
-
+				imageView.setImageResource(R.drawable.ic_market_down);
 			}
-			return textView;
 		}
 
 		@Override

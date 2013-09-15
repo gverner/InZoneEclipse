@@ -29,6 +29,8 @@
     <string name="studyHeaderSellZone">Sell</string>
     <string name="studyHeaderMonthlyTrend">M</string>
     <string name="studyHeader_WeeklyTrend">W</string>
+    <string name="content_desc_monthly_trend">Monthly Trend</string>
+    <string name="content_desc_weekly_trend">Weekly Trend</string>
     <string name="notice_possible_weekly_downtrend_termination">Possible Weekly Downtrend Termination</string>
     <string name="notice_possible_weekly_uptrend_termination">Possible Weekly Uptrend Termination</string>
     <string name="notice_in_sell_zone">In Sell Zone</string>
@@ -54,6 +56,11 @@
     <string name="alert_no_price">No Price</string>
     <string name="alert_insufficent_history">Insufficient History</string>
     <string name="alert_delayed_price">Delayed Price</string>
+    <string name="status_trend">Trend</string>
+    <string name="status_weekly_uptrend">Weekly=Uptrend</string>
+    <string name="status_weekly_downtrend">Weekly=Downtrend</string>
+    <string name="status_monthly_uptrend">Monthly=Uptrend</string>
+    <string name="status_monthly_downtrend">Monthly=Downtrend</string>
     <string name="menu_item_done">Done</string>
     <string name="pref_autoRestart">Auto Restart Price Service</string>
     <string name="pref_autoRestartSumm">Keep Price Update and Notification Service running without need for user to start program</string>
@@ -77,7 +84,8 @@
     <string name="sdfAtr24Label">ATR/4</string>
     <string name="sdfLowLabel">Low</string>
     <string name="sdfHighLabel">High</string>
-    <string name="sdfAlertNameLabel">Alert</string>
+    <string name="sdfAlertNameLabel">Status\nAlert</string>
+    <string name="sdfStatusNameLabel">Status</string>
     <string name="sdfPricePlusAtr25Label">Stop</string>
    	<string name="tab_protfolio_1">Weekly</string> 
    	<string name="tab_protfolio_2">Monthly</string> 

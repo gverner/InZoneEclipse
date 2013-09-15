@@ -5,9 +5,11 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 import android.R.color;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.util.Log;
 
+import com.codeworks.pai.R;
 import com.codeworks.pai.study.Period;
 
 
@@ -27,7 +29,7 @@ public abstract class RulesBase implements Rules {
 	
 	@Override
 	public boolean hasTradedBelowMAToday() {
-		Log.i(TAG, study.getSymbol()+" TradBelowMA="+(isUpTrendWeekly() && study.getLow() <  study.getMovingAverage(Period.Week))+" low="+study.getLow()+" ma="+study.getMovingAverage(Period.Week) + " maTyp="+study.getMaType().name() +" Id="+ study.getSecurityId());
+		Log.i(TAG, study.getSymbol()+" TradBelowMA="+(isUpTrendWeekly() && study.getLow() <  study.getMovingAverage(Period.Week))+" low="+study.getLow()+" ma="+study.getMovingAverage(Period.Week) + " maTyp="+study.getMaType() +" Id="+ study.getSecurityId());
 		return isUpTrendWeekly() && study.getLow() > 0 && study.getLow() <  study.getMovingAverage(Period.Week);
 	}
 	
@@ -102,6 +104,44 @@ public abstract class RulesBase implements Rules {
 		} else {
 			return (isDownTrendMonthly() && study.getPrice() > study.getMaMonth());
 		}
+	}
+
+	@Override
+	public boolean isUpTrendWeekly() {
+		return isUpTrend(Period.Week);
+	}
+
+	@Override
+	public boolean isUpTrendMonthly() {
+		return isUpTrend(Period.Month);
+	}
+
+	@Override
+	public boolean isDownTrendWeekly() {
+		return !isUpTrendWeekly();
+	}
+
+	@Override
+	public boolean isDownTrendMonthly() {
+		return !isUpTrendMonthly();
+	}
+
+
+	@Override
+	public String getTrendText(Resources res) {
+		StringBuilder sb = new StringBuilder();
+		if (isUpTrend(Period.Month)) {
+			sb.append(res.getString(R.string.status_monthly_uptrend));
+		} else {
+			sb.append(res.getString(R.string.status_monthly_downtrend));
+		}
+		sb.append(" ");
+		if (isUpTrend(Period.Week)) {
+			sb.append(res.getString(R.string.status_weekly_uptrend));
+		} else {
+			sb.append(res.getString(R.string.status_weekly_downtrend));
+		}
+		return sb.toString();
 	}
 
 }

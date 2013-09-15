@@ -258,25 +258,6 @@ public class EmaRules extends RulesBase {
 		// calcSellZoneTop());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.codeworks.pai.db.model.Rules#isUpTrendWeekly()
-	 */
-	@Override
-	public boolean isUpTrendWeekly() {
-		return study.getMaLastWeek() <= study.getPriceLastWeek();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.codeworks.pai.db.model.Rules#isUpTrendMonthly()
-	 */
-	@Override
-	public boolean isUpTrendMonthly() {
-		return study.getMaMonth() <= study.getPrice();
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -288,30 +269,10 @@ public class EmaRules extends RulesBase {
 	@Override
 	public boolean isUpTrend(Period period) {
 		if (Period.Month.equals(period)) {
-			return study.getMaLastMonth() <= study.getPriceLastMonth();
+			return study.getMaMonth() <= study.getPrice();
 		} else {
 			return study.getMaLastWeek() <= study.getPriceLastWeek();
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.codeworks.pai.db.model.Rules#isDownTrendWeekly()
-	 */
-	@Override
-	public boolean isDownTrendWeekly() {
-		return study.getMaLastWeek() > study.getPriceLastWeek();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.codeworks.pai.db.model.Rules#isDownTrendMonthly()
-	 */
-	@Override
-	public boolean isDownTrendMonthly() {
-		return study.getMaMonth() > study.getPrice();
 	}
 
 	/*
@@ -347,6 +308,7 @@ public class EmaRules extends RulesBase {
 		return sb.toString();
 	}
 
+	
 	@Override
 	public String getAdditionalAlerts(Resources res) {
 		StringBuilder alert = new StringBuilder();
@@ -365,6 +327,9 @@ public class EmaRules extends RulesBase {
 	
 	@Override
 	public void updateNotice() {
+		// TODO consider moving non Notice type to there own ENum and field.
+		// if truly same for both SMA and EMA then code should be in rule base.
+		
 		if (Notice.NO_PRICE.equals(study.getNotice())) {
 			// set by processor
 		} else if (Notice.INSUFFICIENT_HISTORY.equals(study.getNotice())) {

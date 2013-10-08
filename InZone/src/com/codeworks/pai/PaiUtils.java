@@ -16,6 +16,8 @@ public class PaiUtils {
 	
 	//public static final String PREF_PORTFOLIO_MA_TYPE = "com.codeworks.inzone.portfolio_ma_type";
 	public static final String PREF_PORTFOLIO_MA_TYPE = "pref_portfolio_type";
+	public static final String PREF_RINGTONE = "pref_ringtone";
+	public static final String PREF_VIBRATE_ON = "pref_vibrateOn";
 	
 	public static final String MA_TYPE_EMA = "E";
 	public static final String MA_TYPE_SMA = "S";

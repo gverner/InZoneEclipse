@@ -6,11 +6,12 @@ import java.util.List;
 import com.codeworks.pai.db.model.PaiStudy;
 
 public class MockProcessor implements Processor {
-	int numberOfCalls = 0;
+	int numberOfProcessCalls = 0;
+	int numberOfUpdatePriceCalls = 0;
 	
 	@Override
 	public List<PaiStudy> process(String symbol) throws InterruptedException {
-		numberOfCalls++;
+		numberOfProcessCalls++;
 		List<PaiStudy> studies = new ArrayList<PaiStudy>();
 		PaiStudy study = new PaiStudy("SPY");
 		studies.add(study);
@@ -29,6 +30,7 @@ public class MockProcessor implements Processor {
 
 	@Override
 	public List<PaiStudy> updatePrice(String symbol) throws InterruptedException {
+		numberOfUpdatePriceCalls++;
 		return new ArrayList<PaiStudy>();
 	}
 

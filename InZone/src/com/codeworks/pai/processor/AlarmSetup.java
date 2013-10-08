@@ -1,46 +1,41 @@
 package com.codeworks.pai.processor;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-
-import com.codeworks.pai.R;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.util.Log;
 
+import com.codeworks.pai.R;
+import com.codeworks.pai.contentprovider.PaiContentProvider;
+import com.codeworks.pai.db.ServiceLogTable;
+import com.codeworks.pai.db.model.ServiceType;
+
 public class AlarmSetup extends Thread {
-	static final String	TAG					= AlarmSetup.class.getSimpleName();
-	static final int	DAILY_INTENT_ID		= 5453;
-	static final int	DAILY_START_INTENT_ID = 5473;
-	static final int	ONE_TIME_INTENT_ID	= 5463;
+	static final String	TAG						= AlarmSetup.class.getSimpleName();
+	static final int	REPEAT_INTENT_ID		= 5453;
+	static final int	DAILY_START_INTENT_ID	= 5473;
 
 	static int			RUN_START_HOUR		= 9;
 	static int			RUN_START_MINUTE    = 30;
-	static int			RUN_END_HOUR		= 17;
+	static int			RUN_END_HOUR		= 16;
 
 	Context				context;
-	Intent				alarmScheduleIntent;
 	Notifier			notifier;
 	boolean				running = false;
 	
 	public AlarmSetup(Context context, Notifier notifier) {
 		this.context = context;
-		Intent						alarmScheduleIntent 			= null;
-		alarmScheduleIntent = new Intent(context, UpdateService.class);
-
-		this.alarmScheduleIntent = alarmScheduleIntent;
 		this.notifier = notifier;
 	}
 	
@@ -59,66 +54,57 @@ public class AlarmSetup extends Thread {
 	 * setup Alarm Manager to restart this service every hour between the hours
 	 * of 9AM AND 5PM US/EASTERN.
 	 */
-	/*
-	 * void updateAlarm() {
-	 * 
-	 * Calendar startTime = getCurrentTime();
-	 * 
-	 * startTime.set(Calendar.MINUTE, 0); int hour =
-	 * startTime.get(Calendar.HOUR_OF_DAY); if (hour > RUN_END_HOUR) { // run
-	 * next trade date a 9AM startTime.add(Calendar.DAY_OF_MONTH, 1); while
-	 * (startTime.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
-	 * startTime.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
-	 * startTime.add(Calendar.DAY_OF_MONTH, 1); }
-	 * startTime.set(Calendar.HOUR_OF_DAY, RUN_START_HOUR); setAlarm(startTime);
-	 * } else if (hour > RUN_START_HOUR) { // run each hour
-	 * startTime.add(Calendar.HOUR_OF_DAY, 1); if (!isAlarmAlreadyUp()) {
-	 * setAlarm(startTime); } } else { // start today or next trade date at 9PM
-	 * while (startTime.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
-	 * startTime.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
-	 * startTime.add(Calendar.DAY_OF_MONTH, 1); }
-	 * startTime.set(Calendar.HOUR_OF_DAY, RUN_START_HOUR); if
-	 * (!isAlarmAlreadyUp()) { setAlarm(startTime); } } }
-	 */
 	void updateAlarm() {
 		long startMillis = System.currentTimeMillis();
 		DateTime startTime = getCurrentNYTime();
 
 		startTime = startTime.minuteOfHour().setCopy(0);
 		int hour = startTime.getHourOfDay();
-		if (hour >= RUN_END_HOUR) {
-			// run next trade date a 9AM
+		int minute = startTime.getMinuteOfHour();
+		if (hour >= RUN_END_HOUR || startTime.getDayOfWeek() == DateTimeConstants.SATURDAY || startTime.getDayOfWeek() == DateTimeConstants.SUNDAY) {
+			// run next trade date a 9AM load history
 			startTime = startTime.dayOfMonth().addToCopy(1);
-			while (startTime.getDayOfWeek() == DateTimeConstants.SATURDAY || startTime.getDayOfWeek() == DateTimeConstants.SUNDAY) {
-				startTime = startTime.dayOfMonth().addToCopy(1);
-			}
+			startTime = rollPastWeekend(startTime);
 			startTime = startTime.hourOfDay().setCopy(RUN_START_HOUR);
-			startTime = startTime.minuteOfHour().setCopy(RUN_START_MINUTE);
+			cancelAlarm(REPEAT_INTENT_ID);
 			setStartAlarm(startTime);
-		} else if (hour >= RUN_START_HOUR) {
-			// run each hour
+		} else if (hour > RUN_START_HOUR || (hour == RUN_START_HOUR && minute >= RUN_START_MINUTE)) {
+			// repeating all day
 			startTime = getCurrentNYTime();
-			if (!isAlarmAlreadyUp()) {
+			if (!isAlarmAlreadyUp(REPEAT_INTENT_ID)) {
 				setRepeatingAlarm(startTime);
 			}
-		} else {
-			// start today or next trade date at 9PM
-			while (startTime.getDayOfWeek() == DateTimeConstants.SATURDAY || startTime.getDayOfWeek() == DateTimeConstants.SUNDAY) {
-				startTime = startTime.dayOfMonth().addToCopy(1);
-			}
+		} else if (hour == RUN_START_HOUR && minute < RUN_START_MINUTE) {
+			// start when market opens
+			startTime = rollPastWeekend(startTime);
 			startTime = startTime.hourOfDay().setCopy(RUN_START_HOUR);
 			startTime = startTime.minuteOfHour().setCopy(RUN_START_MINUTE);
-			// if (!isAlarmAlreadyUp()) {
 			setStartAlarm(startTime);
-			// }
+		} else {
+			// load history 9am
+			startTime = rollPastWeekend(startTime);
+			startTime = startTime.hourOfDay().setCopy(RUN_START_HOUR);
+			setStartAlarm(startTime);
 		}
 		Log.i(TAG, "Setup Alarm time ms=" + (System.currentTimeMillis() - startMillis));
 	}
 
+	DateTime rollPastWeekend(DateTime startTime) {
+		while (startTime.getDayOfWeek() == DateTimeConstants.SATURDAY || startTime.getDayOfWeek() == DateTimeConstants.SUNDAY) {
+			startTime = startTime.dayOfMonth().addToCopy(1);
+		}
+		return startTime;
+	}
+
+	PendingIntent setupIntent(int intentId, String subAction) {
+		Intent intent = new Intent(context, UpdateService.class);
+		intent.putExtra(UpdateService.SERVICE_ACTION, subAction);
+		PendingIntent pDailyIntent = PendingIntent.getService(context, intentId, intent, 0);
+		return pDailyIntent;
+	}
+	
 	void setRepeatingAlarm(DateTime startTime) {
-		Intent dailyIntent = alarmScheduleIntent;
-		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_SCHEDULE);
-		PendingIntent pDailyIntent = PendingIntent.getService(context, DAILY_INTENT_ID, dailyIntent, 0);
+		PendingIntent pDailyIntent = setupIntent(REPEAT_INTENT_ID, UpdateService.ACTION_REPEATING);
 		AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		long interval = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
 		alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, startTime.getMillis(), interval, pDailyIntent);
@@ -127,17 +113,23 @@ public class AlarmSetup extends Thread {
 	}
 
 	void setStartAlarm(DateTime startTime) {
-		Intent dailyIntent = alarmScheduleIntent;
-		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_SCHEDULE);
-		PendingIntent pDailyIntent = PendingIntent.getService(context, DAILY_START_INTENT_ID, dailyIntent, 0);
+		PendingIntent pDailyIntent = setupIntent(DAILY_START_INTENT_ID, UpdateService.ACTION_SCHEDULE);
 		AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		alarm.set(AlarmManager.RTC_WAKEUP, startTime.getMillis(), pDailyIntent);
 		Log.i(TAG, "Setup Alarm Manager to start service at " + formatStartTime(startTime));
-		scheduleSetupNotice(startTime);
+		logServiceEvent(startTime);
 	}
 	
-	boolean isAlarmAlreadyUp() {
-		boolean alarmUp = (PendingIntent.getService(context.getApplicationContext(), DAILY_INTENT_ID, alarmScheduleIntent, PendingIntent.FLAG_NO_CREATE) != null);
+	void cancelAlarm(int intentId) {
+		PendingIntent pIntent = setupIntent(intentId, UpdateService.ACTION_REPEATING);
+		AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+		alarm.cancel(pIntent);
+		Log.d(TAG,"Cancel Alarm "+intentId);
+	}
+	
+	boolean isAlarmAlreadyUp(int intentId) {
+		Intent intent = new Intent(context, UpdateService.class);
+		boolean alarmUp = (PendingIntent.getService(context.getApplicationContext(), intentId, intent, PendingIntent.FLAG_NO_CREATE) != null);
 
 		if (alarmUp) {
 			Log.d(TAG, "Alarm is already active");
@@ -151,21 +143,24 @@ public class AlarmSetup extends Thread {
 		return sdf.format(startTime.toDate());
 	}
 	 
-	/*
-	String formatStartTime(DateTime startTime) {
-		DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
-		return fmt.print(startTime);
-	}*/
 	void scheduleSetupNotice(DateTime startTime, int repeating) {
 		Resources res = context.getApplicationContext().getResources();
-		notifier.sendNotice(50000L, res.getString(R.string.scheduleSetupSubject),
-				String.format(res.getString(R.string.scheduleRepeatingMessage, formatStartTime(startTime)), repeating));
+		String message = String.format(res.getString(R.string.scheduleRepeatingMessage, formatStartTime(startTime)), repeating);
+		logStartEvent(message);
 	}
 
-	void scheduleSetupNotice(DateTime startTime) {
+	void logServiceEvent(DateTime startTime) {
 		Resources res = context.getApplicationContext().getResources();
-		notifier.sendNotice(50000L, res.getString(R.string.scheduleSetupSubject),
-				String.format(res.getString(R.string.scheduleStartMessage, formatStartTime(startTime))));
+		String message = String.format(res.getString(R.string.scheduleStartMessage, formatStartTime(startTime)));
+		logStartEvent(message);
+	}
+	
+	void logStartEvent(String message) {
+		ContentValues values = new ContentValues();
+		values.put(ServiceLogTable.COLUMN_MESSAGE, message);
+		values.put(ServiceLogTable.COLUMN_SERVICE_TYPE, ServiceType.SETUP.getIndex());
+		values.put(ServiceLogTable.COLUMN_TIMESTAMP, DateTime.now().toString(ServiceLogTable.timestampFormat));
+		context.getContentResolver().insert(PaiContentProvider.SERVICE_LOG_URI, values);
 	}
 
 	public DateTime getCurrentNYTime() {

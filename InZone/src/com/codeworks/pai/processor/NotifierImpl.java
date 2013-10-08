@@ -12,25 +12,29 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
+import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.R;
 import com.codeworks.pai.StudyActivity;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.PaiStudyTable;
 import com.codeworks.pai.db.model.EmaRules;
+import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Rules;
+import com.codeworks.pai.db.model.SmaRules;
 
 public class NotifierImpl implements Notifier {
 	private static final String TAG = NotifierImpl.class.getSimpleName();
-	SimpleDateFormat noticeDateFormat = new SimpleDateFormat("yyyyMMdd kk:mm", Locale.US);
 	Context context;
 
 	public NotifierImpl(Context context) {
@@ -45,18 +49,26 @@ public class NotifierImpl implements Notifier {
 		Resources res = context.getResources();
 
 		for (PaiStudy study : studies) {
-			// TODO why is this always EMA rules.
-			
-			Rules rules = new EmaRules(study);
-			rules.updateNotice();
-			String additionalMessage = "";
-			if (rules.hasTradedBelowMAToday() && !Notice.POSSIBLE_WEEKLY_DOWNTREND_TERMINATION.equals(study.getNotice())) {
-				additionalMessage = 
-						String.format(res.getString(R.string.notice_has_traded_below_ma_text), study.getSymbol());
-			}
-			if (saveStudyNoticeIfChanged(study) && !Notice.NONE.equals(study.getNotice()) && study.getNotice().getSubject() != 0 && study.getNotice().getMessage() != 0) {
-				sendNotice(study.getSecurityId(), res.getString(study.getNotice().getSubject()),
-						String.format(res.getString(study.getNotice().getMessage()), study.getSymbol()) + "\n" + additionalMessage);
+			if (study.isValid() && !study.hasInsufficientHistory()) {
+				Rules rules;
+				if (MaType.S.equals(study.getMaType())) {
+					rules = new SmaRules(study);
+				} else {
+					rules = new EmaRules(study);
+				}
+				rules.updateNotice();
+				String additionalMessage = "";
+				if (rules.hasTradedBelowMAToday() && !Notice.POSSIBLE_WEEKLY_DOWNTREND_TERMINATION.equals(study.getNotice())) {
+					additionalMessage = String.format(res.getString(R.string.notice_has_traded_below_ma_text), study.getSymbol());
+				}
+				boolean sendNotice = saveStudyNoticeIfChanged(study) && !Notice.NONE.equals(study.getNotice()) && study.getNotice().getSubject() != 0
+						&& study.getNotice().getMessage() != 0;
+				Log.d(TAG, "SendNotice = " + sendNotice + " for " + study.getSymbol() + " Prot=" + study.getPortfolioId());
+				if (sendNotice) {
+
+					sendNotice(study.getSecurityId(), res.getString(study.getNotice().getSubject()),
+							String.format(res.getString(study.getNotice().getMessage()), study.getSymbol()) + "\n" + additionalMessage);
+				}
 			}
 		}
 	}
@@ -64,29 +76,37 @@ public class NotifierImpl implements Notifier {
 	boolean saveStudyNoticeIfChanged(PaiStudy study) {
 		boolean changed = false;
 		String[] projection = new String[] { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_NOTICE, PaiStudyTable.COLUMN_NOTICE_DATE };
-		String selection = "symbol = ? ";
-		String[] selectionArgs = new String[] { study.getSymbol() };
-		Cursor studyCursor = getContentResolver().query(PaiContentProvider.PAI_STUDY_URI, projection, selection, selectionArgs, null);
+		Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + study.getSecurityId());
+		Cursor studyCursor = getContentResolver().query(studyUri, projection, null, null, null);
 		try {
 			ContentValues values = new ContentValues();
 			values.put(PaiStudyTable.COLUMN_NOTICE, study.getNotice().getIndex());
-			values.put(PaiStudyTable.COLUMN_NOTICE_DATE, noticeDateFormat.format(study.getNoticeDate()==null? new Date(): study.getNoticeDate()));
-			Log.d(TAG, "Updating Study " + study.toString());
-			studyCursor.moveToFirst();
-			Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + studyCursor.getLong(0));
-			Notice lastNotice = Notice.fromIndex(studyCursor.getInt(1));
-			if (study.getNotice() != null && !study.getNotice().equals(lastNotice)) {
-				getContentResolver().update(studyUri, values, null, null);
-				changed = true;
+			values.put(PaiStudyTable.COLUMN_NOTICE_DATE, PaiStudyTable.noticeDateFormat.format(study.getNoticeDate()==null? new Date(): study.getNoticeDate()));
+			if (studyCursor.moveToFirst()) {
+				Notice lastNotice = Notice.fromIndex(studyCursor.getInt(1));
+				String lastNoticeDate = studyCursor.getString(2);
+				Log.d(TAG,
+						"Notice upd " + study.getSymbol() + " p=" + study.getPortfolioId() + " last=" + lastNotice.getIndex() + " new="
+								+ values.getAsString(PaiStudyTable.COLUMN_NOTICE) + " last=" + lastNoticeDate + " new="
+								+ values.getAsString(PaiStudyTable.COLUMN_NOTICE_DATE));
+				if (study.getNotice() != null && !study.getNotice().equals(lastNotice)) {
+					studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + study.getSecurityId());
+					if (getContentResolver().update(studyUri, values, null, null) != 1) {
+						Log.d(TAG, "Notice update failed");
+					}
+					changed = true;
+				} else {
+					changed = false;
+				}
 			} else {
-				changed = false;
+				Log.d(TAG,"study not found "+study.toString() );
 			}
-
 		} finally {
 			studyCursor.close();
 		}
 		return changed;
 	}
+
 	/**
 	 * Create Notification from PaiStucyListActivity
 	 * 
@@ -96,19 +116,29 @@ public class NotifierImpl implements Notifier {
 	 */
 	public void sendNotice(long securityId, String title, String text) {
 		Log.d(TAG, String.format("create notice title %1$s with text %2$s", title, text));
+
+		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+		String ringtoneName = sharedPreferences.getString(PaiUtils.PREF_RINGTONE, "none");
+		Uri ringtoneUri;
+		if ("none".equals(ringtoneName) || ringtoneName == null) {
+			ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+		} else {
+			ringtoneUri = Uri.parse(ringtoneName);
+		}
+		
+		boolean vibrate = sharedPreferences.getBoolean(PaiUtils.PREF_VIBRATE_ON, false);
+		
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context).setSmallIcon(R.drawable.ic_launcher)
 				.setContentTitle(title).setContentText(text);
+		
 		mBuilder.setAutoCancel(true);
 		mBuilder.setOnlyAlertOnce(true);
-		mBuilder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+		mBuilder.setSound(ringtoneUri);
+		if (vibrate) {
+			long[] pattern = { 500, 100, 100, 500 };
+			mBuilder.setVibrate(pattern);
+		}
 		mBuilder.setDefaults(Notification.DEFAULT_LIGHTS);
-/*
- *    final Uri ringtone = Uri.parse(PreferenceManager.getDefaultSharedPreferences(this).getString("ringtone", getString(R.string.settings_default_ringtone)));
-
-    nb.setDefaults(Notification.DEFAULT_VIBRATE);
-    nb.setSound(ringtone);      
-    nb.setDefaults(Notification.DEFAULT_LIGHTS);
- */
 		mBuilder.setContentIntent(createBackStackIntent());
 
 		NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

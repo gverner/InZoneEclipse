@@ -79,6 +79,7 @@ public class DataReaderYahoo implements DataReader {
 		try {
 			String urlStr = buildRealtimeUrl(security.getSymbol());
 			String searchStr = "yfs_l84_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
+			// Fund Different yfs_l10_pttrx
 			//String searchBid = "yfs_b00_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
 			//String searchAsk = "yfs_a00_" + security.getSymbol().toLowerCase(Locale.US) + "\">";
 			String searchName = "class=\"title\"><h2>";

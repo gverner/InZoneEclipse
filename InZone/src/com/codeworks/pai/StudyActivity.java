@@ -164,19 +164,28 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 			dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_MANUAL_MENU);
 			startService(dailyIntent);
 			break;
+		
 		case R.id.itemStopService:
 			stopService(dailyIntent);
 			break;
+		
 		case R.id.portfolio:
 			Intent intent = new Intent();
 			intent.setClassName(getPackageName(), SecurityListActivity.class.getName());
 			intent.putExtra(SecurityListActivity.ARG_PORTFOLIO_ID, portfolioId);
 			startActivity(intent);
 			break;
+
 		case R.id.action_settings:
 			Intent settingsIntent = new Intent();
 			settingsIntent.setClassName(getPackageName(), SettingsActivity.class.getName());
 			startActivity(settingsIntent);
+			break;
+			
+		case R.id.itemServiceLog:
+			Intent serviceLogIntent = new Intent();
+			serviceLogIntent.setClassName(getPackageName(), ServiceLogListActivity.class.getName());
+			startActivity(serviceLogIntent);
 			break;
 		}
 		
@@ -234,6 +243,8 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 			startService(dailyIntent);
 		}
 		serviceStartedByCreate = false;
+		//SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		//Toast.makeText(this, "Ringtone: " + pref.getString(PaiUtils.PREF_RINGTONE, "none"), Toast.LENGTH_SHORT).show();
 		
 	}
 
@@ -258,7 +269,7 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 		if ((PaiUtils.PREF_PORTFOLIO_KEY + 3).equals(key)) {
 			getActionBar().getTabAt(2).setText(sharedPreferences.getString(key, ""));
 		}
-		
+
 	}
 
 

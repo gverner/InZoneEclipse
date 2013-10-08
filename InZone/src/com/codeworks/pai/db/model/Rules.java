@@ -78,7 +78,7 @@ public interface Rules {
 	
 	public abstract String getTrendText(Resources res);
 	
-	public abstract String getAdditionalAlerts(Resources res);
+	public abstract StringBuilder getAdditionalAlerts(Resources res);
 	
 	public abstract void updateNotice();
 }

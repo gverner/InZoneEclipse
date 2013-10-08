@@ -8,6 +8,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -22,7 +23,11 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.codeworks.pai.R;
+import com.codeworks.pai.contentprovider.PaiContentProvider;
+import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.ServiceLogTable;
 import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.ServiceType;
 
 public class UpdateService extends Service implements OnSharedPreferenceChangeListener {
 	private static final String	TAG								= UpdateService.class.getSimpleName();
@@ -36,6 +41,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	public static final String	PROGRESS_BAR_STATUS				= "com.codeworks.pai.updateservice.progress.status";
 
 	public static final String	ACTION_SCHEDULE					= "action_schedule";
+	public static final String	ACTION_REPEATING	            = "action_repeating";
 	public static final String	ACTION_ONE_TIME					= "action_one_time";
 	public static final String	ACTION_MANUAL					= "action_manual";
 	public static final String	ACTION_MANUAL_MENU				= "action_manual_menu";
@@ -43,6 +49,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	public static final String	ACTION_SET_PROGRESS_BAR			= "action_set_progress_bar";
 
 	public static final String	KEY_PREF_UPDATE_FREQUENCY_TYPE	= "pref_updateFrequencyType";
+
 	Updater						updater;
 	PriceUpdater				priceUpdater;
 	Processor					processor						= null;
@@ -99,8 +106,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		sharedPref.unregisterOnSharedPreferenceChangeListener(this);
 
 		Log.d(TAG, "on Destroy'd");
-		updateServiceNotice(R.string.serviceStoppedMessage, updater != null ? updater.getNumMessages(): 0);
-		makeToast("Price Update Service Stopped", Toast.LENGTH_LONG);
+		//makeToast("Price Update Service Stopped", Toast.LENGTH_LONG);
 	}
 
 	SharedPreferences getSharedPreferences() {
@@ -120,22 +126,24 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 			Log.e(TAG, "onStartCommand receive null bundle");
 			return START_STICKY;
 		}
-
 		String action = (String) bundle.get(SERVICE_ACTION);
-		if (ACTION_SCHEDULE.equals(action) || ACTION_MANUAL.equals(action) || ACTION_MANUAL_MENU.equals(action)) {
+		if (ACTION_SCHEDULE.equals(action) || ACTION_MANUAL.equals(action) || ACTION_MANUAL_MENU.equals(action) || ACTION_REPEATING.equals(action)) {
 			if (ACTION_MANUAL.equals(action)) {
 				Log.i(TAG, "Manual start");
 			} else {
 				Log.i(TAG, "Scheduled start");
-				scheduledStartNotice();
+				scheduledStartNotice(action);
+			}
+			// clear service log on schedule start 
+			if (ACTION_SCHEDULE.equals(action)) {
+				clearServiceLog();
 			}
 			if (!updater.isRunning()) {
 				updater.start();
-				makeToast("Price Update Service Started", Toast.LENGTH_LONG);
+				//makeToast("Price Update Service Started", Toast.LENGTH_LONG);
 				Log.i(TAG, "on Starte'd");
 			} else {
-				
-				updater.restart(!ACTION_MANUAL_MENU.equals(action)); // read history if from MENU
+				updater.restart(ACTION_MANUAL.equals(action)); // Full update if from MENU or Schedule otherwise priceOnly
 				Log.i(TAG, "an Re-Starte'd");
 			}
 			if (!alarmSetup.isAlive() && !alarmSetup.isRunning()) {
@@ -170,18 +178,53 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		return START_STICKY;
 	}
 
-	void scheduledStartNotice() {
+	void scheduledStartNotice(String action) {
 		Resources res = getApplicationContext().getResources();
-		notifier.sendNotice(50000L, res.getString(R.string.scheduledStartSubject),
-				String.format(res.getString(R.string.scheduledStartMessage)));
+		String message;
+		if (ACTION_SCHEDULE.equals(action)) {
+			message = res.getString(R.string.startTypeSchedule);
+		} else if (ACTION_REPEATING.equals(action)) {
+			message = res.getString(R.string.startTypeRepeating);
+		} else if (ACTION_MANUAL.equals(action)) {
+			message = res.getString(R.string.startTypeManual);
+		} else if (ACTION_MANUAL_MENU.equals(action)) {
+			message = res.getString(R.string.startTypeManualMenu);
+		} else {
+			message = action;
+			//return; // no logging
+		}
+		ContentValues values = new ContentValues();
+
+		values.put(ServiceLogTable.COLUMN_MESSAGE, message);
+		values.put(ServiceLogTable.COLUMN_SERVICE_TYPE, ServiceType.START.getIndex());
+		values.put(ServiceLogTable.COLUMN_TIMESTAMP, DateTime.now().toString(ServiceLogTable.timestampFormat));
+
+		insertServiceLog(values);
 	}
 
-	void updateServiceNotice(int messageKey, int numMessages) {
+	void updateServiceNotice(int messageKey, int numMessages, boolean priceOnly, long runtime) {
 		Resources res = getApplicationContext().getResources();
-		notifier.sendServiceNotice(50002, res.getString(R.string.updateServiceSubject),
-				res.getString(messageKey), numMessages);
+		ContentValues values = new ContentValues();
+		values.put(ServiceLogTable.COLUMN_MESSAGE, res.getString(messageKey));
+		values.put(ServiceLogTable.COLUMN_SERVICE_TYPE, priceOnly ? ServiceType.PRICE.getIndex() : ServiceType.FULL.getIndex());
+		values.put(ServiceLogTable.COLUMN_TIMESTAMP, DateTime.now().toString(ServiceLogTable.timestampFormat));
+		values.put(ServiceLogTable.COLUMN_ITERATION, numMessages);
+		values.put(ServiceLogTable.COLUMN_RUNTIME, runtime);
+		
+		insertServiceLog(values);
 	}
 
+	void insertServiceLog(ContentValues values) {
+		getContentResolver().insert(PaiContentProvider.SERVICE_LOG_URI, values);
+	}
+
+	void clearServiceLog() {
+		String selection = ServiceLogTable.COLUMN_TIMESTAMP + " < ? ";
+		String[] selectionArgs = { new DateTime().toString(ServiceLogTable.timestampFormat).substring(0,10) };
+		int rowsDeleted = getContentResolver().delete(PaiContentProvider.SERVICE_LOG_URI, selection, selectionArgs);
+		Log.d(TAG,rowsDeleted+" Deleted Sevice Log Events Deleted "+selectionArgs[0]);
+	}
+	
 	/**
 	 * wrapping toast to remove dependency during unit test.
 	 * 
@@ -297,7 +340,6 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 			while (running) {
 				try {
 					startTime = System.currentTimeMillis();
-					updateServiceNotice(R.string.serviceRunningMessage, numMessages++);
 					progressBarStart();
 					Log.d(TAG, "Updater Running");
 					List<PaiStudy> studies;
@@ -310,8 +352,9 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 					}
 				
 					notifier.updateNotification(studies);
+					boolean historyReloaded = scanHistoryReloaded(studies);
 					if (isMarketOpen()) {
-						updateServiceNotice(R.string.servicePausedMessage, numMessages++);
+						updateServiceNotice(historyReloaded ?  R.string.servicePausedHistory: R.string.servicePausedMessage, numMessages++, priceOnly, System.currentTimeMillis() - startTime);
 						progressBarStop();
 						synchronized (lock) {
 							// if notified true we missed a notify, so restart loop.
@@ -325,6 +368,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 					} else {
 						Log.d(TAG, "Market is Closed - Service will stop");
 						running = false;
+						updateServiceNotice(historyReloaded ? R.string.serviceStoppedHistory : R.string.serviceStoppedMessage, numMessages++, priceOnly, System.currentTimeMillis() - startTime);
 						progressBarStop();
 						stopSelf();
 					}
@@ -334,6 +378,16 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 				}
 				//progressBarStop();
 			}
+		}
+
+		boolean scanHistoryReloaded(List<PaiStudy> studies) {
+			boolean historyReloaded = false;
+			for (PaiStudy study : studies) {
+				if (study.wasHistoryReloaded()) {
+					historyReloaded = true;
+				}
+			}
+			return historyReloaded;
 		}
 
 	}

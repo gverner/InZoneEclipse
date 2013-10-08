@@ -143,5 +143,25 @@ public abstract class RulesBase implements Rules {
 		}
 		return sb.toString();
 	}
+	/**
+	 * Super Version to contain common alerts
+	 */
+	public StringBuilder getAdditionalAlerts(Resources res) {
+		StringBuilder alert = new StringBuilder();
+
+		if (study.hasDelayedPrice()) {
+			alert.append(res.getString(R.string.alert_delayed_price));
+			alert.append("\n");
+		}
+		if (study.hasInsufficientHistory()) {
+			alert.append(res.getString(R.string.alert_insufficent_history));
+			alert.append("\n");
+		}
+		if (study.hasNoPrice()) {
+			alert.append(res.getString(R.string.alert_no_price));
+			alert.append("\n");
+		}
+		return alert;
+	}
 
 }

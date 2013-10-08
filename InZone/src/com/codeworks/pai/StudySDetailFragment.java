@@ -53,45 +53,15 @@ public class StudySDetailFragment extends Fragment {
 	}
 
 	private void fillData(Long id) {
-		String[] projection = { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_NAME, PaiStudyTable.COLUMN_MA_TYPE,
-				PaiStudyTable.COLUMN_MA_WEEK, PaiStudyTable.COLUMN_MA_MONTH, PaiStudyTable.COLUMN_MA_LAST_WEEK, PaiStudyTable.COLUMN_MA_LAST_MONTH,
-				PaiStudyTable.COLUMN_PRICE, PaiStudyTable.COLUMN_PRICE_LAST_WEEK, PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_STDDEV_WEEK,
-				PaiStudyTable.COLUMN_STDDEV_MONTH, PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.COLUMN_SMA_MONTH,
-				PaiStudyTable.COLUMN_SMA_LAST_MONTH, PaiStudyTable.COLUMN_SMA_STDDEV_MONTH, PaiStudyTable.COLUMN_SMA_STDDEV_WEEK,
-				PaiStudyTable.COLUMN_SMA_WEEK, PaiStudyTable.COLUMN_SMA_LAST_WEEK , PaiStudyTable.COLUMN_LOW, PaiStudyTable.COLUMN_HIGH};
 
 		Uri uri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + id);
-		Cursor cursor = getActivity().getContentResolver().query(uri, projection, null, null, null);
+		Cursor cursor = getActivity().getContentResolver().query(uri, PaiStudyTable.getFullProjection(), null, null, null);
 		if (cursor != null)
 			try {
 				cursor.moveToFirst();
-				String symbol = cursor.getString(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SYMBOL));
-				PaiStudy security = new PaiStudy(symbol);
-
-				security.setSecurityId(cursor.getLong(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_ID)));
-				security.setName(cursor.getString(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_NAME)));
-				security.setMaType(MaType.parse(cursor.getString(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_MA_TYPE))));
-				security.setMaWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_MA_WEEK)));
-				security.setMaMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_MA_MONTH)));
-				security.setMaLastWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_MA_LAST_WEEK)));
-				security.setMaLastMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_MA_LAST_MONTH)));
-				security.setPrice(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PRICE)));
-				security.setPriceLastWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PRICE_LAST_WEEK)));
-				security.setPriceLastMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PRICE_LAST_MONTH)));
-				security.setStddevWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_STDDEV_WEEK)));
-				security.setStddevMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_STDDEV_MONTH)));
-				security.setAverageTrueRange(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_AVG_TRUE_RANGE)));
-				security.setPriceDate(cursor.getString(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PRICE_DATE)));
-				security.setSmaMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_MONTH)));
-				security.setSmaLastMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_LAST_MONTH)));
-				security.setSmaStddevMonth(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_STDDEV_MONTH)));
-				security.setSmaStddevWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_STDDEV_WEEK)));
-				security.setSmaWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_WEEK)));
-				security.setSmaLastWeek(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SMA_LAST_WEEK)));
-				security.setLow(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_LOW)));
-				security.setHigh(cursor.getDouble(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_HIGH)));
+				PaiStudy security = PaiStudyTable.loadStudy(cursor); 
 				
-				((TextView) getView().findViewById(R.id.sdfSymbol)).setText(symbol);
+				((TextView) getView().findViewById(R.id.sdfSymbol)).setText(security.getSymbol());
 				((TextView) getView().findViewById(R.id.sdfName)).setText(security.getName());
 				populateView(security);
 
@@ -119,50 +89,17 @@ public class StudySDetailFragment extends Fragment {
 		setDouble(getView(), study.getAverageTrueRange() / 4, R.id.sdfAtr25);
 		setDouble(getView(), study.getMaWeek() + (study.getAverageTrueRange() / 4), R.id.sdfPricePlusAtr25);
 		
-		/*
-		double highMovingAverage = Math.max(study.getSmaWeek(), study.getMaWeek());
-		double emaBuyZoneTop = study.getMaWeek() + (study.getStddevWeek() * SmaRules.ZONE_INNER);
-		double smaBuyZoneTop = study.getSmaWeek() + (study.getSmaStddevWeek() * SmaRules.ZONE_INNER);
-		double highTop = Math.max(smaBuyZoneTop, emaBuyZoneTop);
-		double buyZoneTop  = Math.max(highMovingAverage, highTop);
-		if (study.getSmaWeek() < study.getMaWeek()) {
-			setDouble(getView(), emaBuyZoneTop, R.id.sdfBuyZone4Value);
-			setString(getView(), "EMA Top", R.id.sdfBuyZone4);
-			setDouble(getView(), smaBuyZoneTop, R.id.sdfBuyZone3Value);
-			setString(getView(), "SMA Top", R.id.sdfBuyZone3);
-			setDouble(getView(), study.getMaWeek(), R.id.sdfBuyZone2Value);
-			setString(getView(), "EMA Bot", R.id.sdfBuyZone2);
+		if (study.isValidWeek()) {
 			setDouble(getView(), study.getSmaWeek(), R.id.sdfMaWeekly);
-		} else {
-			setDouble(getView(), emaBuyZoneTop, R.id.sdfBuyZone4Value);
-			setString(getView(), "EMA Top", R.id.sdfBuyZone4);
-			setDouble(getView(), smaBuyZoneTop, R.id.sdfBuyZone3Value);
-			setString(getView(), "SMA Top", R.id.sdfBuyZone3);
-			setDouble(getView(), study.getMaWeek(), R.id.sdfBuyZone2Value);
-			setString(getView(), "EMA Bot", R.id.sdfBuyZone2);
-			setDouble(getView(), study.getSmaWeek(), R.id.sdfMaWeekly);
-			
-		}*/
-
-		setDouble(getView(), study.getSmaWeek(), R.id.sdfMaWeekly);
+		}
 		
-		/*
-		setDouble(getView(), rules.calcUpperSellZoneTop(Period.Week), R.id.sdfWeeklyUpperSellTop);
-		setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Week), R.id.sdfWeeklyUpperSellBottom);
-		setDouble(getView(), rules.calcUpperBuyZoneTop(Period.Week), R.id.sdfWeeklyUpperBuyTop);
-		setDouble(getView(), rules.calcUpperBuyZoneBottom(Period.Week), R.id.sdfMaWeekly);
-		setDouble(getView(), rules.calcLowerSellZoneBottom(Period.Week), R.id.sdfWeeklyLowerSellBottom);
-		setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Week), R.id.sdfWeeklyLowerBuyTop);
-		setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Week), R.id.sdfWeeklyLowerBuyBottom);
-	    */
-		setDouble(getView(), rules.calcUpperSellZoneTop(Period.Month), R.id.sdfMonthlySellTop);
-		setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Month), R.id.sdfMonthlySellBottom);
-		//setDouble(getView(), rules.calcUpperBuyZoneTop(Period.Month), R.id.sdfMonthlyUpperBuyTop);
-		setDouble(getView(), rules.calcUpperBuyZoneBottom(Period.Month), R.id.sdfMaMonthly);
-		//setDouble(getView(), rules.calcLowerSellZoneBottom(Period.Month), R.id.sdfMonthlyLowerSellBottom);
-		setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Month), R.id.sdfMonthlyPDL1);
-		setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Month), R.id.sdfMonthlyPDL2);
-
+		if (study.isValidMonth()) {
+			setDouble(getView(), rules.calcUpperSellZoneTop(Period.Month), R.id.sdfMonthlySellTop);
+			setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Month), R.id.sdfMonthlySellBottom);
+			setDouble(getView(), rules.calcUpperBuyZoneBottom(Period.Month), R.id.sdfMaMonthly);
+			setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Month), R.id.sdfMonthlyPDL1);
+			setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Month), R.id.sdfMonthlyPDL2);
+		}
 		rules.updateNotice();
 		StringBuilder alertMsg = new StringBuilder();
 		alertMsg.append(rules.getTrendText(getResources()));
@@ -173,7 +110,7 @@ public class StudySDetailFragment extends Fragment {
 			alertMsg.append(String.format(getResources().getString(study.getNotice().getMessage()), study.getSymbol()));
 			alertMsg.append("\n");
 		}
-		String addAlert = rules.getAdditionalAlerts(getResources());
+		StringBuilder addAlert = rules.getAdditionalAlerts(getResources());
 		if (addAlert != null && addAlert.length() > 0) {
 			alert = true;
 			alertMsg.append(addAlert);
@@ -186,11 +123,12 @@ public class StudySDetailFragment extends Fragment {
 			}
 			setString(getView(), alertMsg.toString(), R.id.sdfAlertText);
 		}
-		
-		setString(getView(), rules.inCash(), R.id.sdfInCashText);
-		setString(getView(), rules.inCashAndPut(), R.id.sdfInCashAndPutText);
-		setString(getView(), rules.inStock(), R.id.sdfInStockText);
-		setString(getView(), rules.inStockAndCall(), R.id.sdfInStockAndCallText);
+		if (study.getSmaWeek() != 0 && !study.hasInsufficientHistory()) {
+			setString(getView(), rules.inCash(), R.id.sdfInCashText);
+			setString(getView(), rules.inCashAndPut(), R.id.sdfInCashAndPutText);
+			setString(getView(), rules.inStock(), R.id.sdfInStockText);
+			setString(getView(), rules.inStockAndCall(), R.id.sdfInStockAndCallText);
+		}
 	}
 
 	TextView setDouble(View view, double value, int viewId) {

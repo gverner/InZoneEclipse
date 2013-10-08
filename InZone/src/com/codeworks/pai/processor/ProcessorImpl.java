@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeComparator;
 
 import android.content.ContentResolver;
@@ -20,9 +21,11 @@ import android.util.Log;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.PaiStudyTable;
 import com.codeworks.pai.db.PriceHistoryTable;
+import com.codeworks.pai.db.ServiceLogTable;
 import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Price;
+import com.codeworks.pai.db.model.ServiceType;
 import com.codeworks.pai.study.ATR;
 import com.codeworks.pai.study.EMA2;
 import com.codeworks.pai.study.Grouper;
@@ -58,7 +61,7 @@ public class ProcessorImpl implements Processor {
 		for (PaiStudy security : studies) {
 			if (security.getPrice() != 0) {
 				if (!lastSymbol.equals(security.getSymbol())) { // cache history
-					history = getPriceHistory(security.getSymbol(),lastOnlineHistoryDbDate);
+					history = getPriceHistory(security,lastOnlineHistoryDbDate);
 					Collections.sort(history);
 					history = Collections.unmodifiableList(history);
 				} else {
@@ -72,10 +75,10 @@ public class ProcessorImpl implements Processor {
 					calculateStudy(security, history); // shallow copy of cashed history because it is modified.
 					saveStudy(security);
 				} else {
-					security.setNotice(Notice.INSUFFICIENT_HISTORY);
+					security.setInsufficientHistory(true);
 				}
 			} else {
-				security.setNotice(Notice.NO_PRICE);
+				security.setNoPrice(true);
 			}
 		}
 		return studies;
@@ -95,7 +98,7 @@ public class ProcessorImpl implements Processor {
 			if (security.getPrice() != 0) {
 					saveStudyPrice(security);
 			} else {
-				security.setNotice(Notice.NO_PRICE);
+				security.setNoPrice(true);
 			}
 		}
 		return studies;
@@ -134,6 +137,7 @@ public class ProcessorImpl implements Processor {
 				
 			} else {
 				Log.w(TAG,"Insufficent Weekly History only "+weekly.size()+" periods.");
+				security.setInsufficientHistory(true);
 			}
 		}
 		{
@@ -159,6 +163,7 @@ public class ProcessorImpl implements Processor {
 				
 			} else {
 				Log.w(TAG,"Insufficent Monthly History only "+monthly.size()+" periods.");
+				security.setInsufficientHistory(true);
 			}
 		}
 		{
@@ -217,7 +222,7 @@ public class ProcessorImpl implements Processor {
 			if (cachedQuote == null) {
 				if (!reader.readRTPrice(quote)) {
 					reader.readCurrentPrice(quote);
-					quote.setNotice(Notice.DELAYED_PRICE);
+					quote.setDelayedPrice(true);
 					Log.w(TAG, "FAILED to get real time price using delayed Price");
 				} else {
 					if (quote.getPriceDate() == null) {
@@ -257,14 +262,16 @@ public class ProcessorImpl implements Processor {
 		getContentResolver().update(securityUri, values, null, null);
 	}
 
-	List<Price> getPriceHistory(String symbol, String lastOnlineHistoryDbDate) {
+	List<Price> getPriceHistory(PaiStudy study, String lastOnlineHistoryDbDate) {
+		String TAG = "Get Price History";
 		long readDbHistoryStartTime = System.currentTimeMillis();
+		String nowDbDate = DateUtils.toDatabaseFormat(new Date());
 		String[] projection = { PriceHistoryTable.COLUMN_SYMBOL, PriceHistoryTable.COLUMN_CLOSE, PriceHistoryTable.COLUMN_DATE,
 				PriceHistoryTable.COLUMN_HIGH, PriceHistoryTable.COLUMN_LOW, PriceHistoryTable.COLUMN_OPEN,
 				PriceHistoryTable.COLUMN_ADJUSTED_CLOSE };
 		String selection = PaiStudyTable.COLUMN_SYMBOL + " = ? ";
-		String[] selectionArgs = { symbol };
-		Log.d(TAG, "Reading Price History from database "+symbol);
+		String[] selectionArgs = { study.getSymbol() };
+		Log.d(TAG, "Get History from database "+ study.getSymbol());
 		Cursor historyCursor = getContentResolver().query(PaiContentProvider.PRICE_HISTORY_URI, projection, selection, selectionArgs,
 				PriceHistoryTable.COLUMN_DATE);
 		boolean reloadHistory = true;
@@ -273,9 +280,10 @@ public class ProcessorImpl implements Processor {
 			if (historyCursor != null) {
 				if (historyCursor.moveToLast()) {
 					String lastHistoryDate = historyCursor.getString(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_DATE));
-					if (lastHistoryDate.compareTo(lastOnlineHistoryDbDate) >= 0) {
+					// how does lastHistoryDate get to be after now? added check 9/21/2013
+					if (lastHistoryDate.compareTo(lastOnlineHistoryDbDate) >= 0 && lastHistoryDate.compareTo(nowDbDate) <= 0) {
 						double lastClose = historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_CLOSE));
-						Log.d(TAG, "Price History is upto date using data from database lastDate=" + lastHistoryDate + " last Close "
+						Log.d(TAG, study.getSymbol()+" is upto date using data from database lastDate=" + lastHistoryDate + " now"+nowDbDate+" last Close "
 								+ lastClose);
 						reloadHistory = false;
 						if (historyCursor.moveToFirst()) {
@@ -309,7 +317,8 @@ public class ProcessorImpl implements Processor {
 		if (reloadHistory) {
 			long readHistoryStartTime = System.currentTimeMillis();
 			Log.d(TAG, "Price History is out-of-date reloading from history provider");
-			history = reader.readHistory(symbol);
+			history = reader.readHistory(study.getSymbol());
+			study.setHistoryReloaded(true);
 			Log.d(TAG, "Time to read on line history ms = " + (System.currentTimeMillis()-readHistoryStartTime));
 			long dbUpdateStartTime = System.currentTimeMillis();
 			if (history != null && history.size() > 0) {
@@ -324,7 +333,7 @@ public class ProcessorImpl implements Processor {
 					values.put(PriceHistoryTable.COLUMN_HIGH, price.getHigh());
 					values.put(PriceHistoryTable.COLUMN_LOW, price.getLow());
 					values.put(PriceHistoryTable.COLUMN_OPEN, price.getOpen());
-					values.put(PriceHistoryTable.COLUMN_SYMBOL, symbol);
+					values.put(PriceHistoryTable.COLUMN_SYMBOL, study.getSymbol());
 					getContentResolver().insert(PaiContentProvider.PRICE_HISTORY_URI, values);
 				} catch (Exception e) {
 					Log.e(TAG,"Exception on Insert History ",e);
@@ -333,8 +342,16 @@ public class ProcessorImpl implements Processor {
 			}
 			
 		}
-		Log.d(TAG, "Returning " + history.size() + " Price History records for symbol " + symbol);
+		Log.d(TAG, "Returning " + history.size() + " Price History records for symbol " + study.getSymbol());
 		return history;
+	}
+
+	void recordServiceLogEventLoadHistory() {
+		ContentValues values = new ContentValues();
+		values.put(ServiceLogTable.COLUMN_MESSAGE, "History Reload");
+		values.put(ServiceLogTable.COLUMN_SERVICE_TYPE, ServiceType.PRICE.getIndex());
+		values.put(ServiceLogTable.COLUMN_TIMESTAMP, DateTime.now().toString(ServiceLogTable.timestampFormat));
+		getContentResolver().insert(PaiContentProvider.SERVICE_LOG_URI, values);
 	}
 
 	String getLastestOnlineHistoryDbDate(String symbol) {
@@ -350,6 +367,9 @@ public class ProcessorImpl implements Processor {
 		ContentValues values = new ContentValues();
 		values.put(PaiStudyTable.COLUMN_PRICE, study.getPrice());
 		values.put(PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.priceDateFormat.format(study.getPriceDate()));
+		if (study.getStatusMap() != 0) {
+			values.put(PaiStudyTable.COLUMN_STATUSMAP, study.getStatusMap());
+		}
 		Log.d(TAG, "Updating Price Study " + study.toString());
 		Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + study.getSecurityId());
 		getContentResolver().update(studyUri, values, null, null);
@@ -364,22 +384,23 @@ public class ProcessorImpl implements Processor {
 		values.put(PaiStudyTable.COLUMN_PRICE, study.getPrice());
 		values.put(PaiStudyTable.COLUMN_PRICE_LAST_WEEK, study.getPriceLastWeek());
 		values.put(PaiStudyTable.COLUMN_PRICE_LAST_MONTH, study.getPriceLastMonth());
+		values.put(PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.priceDateFormat.format(study.getPriceDate()));
 		values.put(PaiStudyTable.COLUMN_STDDEV_WEEK, study.getStddevWeek());
 		values.put(PaiStudyTable.COLUMN_STDDEV_MONTH, study.getStddevMonth());
 		values.put(PaiStudyTable.COLUMN_AVG_TRUE_RANGE, study.getAverageTrueRange());
 		values.put(PaiStudyTable.COLUMN_SYMBOL, study.getSymbol());
-		values.put(PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.priceDateFormat.format(study.getPriceDate()));
 		values.put(PaiStudyTable.COLUMN_SMA_MONTH, study.getSmaMonth());
 		values.put(PaiStudyTable.COLUMN_SMA_LAST_MONTH, study.getSmaLastMonth());
 		values.put(PaiStudyTable.COLUMN_SMA_STDDEV_MONTH, study.getSmaStddevMonth());
-		values.put(PaiStudyTable.COLUMN_PORTFOLIO_ID, study.getPortfolioId());
-		values.put(PaiStudyTable.COLUMN_OPEN, study.getOpen());
-		values.put(PaiStudyTable.COLUMN_HIGH, study.getHigh());
-		values.put(PaiStudyTable.COLUMN_LOW, study.getLow());
 		values.put(PaiStudyTable.COLUMN_SMA_WEEK, study.getSmaWeek());
 		values.put(PaiStudyTable.COLUMN_SMA_LAST_WEEK,study.getSmaLastWeek());
 		values.put(PaiStudyTable.COLUMN_SMA_STDDEV_WEEK,study.getSmaStddevWeek());
+		values.put(PaiStudyTable.COLUMN_OPEN, study.getOpen());
+		values.put(PaiStudyTable.COLUMN_HIGH, study.getHigh());
+		values.put(PaiStudyTable.COLUMN_LOW, study.getLow());
 		values.put(PaiStudyTable.COLUMN_LAST_CLOSE,study.getLastClose());
+		values.put(PaiStudyTable.COLUMN_PORTFOLIO_ID, study.getPortfolioId());
+		values.put(PaiStudyTable.COLUMN_STATUSMAP, study.getStatusMap());
 
 		
 		Log.d(TAG, "Updating Study " + study.toString());

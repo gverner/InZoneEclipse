@@ -196,19 +196,13 @@ public class SmaRules  extends RulesBase {
 	}
 	
 	@Override
-	public String getAdditionalAlerts(Resources res) {
-		return "";
+	public StringBuilder getAdditionalAlerts(Resources res) {
+		return super.getAdditionalAlerts(res);
 	}
 
 	@Override
 	public void updateNotice() {
-		if (Notice.NO_PRICE.equals(study.getNotice())) {
-			// set by processor
-		} else if (Notice.INSUFFICIENT_HISTORY.equals(study.getNotice())) {
-			// set by processor
-		} else if (Notice.DELAYED_PRICE.equals(study.getNotice())) {
-			// set by processor
-		} else if (isPossibleDowntrendTermination(Period.Month)) {
+		if (isPossibleDowntrendTermination(Period.Month)) {
 			study.setNotice(Notice.POSSIBLE_WEEKLY_DOWNTREND_TERMINATION);
 		} else if (isPossibleUptrendTermination(Period.Month)) {
 			study.setNotice(Notice.POSSIBLE_WEEKLY_UPTREND_TEMINATION);
@@ -249,7 +243,7 @@ public class SmaRules  extends RulesBase {
 			}
 		} else { // Monthly DownTrend
 			if (isPossibleDowntrendTermination(Period.Month)) {
-				rule = "Wait for Weekly Close above moving average";
+				rule = "Wait for Monthly Close above moving average";
 			} else {
 				rule = "If Necessary Roll Puts to Proximal Demand Level (PDL)";
 			}

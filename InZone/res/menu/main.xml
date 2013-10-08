@@ -6,6 +6,7 @@
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="@string/action_settings"/>
+    
     <item
         android:id="@+id/itemStartSerivce"
         android:icon="@android:drawable/ic_media_play"
@@ -17,6 +18,12 @@
         android:icon="@android:drawable/ic_media_pause"
         android:title="@string/titleServiceStop">
     </item>
+    
+    <item
+        android:id="@+id/itemServiceLog"
+        android:title="@string/titleServiceLog">
+    </item>
+    
     <item android:id="@+id/portfolio" android:title="@string/portfolio" android:showAsAction="always"></item>
 
 </menu>

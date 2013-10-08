@@ -216,7 +216,7 @@ public class EmaRules extends RulesBase {
 
 	@Override
 	public boolean isWeeklyUpperSellZoneExpandedByMonthly() {
-		if (isUpTrendWeekly() && calcUpperSellZoneBottom(Period.Month) < calcUpperSellZoneBottom(Period.Week)) {
+		if (isUpTrendWeekly() && calcUpperSellZoneBottom(Period.Month) < calcUpperSellZoneBottom(Period.Week) && !study.hasInsufficientHistory()) {
 			return true;
 		} else {
 			return false;
@@ -310,8 +310,8 @@ public class EmaRules extends RulesBase {
 
 	
 	@Override
-	public String getAdditionalAlerts(Resources res) {
-		StringBuilder alert = new StringBuilder();
+	public StringBuilder getAdditionalAlerts(Resources res) {
+		StringBuilder alert = super.getAdditionalAlerts(res);
 
 		if (hasTradedBelowMAToday()) {
 			alert.append(res.getString(R.string.alert_has_traded_below_ma));
@@ -322,21 +322,12 @@ public class EmaRules extends RulesBase {
 			}
 			alert.append(res.getString(R.string.alert_sell_zone_expanded_by_monthly));
 		}
-		return alert.toString();
+		return alert;
 	}
 	
 	@Override
 	public void updateNotice() {
-		// TODO consider moving non Notice type to there own ENum and field.
-		// if truly same for both SMA and EMA then code should be in rule base.
-		
-		if (Notice.NO_PRICE.equals(study.getNotice())) {
-			// set by processor
-		} else if (Notice.INSUFFICIENT_HISTORY.equals(study.getNotice())) {
-			// set by processor
-		} else if (Notice.DELAYED_PRICE.equals(study.getNotice())) {
-			// set by processor
-		} else if (isPossibleDowntrendTermination(Period.Week)) {
+		if (isPossibleDowntrendTermination(Period.Week)) {
 			study.setNotice(Notice.POSSIBLE_WEEKLY_DOWNTREND_TERMINATION);
 		} else if (isPossibleUptrendTermination(Period.Week)) {
 			study.setNotice(Notice.POSSIBLE_WEEKLY_UPTREND_TEMINATION);

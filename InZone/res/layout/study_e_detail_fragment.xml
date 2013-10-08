@@ -449,7 +449,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
-                    android:text="C: Going For the Ride /n A: Buy Back Puts and Buy Stock"
                     android:textIsSelectable="true" />
             </LinearLayout>
 
@@ -472,7 +471,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
-                    android:text="Sell Calls in the Willing to Sell Zone AOB 47"
                     android:textIsSelectable="true" />
             </LinearLayout>
 
@@ -495,7 +493,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
-                    android:text="Going For the Ride"
                     android:textIsSelectable="true" />
             </LinearLayout>
         </LinearLayout>

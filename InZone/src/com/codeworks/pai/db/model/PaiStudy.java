@@ -12,7 +12,11 @@ import com.codeworks.pai.study.Period;
 public class PaiStudy implements Serializable {
 
 	private static final long	serialVersionUID	= -1275103175237753227L;
-
+	// Status Bit Map
+	public static int STATUS_NO_PRICE = 1;
+	public static int STATUS_DELAYED_PRICE = 2;
+	public static int STATUS_INSUFFICIENT_HISTORY = 4;
+	
 	public static String format(double value) {
 		if (value != Double.NaN) {
 			return new BigDecimal(value).setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString();
@@ -49,6 +53,9 @@ public class PaiStudy implements Serializable {
 	Date						noticeDate;
 
 	Date						priceDate;
+	int							statusMap;
+	
+	boolean						historyReloaded = false;
 
 	public PaiStudy(String symbol) {
 		this.symbol = symbol;
@@ -94,7 +101,6 @@ public class PaiStudy implements Serializable {
 		return maWeek;
 	}
 
-	
 	public double getMovingAverage(Period period) {
 		if (MaType.E.equals(maType)) {
 			if (Period.Week.equals(period)) {
@@ -110,15 +116,16 @@ public class PaiStudy implements Serializable {
 			}
 		}
 	}
-	
+
 	public String getName() {
 		return name;
 	}
 
+	
 	public Notice getNotice() {
 		return notice;
 	}
-
+	
 	public Date getNoticeDate() {
 		return noticeDate;
 	}
@@ -175,6 +182,10 @@ public class PaiStudy implements Serializable {
 		return smaWeek;
 	}
 
+	public int getStatusMap() {
+		return statusMap;
+	}
+
 	public double getStddevMonth() {
 		return stddevMonth;
 	}
@@ -185,6 +196,35 @@ public class PaiStudy implements Serializable {
 
 	public String getSymbol() {
 		return symbol;
+	}
+
+	public boolean hasDelayedPrice() {
+		return ((statusMap & STATUS_DELAYED_PRICE) != 0);
+	}
+
+	public boolean hasInsufficientHistory() {
+		return ((statusMap & STATUS_INSUFFICIENT_HISTORY) != 0);
+	}
+
+	public boolean hasNoPrice() {
+		return ((statusMap & STATUS_NO_PRICE) != 0);
+	}
+
+	/**
+	 * is valid good data
+	 * @return
+	 */
+	public boolean isValid() {
+		return (isValidMonth() && isValidWeek());
+	}
+
+	public boolean isValidMonth() {
+		return (getMaMonth() != 0) && (getSmaMonth() != 0);
+		
+	}
+
+	public boolean isValidWeek() {
+		return (getMaWeek() != 0) && (getSmaWeek() != 0);
 	}
 
 	public double round(double value) {
@@ -199,8 +239,28 @@ public class PaiStudy implements Serializable {
 		this.contracts = contracts;
 	}
 
+	public void setDelayedPrice(boolean delayed) {
+		if (delayed) {
+			statusMap = statusMap + STATUS_DELAYED_PRICE;
+		} else {
+			statusMap = statusMap - STATUS_DELAYED_PRICE;
+		}
+	}
+
 	public void setHigh(double high) {
 		this.high = high;
+	}
+
+	public void setHistoryReloaded(boolean historyReloaded) {
+		this.historyReloaded = historyReloaded;
+	}
+
+	public void setInsufficientHistory(boolean value) {
+		if (value) {
+			statusMap = statusMap + STATUS_INSUFFICIENT_HISTORY;
+		} else {
+			statusMap = statusMap - STATUS_INSUFFICIENT_HISTORY;
+		}
 	}
 
 	public void setLastClose(double lastClose) {
@@ -233,6 +293,14 @@ public class PaiStudy implements Serializable {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public void setNoPrice(boolean value) {
+		if (value) {
+			statusMap = statusMap + STATUS_NO_PRICE;
+		} else {
+			statusMap = statusMap - STATUS_NO_PRICE;
+		}
 	}
 
 	public void setNotice(Notice notice) {
@@ -286,21 +354,25 @@ public class PaiStudy implements Serializable {
 	public void setSmaLastWeek(double smaLastWeek) {
 		this.smaLastWeek = smaLastWeek;
 	}
-
+	
 	public void setSmaMonth(double smaMonth) {
 		this.smaMonth = smaMonth;
 	}
-
+	
 	public void setSmaStddevMonth(double s_stddevMonth) {
 		this.smaStddevMonth = s_stddevMonth;
 	}
-
+	
 	public void setSmaStddevWeek(double smaStddevWeek) {
 		this.smaStddevWeek = smaStddevWeek;
 	}
-
+	
 	public void setSmaWeek(double smaWeek) {
 		this.smaWeek = smaWeek;
+	}
+
+	public void setStatusMap(int statusMap) {
+		this.statusMap = statusMap;
 	}
 
 	public void setStddevMonth(double stddev_month) {
@@ -325,5 +397,9 @@ public class PaiStudy implements Serializable {
 		sb.append(" maLM=" + format(maLastMonth));
 		sb.append(" PLM=" + format(priceLastMonth));
 		return sb.toString();
+	}
+
+	public boolean wasHistoryReloaded() {
+		return historyReloaded;
 	}
 }

@@ -130,7 +130,6 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 		setProgressBar(100);
 		// Register mMessageReceiver to receive messages.
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(UpdateService.BROADCAST_UPDATE_PROGRESS_BAR));
-
 	}
 
 	  @Override
@@ -200,14 +199,10 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 	// Creates a new loader after the initLoader () call
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = new String[] { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_PRICE,
-				PaiStudyTable.COLUMN_PRICE_LAST_WEEK, PaiStudyTable.COLUMN_PRICE_LAST_MONTH, PaiStudyTable.COLUMN_MA_WEEK, PaiStudyTable.COLUMN_MA_MONTH,
-				PaiStudyTable.COLUMN_MA_LAST_WEEK, PaiStudyTable.COLUMN_MA_LAST_MONTH, PaiStudyTable.COLUMN_STDDEV_WEEK, PaiStudyTable.COLUMN_STDDEV_MONTH,
-				PaiStudyTable.COLUMN_AVG_TRUE_RANGE, PaiStudyTable.COLUMN_PRICE_DATE, PaiStudyTable.COLUMN_LAST_CLOSE, PaiStudyTable.COLUMN_LOW };
 		String selection = PaiStudyTable.COLUMN_PORTFOLIO_ID + " = ? ";
 		String[] selectionArgs = { Long.toString(portfolioId) };
 		Log.i(TAG, "Prepare Cursor Loader portfolio "+portfolioId);
-		CursorLoader cursorLoader = new CursorLoader(getActivity(), PaiContentProvider.PAI_STUDY_URI, projection, selection, selectionArgs, null);
+		CursorLoader cursorLoader = new CursorLoader(getActivity(), PaiContentProvider.PAI_STUDY_URI, PaiStudyTable.getFullProjection(), selection, selectionArgs, null);
 		return cursorLoader;
 	}
 
@@ -235,27 +230,9 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
 			if (null != cursor) {
-				// Log.d("TAG", "CursorAdapter BindView:Cursor not null");
 
-				PaiStudy study = new PaiStudy(cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_SYMBOL)));
+				PaiStudy study = PaiStudyTable.loadStudy(cursor);
 				study.setMaType(MaType.E);
-				study.setPrice(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_PRICE)));
-				study.setPriceLastWeek(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_PRICE_LAST_WEEK)));
-				study.setPriceLastMonth(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_PRICE_LAST_MONTH)));
-				study.setMaWeek(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_MA_WEEK)));
-				study.setMaMonth(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_MA_MONTH)));
-				study.setMaLastWeek(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_MA_LAST_WEEK)));
-				study.setMaLastMonth(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_MA_LAST_MONTH)));
-				study.setStddevWeek(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_STDDEV_WEEK)));
-				study.setStddevMonth(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_STDDEV_MONTH)));
-				study.setAverageTrueRange(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_AVG_TRUE_RANGE)));
-				study.setLastClose(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_LAST_CLOSE)));
-				study.setLow(cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_LOW)));
-				try {
-					study.setPriceDate(cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_PRICE_DATE)));
-				} catch (ParseException e) {
-					Log.d(TAG, "Parse Exception Price Date", e);
-				}
 				// Set the Menu Image
 				// ImageView
 				// menuImage=(ImageView)arg0.findViewById(R.id.iv_ContactImg);
@@ -264,64 +241,72 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				// Set Synbol
 				TextView symbol = (TextView) view.findViewById(R.id.quoteList_symbol);
 				symbol.setText(study.getSymbol());
-				setTrend(view, rules.isUpTrendMonthly(), R.id.quoteList_MonthyTrend);
-				setTrend(view, rules.isUpTrendWeekly(), R.id.quoteList_WeeklyTrend);
-				// Set EMA
-				TextView ema = (TextView) view.findViewById(R.id.quoteList_ema);
-				ema.setText(PaiStudy.format(study.getMaWeek()));
 				// Price
 				TextView price = (TextView) view.findViewById(R.id.quoteList_Price);
 				price.setText(PaiStudy.format(study.getPrice()));
-				
-				if (rules.hasTradedBelowMAToday()) {
-					price.setTextColor(getResources().getColor(R.color.net_negative));
-				} else {
-					ColorStateList oldColors =  ema.getTextColors(); //get original colors from ema 
-					price.setTextColor(oldColors);
-				}
 
-				double net = 0;
-				Calendar cal = GregorianCalendar.getInstance();
-				if ((study.getPriceDate() != null && DateUtils.isSameDay(study.getPriceDate(), new Date())) || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
-					net = study.getPrice() - study.getLastClose();
-				}
-				TextView textNet = (TextView) view.findViewById(R.id.quoteList_net);
-				if (net < 0 ) {
-					textNet.setText(rules.formatNet(net));
-					textNet.setTextColor(getResources().getColor(R.color.net_negative));
-				} else {
-					textNet.setText(rules.formatNet(net));
-					textNet.setTextColor(getResources().getColor(R.color.net_positive));
-				}
-				TextView textBuyZoneBot = setDouble(view, rules.calcBuyZoneBottom(), R.id.quoteList_BuyZoneBottom);
-				TextView textBuyZoneTop = setDouble(view, rules.calcBuyZoneTop(), R.id.quoteList_BuyZoneTop);
-				/*
-				if (rules.isWeeklyLowerBuyZoneCompressedByMonthly()) {
-					textBuyZoneTop.setText("*"+textBuyZoneTop.getText());
-				}*/
-				textBuyZoneBot.setBackgroundColor(rules.getBuyZoneBackgroundColor());
-				textBuyZoneTop.setBackgroundColor(rules.getBuyZoneBackgroundColor());
-				textBuyZoneBot.setTextColor(rules.getBuyZoneTextColor());
-				textBuyZoneTop.setTextColor(rules.getBuyZoneTextColor());
+				if (study.isValidWeek()) {
+					setTrend(view, rules.isUpTrendMonthly(), R.id.quoteList_MonthyTrend);
+					setTrend(view, rules.isUpTrendWeekly(), R.id.quoteList_WeeklyTrend);
+					// Set EMA
+					TextView ema = (TextView) view.findViewById(R.id.quoteList_ema);
+					ema.setText(PaiStudy.format(study.getMaWeek()));
 
-				TextView textSellZoneBot = setDouble(view, rules.calcSellZoneBottom(), R.id.quoteList_SellZoneBottom);
-				TextView textSellZoneTop = setDouble(view, rules.calcSellZoneTop(), R.id.quoteList_SellZoneTop);
-				if (rules.isWeeklyUpperSellZoneExpandedByMonthly()) {
-					textSellZoneBot.setText("*"+textSellZoneBot.getText());
-					weeklyZoneModifiedByMonthly = true;
-				}
+					if (rules.hasTradedBelowMAToday()) {
+						price.setTextColor(getResources().getColor(R.color.net_negative));
+					} else {
+						ColorStateList oldColors = ema.getTextColors(); // get
+																		// original
+																		// colors
+																		// from
+																		// ema
+						price.setTextColor(oldColors);
+					}
 
-				textSellZoneBot.setBackgroundColor(rules.getSellZoneBackgroundColor());
-				textSellZoneBot.setTextColor(rules.getSellZoneTextColor());
-				textSellZoneTop.setBackgroundColor(rules.getSellZoneBackgroundColor());
-				textSellZoneTop.setTextColor(rules.getSellZoneTextColor());
+					double net = 0;
+					Calendar cal = GregorianCalendar.getInstance();
+					if ((study.getPriceDate() != null && DateUtils.isSameDay(study.getPriceDate(), new Date()))
+							|| cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+						net = study.getPrice() - study.getLastClose();
+					}
+					TextView textNet = (TextView) view.findViewById(R.id.quoteList_net);
+					if (net < 0) {
+						textNet.setText(rules.formatNet(net));
+						textNet.setTextColor(getResources().getColor(R.color.net_negative));
+					} else {
+						textNet.setText(rules.formatNet(net));
+						textNet.setTextColor(getResources().getColor(R.color.net_positive));
+					}
+					TextView textBuyZoneBot = setDouble(view, rules.calcBuyZoneBottom(), R.id.quoteList_BuyZoneBottom);
+					TextView textBuyZoneTop = setDouble(view, rules.calcBuyZoneTop(), R.id.quoteList_BuyZoneTop);
+					/*
+					 * if (rules.isWeeklyLowerBuyZoneCompressedByMonthly()) {
+					 * textBuyZoneTop.setText("*"+textBuyZoneTop.getText()); }
+					 */
+					textBuyZoneBot.setBackgroundColor(rules.getBuyZoneBackgroundColor());
+					textBuyZoneTop.setBackgroundColor(rules.getBuyZoneBackgroundColor());
+					textBuyZoneBot.setTextColor(rules.getBuyZoneTextColor());
+					textBuyZoneTop.setTextColor(rules.getBuyZoneTextColor());
 
-				TextView lastUpdated = (TextView) getActivity().findViewById(R.id.studyList_lastUpdated);
-				if (study.getPriceDate() != null && lastUpdated != null) {
-					lastUpdated.setText(lastUpdatedFormat.format(study.getPriceDate()));
-				}
-				if (weeklyZoneModifiedByMonthly) {
-					lastUpdated.setText(lastUpdated.getText()+" * value from monthly");
+					TextView textSellZoneBot = setDouble(view, rules.calcSellZoneBottom(), R.id.quoteList_SellZoneBottom);
+					TextView textSellZoneTop = setDouble(view, rules.calcSellZoneTop(), R.id.quoteList_SellZoneTop);
+					if (rules.isWeeklyUpperSellZoneExpandedByMonthly()) {
+						textSellZoneBot.setText("*" + textSellZoneBot.getText());
+						weeklyZoneModifiedByMonthly = true;
+					}
+
+					textSellZoneBot.setBackgroundColor(rules.getSellZoneBackgroundColor());
+					textSellZoneBot.setTextColor(rules.getSellZoneTextColor());
+					textSellZoneTop.setBackgroundColor(rules.getSellZoneBackgroundColor());
+					textSellZoneTop.setTextColor(rules.getSellZoneTextColor());
+
+					TextView lastUpdated = (TextView) getActivity().findViewById(R.id.studyList_lastUpdated);
+					if (study.getPriceDate() != null && lastUpdated != null) {
+						lastUpdated.setText(lastUpdatedFormat.format(study.getPriceDate()));
+					}
+					if (weeklyZoneModifiedByMonthly) {
+						lastUpdated.setText(lastUpdated.getText() + " * value from monthly");
+					}
 				}
 
 			}

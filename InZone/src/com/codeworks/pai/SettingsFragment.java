@@ -6,14 +6,21 @@ import com.codeworks.pai.db.PaiStudyTable;
 import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.preference.RingtonePreference;
 import android.util.Log;
 
-public class SettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
+public class SettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
 	private static final String	TAG	= SettingsFragment.class.getSimpleName();
 	public static final String	KEY_PREF_SYNC_CONN		= "pref_syncConnectionType";
 	public static final String	PREF_PORTFOLIO_NAME1	= "pref_portfolio_name1";
@@ -38,6 +45,8 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 			updateSummaryName("pref_portfolio_name"+x);
 			updateSummaryType("pref_portfolio_type"+x);
 		}
+		updateRingtoneSummary();
+		updateVibrateSummary();
 	}
 
 	void updateSummaryName(String key) {
@@ -48,6 +57,38 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 		} else {
 			Log.d(TAG, "PREF IS NULL");
 		}
+	}
+	
+	void updateRingtoneSummary() {
+		RingtonePreference pref = (RingtonePreference) findPreference(PaiUtils.PREF_RINGTONE);
+		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		String ringtoneName = sharedPreferences.getString(PaiUtils.PREF_RINGTONE, "none");
+	    updateRingtoneSummary((RingtonePreference) pref, ringtoneName);
+	}
+	
+	void updateRingtoneSummary(RingtonePreference pref, String ringtoneName) {
+		Log.d(TAG,"Update ringtone summary "+ringtoneName);
+		if (ringtoneName != null && !ringtoneName.equals("")) {
+			Uri ringtoneUri = Uri.parse(ringtoneName);
+			Log.d(TAG, "Set Summary ringtone 2 " + ringtoneUri);
+			Ringtone ringtone = RingtoneManager.getRingtone(getActivity(), ringtoneUri);
+			if (ringtone != null)
+				pref.setSummary(ringtone.getTitle(getActivity()));
+			else {
+				pref.setSummary(getActivity().getResources().getString(R.string.pref_ringtone_silent));
+			}
+		} else {
+			pref.setSummary(getActivity().getResources().getString(R.string.pref_ringtone_silent));
+		}
+	}
+
+	void updateVibrateSummary() {
+		Log.d(TAG,"update vibrate summary");
+		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		boolean vibrate = sharedPreferences.getBoolean(PaiUtils.PREF_VIBRATE_ON, false);
+		CheckBoxPreference pref = (CheckBoxPreference) findPreference(PaiUtils.PREF_VIBRATE_ON);
+		Log.d(TAG, "Set vibrate  "+vibrate);
+		pref.setSummary(vibrate ? getResources().getString(R.string.pref_vibrate_on) : getResources().getString(R.string.pref_vibrate_off));		
 	}
 
 	String updateSummaryType(String key) {
@@ -67,7 +108,14 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 		return value;
 	}
 
+	@Override
+	public boolean onPreferenceChange(Preference preference, Object newValue) {
+	    updateRingtoneSummary((RingtonePreference) preference, (String) newValue);
+	    return true;
+	}
+	
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+		Log.d(TAG,"onSharedPreferenceChanged for key "+key);
 		if (key.equals(KEY_PREF_SYNC_CONN)) {
 			// SharedPreferences sharedPref =
 			// PreferenceManager.getDefaultSharedPreferences(this);
@@ -91,6 +139,10 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 			ContentValues values = new ContentValues();
 			values.put(PaiStudyTable.COLUMN_MA_TYPE, String.valueOf(value.charAt(0)));
 			getActivity().getContentResolver().update(PaiContentProvider.PAI_STUDY_URI, values, selection, selectionArgs);
+		} else if (PaiUtils.PREF_RINGTONE.equals(key)) {
+			updateRingtoneSummary();
+		} else if (PaiUtils.PREF_VIBRATE_ON.equals(key)) {
+			updateVibrateSummary();
 		}
 	}
 
@@ -99,6 +151,9 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 		super.onResume();
 		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
 		sharedPref.registerOnSharedPreferenceChangeListener(this);
+		   // A patch to overcome OnSharedPreferenceChange not being called by RingtonePreference bug 
+	    RingtonePreference pref = (RingtonePreference) findPreference(PaiUtils.PREF_RINGTONE);
+	    pref.setOnPreferenceChangeListener(this);		
 	}
 
 	@Override

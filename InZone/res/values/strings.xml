@@ -8,6 +8,7 @@
     <string name="calculate">Calculate</string>
     <string name="titleServiceStart">Start Service</string>
     <string name="titleServiceStop">Stop Service</string>
+    <string name="titleServiceLog">Service Log</string>
     <string name="study_activity_window">Zones</string>
 	<string name="study_detail_activity_window">Zone Detail</string>
     <string name="edit_security_list">Edit Portfolio</string>
@@ -68,14 +69,15 @@
     <string name="pref_updateFrequencyTypeOne">One Minute</string>
     <string name="pref_updateFrequencyTypes_default">3</string>
     <string name="scheduledStartSubject">Started by Schedule</string>
-    <string name="scheduledStartMessage">Started</string>
+    <string name="startTypeSchedule">Scheduled</string>
+    <string name="startTypeRepeating">Repeating</string>
+    <string name="startTypeManual">App</string>
+    <string name="startTypeManualMenu">Menu</string>
+    <string name="scheduledStartMessage">Started by %1$s</string>
     <string name="scheduleSetupSubject">Schedule Setup</string>
     <string name="scheduleStartMessage">Start at %1$s</string>
     <string name="scheduleRepeatingMessage">Start at %1$s repeating every %1$s</string>
     <string name="updateServiceSubject">Update Service</string>
-    <string name="serviceStoppedMessage">Stopped</string>
-    <string name="serviceRunningMessage">Running</string>
-    <string name="servicePausedMessage">Paused</string>
     <string name="sdfColumnHeader4">Monthly</string>
     <string name="sdfColumnHeader3">Weekly</string>
     <string name="sdfEColumnHeader4">Monthly</string>
@@ -99,10 +101,16 @@
    	<string name="pref_portfolio_name1_defaultValue">Weekly</string>
    	<string name="pref_portfolio_type2">Portfolio #2 Strategy</string>
    	<string name="pref_portfolio_name2">Portfolio #2 Name</string>
-   	<string name="pref_portfolio_name2_defaultValue">Monthly</string>
+   	<string name="pref_portfolio_name2_defaultValue">Simple</string>
    	<string name="pref_portfolio_type3">Portfolio #3 Strategy</string>
    	<string name="pref_portfolio_name3">Portfolio #3 Name</string>
    	<string name="pref_portfolio_name3_defaultValue">Other</string>
+   	<string name="pref_ringtone">Alert Notification Ring Tone</string>
+   	<string name="pref_ringtone_silent">Silent</string>
+   	<string name="pref_vibrate">Alert Vibrate</string>
+   	<string name="pref_vibrate_summary">Off</string>
+   	<string name="pref_vibrate_on">On</string>
+   	<string name="pref_vibrate_off">Off</string>
    	<string name="sdfInCashLabel">In Cash</string>
    	<string name="sdfInCashAndPutLabel">In Cash and Short Puts</string>
    	<string name="sdfInStockLabel">In Stock</string>
@@ -116,4 +124,18 @@
    	<string name="sdfLabelZoneWBMonthy">SMA Monthly</string>
    	<string name="sdfLabelZonePDL1">PDL1</string>
    	<string name="sdfLabelZonePDL2">PDL2</string>
+	<string name="servicelog_window">Service Log</string>
+	<string name="no_servicelog">Empty</string>
+   	<string name="servicelog_list_datetime">Time</string>
+   	<string name="servicelog_list_type">Type</string>
+   	<string name="servicelog_list_message">Message</string>
+   	<string name="servicelog_list_interation">Cnt</string>
+   	<string name="servicelog_list_runtime">Seconds</string>
+    <string name="serviceStoppedMessage">Stopped</string>
+    <string name="serviceStoppedHistory">Stopped His-Reload</string>
+    <string name="serviceRunningMessage">Running</string>
+    <string name="servicePausedMessage">Paused</string>
+    <string name="servicePausedHistory">Paused His-Reload</string>
+    <string name="serviceShutdownMessage">Shutdown</string>
+    	
 </resources>

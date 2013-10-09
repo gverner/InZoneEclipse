@@ -132,7 +132,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 				Log.i(TAG, "Manual start");
 			} else {
 				Log.i(TAG, "Scheduled start");
-				scheduledStartNotice(action);
+				createLogEventStart(action);
 			}
 			// clear service log on schedule start 
 			if (ACTION_SCHEDULE.equals(action)) {
@@ -178,7 +178,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		return START_STICKY;
 	}
 
-	void scheduledStartNotice(String action) {
+	void createLogEventStart(String action) {
 		Resources res = getApplicationContext().getResources();
 		String message;
 		if (ACTION_SCHEDULE.equals(action)) {
@@ -202,7 +202,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		insertServiceLog(values);
 	}
 
-	void updateServiceNotice(int messageKey, int numMessages, boolean priceOnly, long runtime) {
+	void createLogEvent(int messageKey, int numMessages, boolean priceOnly, long runtime) {
 		Resources res = getApplicationContext().getResources();
 		ContentValues values = new ContentValues();
 		values.put(ServiceLogTable.COLUMN_MESSAGE, res.getString(messageKey));
@@ -354,7 +354,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 					notifier.updateNotification(studies);
 					boolean historyReloaded = scanHistoryReloaded(studies);
 					if (isMarketOpen()) {
-						updateServiceNotice(historyReloaded ?  R.string.servicePausedHistory: R.string.servicePausedMessage, numMessages++, priceOnly, System.currentTimeMillis() - startTime);
+						createLogEvent(historyReloaded ?  R.string.servicePausedHistory: R.string.servicePausedMessage, numMessages++, priceOnly, System.currentTimeMillis() - startTime);
 						progressBarStop();
 						synchronized (lock) {
 							// if notified true we missed a notify, so restart loop.
@@ -368,7 +368,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 					} else {
 						Log.d(TAG, "Market is Closed - Service will stop");
 						running = false;
-						updateServiceNotice(historyReloaded ? R.string.serviceStoppedHistory : R.string.serviceStoppedMessage, numMessages++, priceOnly, System.currentTimeMillis() - startTime);
+						createLogEvent(historyReloaded ? R.string.serviceStoppedHistory : R.string.serviceStoppedMessage, numMessages++, priceOnly, System.currentTimeMillis() - startTime);
 						progressBarStop();
 						stopSelf();
 					}

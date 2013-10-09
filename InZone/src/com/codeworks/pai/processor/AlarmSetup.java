@@ -57,8 +57,6 @@ public class AlarmSetup extends Thread {
 	void updateAlarm() {
 		long startMillis = System.currentTimeMillis();
 		DateTime startTime = getCurrentNYTime();
-
-		startTime = startTime.minuteOfHour().setCopy(0);
 		int hour = startTime.getHourOfDay();
 		int minute = startTime.getMinuteOfHour();
 		if (hour >= RUN_END_HOUR || startTime.getDayOfWeek() == DateTimeConstants.SATURDAY || startTime.getDayOfWeek() == DateTimeConstants.SUNDAY) {
@@ -66,11 +64,11 @@ public class AlarmSetup extends Thread {
 			startTime = startTime.dayOfMonth().addToCopy(1);
 			startTime = rollPastWeekend(startTime);
 			startTime = startTime.hourOfDay().setCopy(RUN_START_HOUR);
+			startTime = startTime.minuteOfHour().setCopy(0);
 			cancelAlarm(REPEAT_INTENT_ID);
 			setStartAlarm(startTime);
 		} else if (hour > RUN_START_HOUR || (hour == RUN_START_HOUR && minute >= RUN_START_MINUTE)) {
 			// repeating all day
-			startTime = getCurrentNYTime();
 			if (!isAlarmAlreadyUp(REPEAT_INTENT_ID)) {
 				setRepeatingAlarm(startTime);
 			}
@@ -84,6 +82,7 @@ public class AlarmSetup extends Thread {
 			// load history 9am
 			startTime = rollPastWeekend(startTime);
 			startTime = startTime.hourOfDay().setCopy(RUN_START_HOUR);
+			startTime = startTime.minuteOfHour().setCopy(0);
 			setStartAlarm(startTime);
 		}
 		Log.i(TAG, "Setup Alarm time ms=" + (System.currentTimeMillis() - startMillis));

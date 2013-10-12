@@ -1,6 +1,5 @@
 package com.codeworks.pai;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -8,7 +7,6 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import android.R.color;
 import android.app.Activity;
 import android.app.ListFragment;
 import android.app.LoaderManager;
@@ -20,7 +18,6 @@ import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -41,7 +38,6 @@ import com.codeworks.pai.db.PaiStudyTable;
 import com.codeworks.pai.db.model.EmaRules;
 import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.db.model.PaiStudy;
-import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.processor.DateUtils;
 import com.codeworks.pai.processor.UpdateService;
 
@@ -307,9 +303,23 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 					if (weeklyZoneModifiedByMonthly) {
 						lastUpdated.setText(lastUpdated.getText() + " * value from monthly");
 					}
+				} else {
+					setText(view, "", R.id.quoteList_net);
+					setText(view, "", R.id.quoteList_ema);
+					setText(view, "", R.id.quoteList_BuyZoneBottom);
+					setText(view, "", R.id.quoteList_BuyZoneTop);
+					setText(view, "", R.id.quoteList_SellZoneBottom);
+					setText(view, "", R.id.quoteList_SellZoneTop);
+					
 				}
 
 			}
+		}
+
+		TextView setText(View view, String value, int viewId) {
+			TextView textView = (TextView) view.findViewById(viewId);
+			textView.setText(value);
+			return textView;
 		}
 
 		TextView setDouble(View view, double value, int viewId) {

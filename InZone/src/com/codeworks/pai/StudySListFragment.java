@@ -1,11 +1,9 @@
 package com.codeworks.pai;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import android.R.color;
 import android.app.Activity;
 import android.app.ListFragment;
 import android.app.LoaderManager;
@@ -16,7 +14,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -34,7 +31,6 @@ import android.widget.Toast;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.PaiStudyTable;
-import com.codeworks.pai.db.model.MaType;
 import com.codeworks.pai.db.model.PaiStudy;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
@@ -271,10 +267,23 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 					if (study.getPriceDate() != null && lastUpdated != null) {
 						lastUpdated.setText(lastUpdatedFormat.format(study.getPriceDate()));
 					}
+				} else {
+					setText(view, "", R.id.quoteList_net);
+					setText(view, "", R.id.quoteList_ema);
+					setText(view, "", R.id.quoteList_BuyZoneBottom);
+					setText(view, "", R.id.quoteList_BuyZoneTop);
+					setText(view, "", R.id.quoteList_SellZoneBottom);
+					setText(view, "", R.id.quoteList_SellZoneTop);
 				}
 			}
 		}
 
+		TextView setText(View view, String value, int viewId) {
+			TextView textView = (TextView) view.findViewById(viewId);
+			textView.setText(value);
+			return textView;
+		}
+		
 		TextView setDouble(View view, double value, int viewId) {
 			TextView textView = (TextView) view.findViewById(viewId);
 			textView.setText(PaiStudy.format(value));

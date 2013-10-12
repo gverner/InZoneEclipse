@@ -77,6 +77,9 @@
     <string name="scheduleSetupSubject">Schedule Setup</string>
     <string name="scheduleStartMessage">Start at %1$s</string>
     <string name="scheduleRepeatingMessage">Start at %1$s repeating every %1$s</string>
+    <string name="scheduleRepeatingAlreadySetup">Repeating already setup</string>
+    <string name="scheduleSetupBusy">Schedule Setup Busy</string>
+    <string name="scheduleStateBusy">Schedule State Busy</string>
     <string name="updateServiceSubject">Update Service</string>
     <string name="sdfColumnHeader4">Monthly</string>
     <string name="sdfColumnHeader3">Weekly</string>

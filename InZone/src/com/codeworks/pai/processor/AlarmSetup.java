@@ -29,6 +29,7 @@ public class AlarmSetup extends Thread {
 	static int			RUN_START_HOUR		= 9;
 	static int			RUN_START_MINUTE    = 30;
 	static int			RUN_END_HOUR		= 16;
+	static int          HISTORY_LOAD_HOUR   = 5;
 
 	Context				context;
 	Notifier			notifier;
@@ -60,10 +61,13 @@ public class AlarmSetup extends Thread {
 		int hour = startTime.getHourOfDay();
 		int minute = startTime.getMinuteOfHour();
 		if (hour >= RUN_END_HOUR || startTime.getDayOfWeek() == DateTimeConstants.SATURDAY || startTime.getDayOfWeek() == DateTimeConstants.SUNDAY) {
-			// run next trade date a 9AM load history
-			startTime = startTime.dayOfMonth().addToCopy(1);
-			startTime = rollPastWeekend(startTime);
-			startTime = startTime.hourOfDay().setCopy(RUN_START_HOUR);
+			// run the next date a 5AM to load history, if today is the weekend roll to Monday
+			if (startTime.getDayOfWeek() == DateTimeConstants.SATURDAY || startTime.getDayOfWeek() == DateTimeConstants.SUNDAY) {
+				startTime = rollPastWeekend(startTime);
+			} else {
+				startTime = startTime.dayOfMonth().addToCopy(1);
+			}
+			startTime = startTime.hourOfDay().setCopy(HISTORY_LOAD_HOUR);
 			startTime = startTime.minuteOfHour().setCopy(0);
 			cancelAlarm(REPEAT_INTENT_ID);
 			setStartAlarm(startTime);
@@ -71,17 +75,25 @@ public class AlarmSetup extends Thread {
 			// repeating all day
 			if (!isAlarmAlreadyUp(REPEAT_INTENT_ID)) {
 				setRepeatingAlarm(startTime);
+			} else {
+				Resources res = context.getApplicationContext().getResources();
+				logServiceEvent(ServiceType.SETUP, res.getString(R.string.scheduleRepeatingAlreadySetup));
 			}
-		} else if (hour == RUN_START_HOUR && minute < RUN_START_MINUTE) {
+		} else if ((hour >= HISTORY_LOAD_HOUR && hour < RUN_START_HOUR) || (hour == RUN_START_HOUR && minute < RUN_START_MINUTE)) {
+			
 			// start when market opens
 			startTime = rollPastWeekend(startTime);
 			startTime = startTime.hourOfDay().setCopy(RUN_START_HOUR);
 			startTime = startTime.minuteOfHour().setCopy(RUN_START_MINUTE);
 			setStartAlarm(startTime);
 		} else {
-			// load history 9am
-			startTime = rollPastWeekend(startTime);
-			startTime = startTime.hourOfDay().setCopy(RUN_START_HOUR);
+			// load history 5am
+			if (startTime.getDayOfWeek() == DateTimeConstants.SATURDAY || startTime.getDayOfWeek() == DateTimeConstants.SUNDAY) {
+				startTime = rollPastWeekend(startTime);
+			} else {
+				startTime = startTime.dayOfMonth().addToCopy(1);
+			}
+			startTime = startTime.hourOfDay().setCopy(HISTORY_LOAD_HOUR);
 			startTime = startTime.minuteOfHour().setCopy(0);
 			setStartAlarm(startTime);
 		}
@@ -145,28 +157,24 @@ public class AlarmSetup extends Thread {
 	void scheduleSetupNotice(DateTime startTime, int repeating) {
 		Resources res = context.getApplicationContext().getResources();
 		String message = String.format(res.getString(R.string.scheduleRepeatingMessage, formatStartTime(startTime)), repeating);
-		logStartEvent(message);
+		logServiceEvent(ServiceType.SETUP, message);
 	}
 
 	void logServiceEvent(DateTime startTime) {
 		Resources res = context.getApplicationContext().getResources();
 		String message = String.format(res.getString(R.string.scheduleStartMessage, formatStartTime(startTime)));
-		logStartEvent(message);
+		logServiceEvent(ServiceType.SETUP, message);
 	}
 	
-	void logStartEvent(String message) {
+	void logServiceEvent(ServiceType serviceType, String message) {
 		ContentValues values = new ContentValues();
 		values.put(ServiceLogTable.COLUMN_MESSAGE, message);
-		values.put(ServiceLogTable.COLUMN_SERVICE_TYPE, ServiceType.SETUP.getIndex());
+		values.put(ServiceLogTable.COLUMN_SERVICE_TYPE, serviceType.getIndex());
 		values.put(ServiceLogTable.COLUMN_TIMESTAMP, DateTime.now().toString(ServiceLogTable.timestampFormat));
 		context.getContentResolver().insert(PaiContentProvider.SERVICE_LOG_URI, values);
 	}
 
 	public DateTime getCurrentNYTime() {
-		DateTime dt = new DateTime();
-		// translate to New York local time
-		DateTime nyDateTime = dt.withZone(DateTimeZone.forID("America/New_York"));
-		return nyDateTime;
-
+		return DateUtils.getCurrentNYTime();
 	}	
 }

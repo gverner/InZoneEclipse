@@ -7,6 +7,9 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+
 import com.codeworks.pai.study.Period;
 
 public class DateUtils {
@@ -169,5 +172,13 @@ public class DateUtils {
 	public static String toDatabaseFormat(Date date) {
 		return dbStringDateFormat.format(date);
 	}
+
+	public static DateTime getCurrentNYTime() {
+		DateTime dt = new DateTime();
+		// translate to New York local time
+		DateTime nyDateTime = dt.withZone(DateTimeZone.forID("America/New_York"));
+		return nyDateTime;
+
+	}	
 
 }

@@ -17,10 +17,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
-import com.codeworks.pai.StudySListFragment.PaiCursorAdapter;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.ServiceLogTable;
 import com.codeworks.pai.db.model.PaiStudy;

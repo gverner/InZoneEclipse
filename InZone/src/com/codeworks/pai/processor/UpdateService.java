@@ -17,7 +17,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
-import android.text.format.DateUtils;
 import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -51,11 +50,9 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	public static final String	KEY_PREF_UPDATE_FREQUENCY_TYPE	= "pref_updateFrequencyType";
 
 	Updater						updater;
-	PriceUpdater				priceUpdater;
 	Processor					processor						= null;
 	Notifier					notifier						= null;
 	ProgressBar					progressBar						= null;
-	AlarmSetup					alarmSetup						= null;
 
 	public static final class Lock {
 		boolean notified = false;
@@ -81,8 +78,6 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		SharedPreferences sharedPref = getSharedPreferences();
 		sharedPref.registerOnSharedPreferenceChangeListener(this);
 		frequency = getPrefUpdateFrequency();
-		priceUpdater = new PriceUpdater();
-		alarmSetup = new AlarmSetup(getApplicationContext(), notifier);
 		Log.d(TAG, "on Create'd2");
 	}
 
@@ -95,18 +90,10 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		}
 		updater = null;
 		
-		if (priceUpdater.isRunning()) {
-			priceUpdater.interrupt();
-		}
-		priceUpdater = null;
-		
-		alarmSetup = null;
-		
 		SharedPreferences sharedPref = getSharedPreferences();
 		sharedPref.unregisterOnSharedPreferenceChangeListener(this);
 
 		Log.d(TAG, "on Destroy'd");
-		//makeToast("Price Update Service Stopped", Toast.LENGTH_LONG);
 	}
 
 	SharedPreferences getSharedPreferences() {
@@ -146,13 +133,8 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 				updater.restart(ACTION_MANUAL.equals(action)); // Full update if from MENU or Schedule otherwise priceOnly
 				Log.i(TAG, "an Re-Starte'd");
 			}
-			if (!alarmSetup.isAlive() && !alarmSetup.isRunning()) {
-				try {
-					alarmSetup.start();
-				} catch (IllegalThreadStateException e) {
-					Log.e(TAG, "Alarm Setup already Running");
-				}
-			}
+
+			getAlarmSetup().start();
 
 		} else if (ACTION_ONE_TIME.equals(action)) {
 			Log.d(TAG, "One Time start");
@@ -167,8 +149,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 				Log.i(TAG, "Price Update on Starte'd");
 			} else {
 				Log.i(TAG, "Re-Start Price Update starting");
-				updater.restart(true); // TODO should be true for price only
-										// ..interrupt sleep and restart now
+				updater.restart(true); // true for price only
 				Log.i(TAG, "Price Update an Re-Starte'd");
 			}
 		} else {
@@ -178,6 +159,11 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		return START_STICKY;
 	}
 
+	
+	AlarmSetup getAlarmSetup() {
+		return new AlarmSetup(getApplicationContext(), notifier);
+	}
+	
 	void createLogEventStart(String action) {
 		Resources res = getApplicationContext().getResources();
 		String message;
@@ -211,6 +197,15 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		values.put(ServiceLogTable.COLUMN_ITERATION, numMessages);
 		values.put(ServiceLogTable.COLUMN_RUNTIME, runtime);
 		
+		insertServiceLog(values);
+	}
+	
+	void logServiceEvent(ServiceType serviceType, int stringId) {
+		Resources res = getApplicationContext().getResources();
+		ContentValues values = new ContentValues();
+		values.put(ServiceLogTable.COLUMN_MESSAGE, res.getString(stringId));
+		values.put(ServiceLogTable.COLUMN_SERVICE_TYPE, serviceType.getIndex());
+		values.put(ServiceLogTable.COLUMN_TIMESTAMP, DateTime.now().toString(ServiceLogTable.timestampFormat));
 		insertServiceLog(values);
 	}
 
@@ -248,14 +243,22 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	}
 
 	boolean isMarketOpen() {
-		DateTime cal = alarmSetup.getCurrentNYTime();
+		DateTime cal = getCurrentNYTime();
 		int hour = cal.getHourOfDay();
-		Log.d(TAG, "Is EST Hour of day (" + hour + ") between "+AlarmSetup.RUN_START_HOUR+" and "+AlarmSetup.RUN_END_HOUR+" "+DateUtils.formatDateTime(getApplicationContext(), cal.getMillis(), DateUtils.FORMAT_ABBREV_RELATIVE));
+		Log.d(TAG, "Is EST Hour of day (" + hour + ") between "+AlarmSetup.RUN_START_HOUR+" and "+AlarmSetup.RUN_END_HOUR+" "+cal.toString());
 		boolean marketOpen = false; // set to true to ignore market
 		if (hour >= AlarmSetup.RUN_START_HOUR && hour < AlarmSetup.RUN_END_HOUR && cal.getDayOfWeek() != DateTimeConstants.SATURDAY && cal.getDayOfWeek() != DateTimeConstants.SUNDAY) {
 			marketOpen = true;
 		}
 		return marketOpen;
+	}
+	
+	/**
+	 * getCurrentNYTime hook for Testing.
+	 * @return
+	 */
+	DateTime getCurrentNYTime() {
+		return DateUtils.getCurrentNYTime();
 	}
 	
 	/*
@@ -414,47 +417,4 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 
 	}
 	
-	class PriceUpdater extends Thread {
-		public PriceUpdater() {
-			super("PriceUpdater");
-		}
-
-		static final long	DELAY	= 30000L;
-		boolean				running	= false;
-
-		public boolean isRunning() {
-			return running;
-		}
-
-		public void restart() {
-			Log.d(TAG, "restart price updater");
-			synchronized (priceUpdateLock) {
-				priceUpdateLock.notify();
-			}
-		}
-
-		@Override
-		public void run() {
-			running = true;
-
-			while (running) {
-				try {
-					Log.d(TAG, "Price Updater Running");
-					List<PaiStudy> studies = processor.updatePrice(null);
-					if (isMarketOpen()) {
-						synchronized (priceUpdateLock) {
-							priceUpdateLock.wait(DELAY);
-						}
-					} else {
-						Log.d(TAG, "Market is Closed - Price Updater Service will stop");
-						running = false;
-					}
-				} catch (InterruptedException e) {
-					Log.d(TAG, "Price Updater Service has been interrupted");
-					running = false;
-				}
-			}
-		}
-
-	}
 }

@@ -8,10 +8,8 @@ public enum Notice {
 	POSSIBLE_WEEKLY_UPTREND_TEMINATION(1,R.string.notice_possible_weekly_uptrend_termination, R.string.notice_possible_weekly_uptrend_termination_text, R.string.alert_possible_weekly_uptrend_termination), 
 	POSSIBLE_WEEKLY_DOWNTREND_TERMINATION(2,R.string.notice_possible_weekly_downtrend_termination, R.string.notice_possible_weekly_downtrend_termination_text, R.string.alert_possible_weekly_downtrend_termination),
 	IN_SELL_ZONE(3, R.string.notice_in_sell_zone, R.string.notice_in_sell_zone_text, R.string.alert_in_sell_zone),
-	IN_BUY_ZONE(4, R.string.notice_in_buy_zone, R.string.notice_in_buy_zone_text, R.string.alert_in_buy_zone),
-	NO_PRICE(5, R.string.notice_no_price, R.string.notice_no_price_text, R.string.alert_no_price),
-	INSUFFICIENT_HISTORY(6, R.string.notice_insufficent_history, R.string.notice_insufficent_history_text, R.string.alert_insufficent_history),
-	DELAYED_PRICE(7,0,0,R.string.alert_delayed_price);
+	IN_BUY_ZONE(4, R.string.notice_in_buy_zone, R.string.notice_in_buy_zone_text, R.string.alert_in_buy_zone);
+	
 	int index;
 	int subject;
 	int message;
@@ -36,6 +34,7 @@ public enum Notice {
 	public int getRule() {
 		return rule;
 	}
+	
 	public static Notice fromIndex(int index) {
 		for (Notice notice : values()) {
 			if (index == notice.getIndex()) {
@@ -44,4 +43,5 @@ public enum Notice {
 		}
 		return null;
 	}
+	
 }

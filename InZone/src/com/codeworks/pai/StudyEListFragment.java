@@ -125,13 +125,14 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 		// if progress was active probably done.
 		setProgressBar(100);
 		// Register mMessageReceiver to receive messages.
-		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(UpdateService.BROADCAST_UPDATE_PROGRESS_BAR));
+		//LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(UpdateService.BROADCAST_UPDATE_PROGRESS_BAR));
+		getActivity().registerReceiver(mMessageReceiver, new IntentFilter(UpdateService.BROADCAST_UPDATE_PROGRESS_BAR));
 	}
 
 	  @Override
 	public void onPause() {
 		// Unregister since the activity is not visible
-		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
+		getActivity().unregisterReceiver(mMessageReceiver);
 		super.onPause();
 	}
 

@@ -88,6 +88,7 @@ public class DataReaderYahoo implements DataReader {
 			String searchLow = "yfs_g53_"+security.getSymbol().toLowerCase(Locale.US)+"\">";
 			String searchHigh = "yfs_h53_"+security.getSymbol().toLowerCase(Locale.US)+"\">";
 			String searchOpen = "Open:</th><td class=\"yfnc_tabledata1\">";
+			String searchPrevClose ="Prev Close:</th><td class=\"yfnc_tabledata1\">";
 			long start = System.currentTimeMillis();
 			URL url = new URL(urlStr);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -122,6 +123,10 @@ public class DataReaderYahoo implements DataReader {
 				}
 				if (result != null) {
 					security.setPriceDate(parseRTDate(result));
+				}
+				result = scanLine(searchPrevClose, start, line, count);
+				if (result != null && !N_A.equalsIgnoreCase(result)) {
+					security.setLastClose(Double.parseDouble(result));
 				}
 				result = scanLine(searchOpen, start, line, count);
 				if (result != null && !N_A.equalsIgnoreCase(result)) {

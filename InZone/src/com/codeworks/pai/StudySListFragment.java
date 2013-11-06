@@ -119,13 +119,13 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 		super.onResume();
 		adapter.notifyDataSetChanged();
 		// Register mMessageReceiver to receive messages.
-		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(UpdateService.BROADCAST_UPDATE_PROGRESS_BAR));
+		getActivity().registerReceiver(mMessageReceiver, new IntentFilter(UpdateService.BROADCAST_UPDATE_PROGRESS_BAR));
 		
 	}
 	  @Override
 	public void onPause() {
 		// Unregister since the activity is not visible
-		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
+		getActivity().unregisterReceiver(mMessageReceiver);
 		super.onPause();
 	}
 

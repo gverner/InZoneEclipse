@@ -168,18 +168,30 @@ public class ProcessorImpl implements Processor {
 		}
 		{
 			if (daily.size() > 20) {
-				
-				Price lastHistory = daily.get(daily.size()-1);
-				if (DateTimeComparator.getDateOnlyInstance().compare(security.getPriceDate(), lastHistory.getDate()) > 0) {
-					Log.d(TAG,"Daily price history doesn't contains last price market must be open "+security.getSymbol()+" Price Date="+security.getPriceDate()+" ListHistoryDate="+lastHistory.getDate());
-					security.setLastClose(lastHistory.getClose());
-				} else {
-					Log.d(TAG,"Daily price history contains last price, it must be after markect close. "+security.getSymbol()+" Price Date="+security.getPriceDate()+" ListHistoryDate="+lastHistory.getDate());
-					security.setLastClose(daily.get(daily.size()-2).getClose());
-				}
-				//appendCurrentPrice(daily,security);
-				 
+				updateLastClose(security, daily);
+				// appendCurrentPrice(daily,security);
 				security.setAverageTrueRange(ATR.compute(daily, 20));
+			}
+		}
+	}
+	
+	/**
+	 * update lastClose when price is delayed, real time price populates last close.
+	 * @param security
+	 * @param daily
+	 */
+	void updateLastClose(PaiStudy security, List<Price> daily) {
+		if (security.hasDelayedPrice()) { // RTPrice sets lastClose
+			Price lastHistory = daily.get(daily.size() - 1);
+			if (DateTimeComparator.getDateOnlyInstance().compare(security.getPriceDate(), lastHistory.getDate()) > 0) {
+				Log.d(TAG,
+						"Daily price history doesn't contains last price market must be open " + security.getSymbol() + " Price Date="
+								+ security.getPriceDate() + " ListHistoryDate=" + lastHistory.getDate());
+				security.setLastClose(lastHistory.getClose());
+			} else {
+				Log.d(TAG, "Daily price history contains last price, it must be after markect close. " + security.getSymbol() + " Price Date="
+						+ security.getPriceDate() + " ListHistoryDate=" + lastHistory.getDate());
+				security.setLastClose(daily.get(daily.size() - 2).getClose());
 			}
 		}
 	}
@@ -225,6 +237,7 @@ public class ProcessorImpl implements Processor {
 					quote.setDelayedPrice(true);
 					Log.w(TAG, "FAILED to get real time price using delayed Price");
 				} else {
+					quote.setDelayedPrice(false);
 					if (quote.getPriceDate() == null) {
 						PaiStudy quote2 = new PaiStudy(quote.getSymbol());
 						reader.readCurrentPrice(quote);
@@ -242,6 +255,8 @@ public class ProcessorImpl implements Processor {
 				quote.setLow(cachedQuote.getLow());
 				quote.setHigh(cachedQuote.getHigh());
 				quote.setName(cachedQuote.getName());
+				quote.setLastClose(cachedQuote.getLastClose());
+				quote.setDelayedPrice(cachedQuote.hasDelayedPrice());
 			}
 			// updating the name here, may need to move update to when security
 			// is added by user or kick off Processor at that time.
@@ -280,17 +295,17 @@ public class ProcessorImpl implements Processor {
 			if (historyCursor != null) {
 				if (historyCursor.moveToLast()) {
 					String lastHistoryDate = historyCursor.getString(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_DATE));
-					// how does lastHistoryDate get to be after now? added check 9/21/2013
+					// how does lastHistoryDate get to be after now? added check
+					// 9/21/2013
 					if (lastHistoryDate.compareTo(lastOnlineHistoryDbDate) >= 0 && lastHistoryDate.compareTo(nowDbDate) <= 0) {
 						double lastClose = historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_CLOSE));
-						Log.d(TAG, study.getSymbol()+" is upto date using data from database lastDate=" + lastHistoryDate + " now"+nowDbDate+" last Close "
-								+ lastClose);
+						Log.d(TAG, study.getSymbol() + " is upto date using data from database lastDate=" + lastHistoryDate + " now" + nowDbDate
+								+ " last Close " + lastClose);
 						reloadHistory = false;
 						if (historyCursor.moveToFirst()) {
 							do {
 								Price price = new Price();
-								price.setAdjustedClose(historyCursor.getDouble(historyCursor
-										.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_ADJUSTED_CLOSE)));
+								price.setAdjustedClose(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_ADJUSTED_CLOSE)));
 								price.setClose(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_CLOSE)));
 								price.setOpen(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_OPEN)));
 								price.setLow(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_LOW)));
@@ -298,14 +313,15 @@ public class ProcessorImpl implements Processor {
 								try {
 									price.setDate(dbStringDateFormat.parse(historyCursor.getString(historyCursor
 											.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_DATE))));
+									// must have valid date
+									history.add(price);
 								} catch (Exception e) {
 									Log.d(TAG, "failed to parse price history date ");
 								}
-								history.add(price);
 							} while (historyCursor.moveToNext());
 						}
 					} else {
-						Log.d(TAG,"Last History Date "+lastHistoryDate+ " not equal Last on line History Date "+ lastOnlineHistoryDbDate);
+						Log.d(TAG, "Last History Date " + lastHistoryDate + " not equal Last on line History Date " + lastOnlineHistoryDbDate);
 					}
 				}
 			}

@@ -1,9 +1,7 @@
 package com.codeworks.pai.processor;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -61,13 +59,13 @@ public class NotifierImpl implements Notifier {
 				if (rules.hasTradedBelowMAToday() && !Notice.POSSIBLE_WEEKLY_DOWNTREND_TERMINATION.equals(study.getNotice())) {
 					additionalMessage = String.format(res.getString(R.string.notice_has_traded_below_ma_text), study.getSymbol());
 				}
-				boolean sendNotice = saveStudyNoticeIfChanged(study) && !Notice.NONE.equals(study.getNotice()) && study.getNotice().getSubject() != 0
-						&& study.getNotice().getMessage() != 0;
+				boolean sendNotice = saveStudyNoticeIfChanged(study) && !Notice.NONE.equals(study.getNotice());
+				
 				Log.d(TAG, "SendNotice = " + sendNotice + " for " + study.getSymbol() + " Prot=" + study.getPortfolioId());
 				if (sendNotice) {
 
 					sendNotice(study.getSecurityId(), res.getString(study.getNotice().getSubject()),
-							String.format(res.getString(study.getNotice().getMessage()), study.getSymbol()) + "\n" + additionalMessage);
+							String.format(res.getString(study.getNotice().getMessage()), study.getSymbol(), study.getPortfolioId()) + "\n" + additionalMessage);
 				}
 			}
 		}

@@ -37,7 +37,7 @@ import com.codeworks.pai.processor.UpdateService;
  * sample.
  */
 public class StudyActivity extends Activity implements StudyEListFragment.OnItemSelectedListener, StudySListFragment.OnItemSelectedListener, ActionBar.TabListener, OnSharedPreferenceChangeListener {
-	private static final String TAG = StudyActivity.class.getSimpleName();
+	//private static final String TAG = StudyActivity.class.getSimpleName();
 
 	private Intent dailyIntent;
 	private int portfolioId = 1;
@@ -49,10 +49,13 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-		dailyIntent = new Intent(this, UpdateService.class);
+		//dailyIntent = new Intent(this, UpdateService.class);
+		dailyIntent = new Intent(UpdateService.class.getName());
 		dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_MANUAL);
 		startService(dailyIntent);
+		
 		serviceStartedByCreate = true;
+		       
 		setContentView(R.layout.study_activity_frame);	
         // Set up the action bar.
         final ActionBar actionBar = getActionBar();
@@ -160,7 +163,7 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.itemStartSerivce:
-			dailyIntent = new Intent(this, UpdateService.class);
+			dailyIntent = new Intent(UpdateService.class.getName());
 			dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_MANUAL_MENU);
 			startService(dailyIntent);
 			break;

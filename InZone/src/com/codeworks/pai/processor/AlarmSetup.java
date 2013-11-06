@@ -90,8 +90,6 @@ public class AlarmSetup extends Thread {
 			// load history 5am
 			if (startTime.getDayOfWeek() == DateTimeConstants.SATURDAY || startTime.getDayOfWeek() == DateTimeConstants.SUNDAY) {
 				startTime = rollPastWeekend(startTime);
-			} else {
-				startTime = startTime.dayOfMonth().addToCopy(1);
 			}
 			startTime = startTime.hourOfDay().setCopy(HISTORY_LOAD_HOUR);
 			startTime = startTime.minuteOfHour().setCopy(0);
@@ -108,7 +106,7 @@ public class AlarmSetup extends Thread {
 	}
 
 	PendingIntent setupIntent(int intentId, String subAction) {
-		Intent intent = new Intent(context, UpdateService.class);
+		Intent intent = new Intent(UpdateService.class.getName());
 		intent.putExtra(UpdateService.SERVICE_ACTION, subAction);
 		PendingIntent pDailyIntent = PendingIntent.getService(context, intentId, intent, 0);
 		return pDailyIntent;
@@ -139,7 +137,7 @@ public class AlarmSetup extends Thread {
 	}
 	
 	boolean isAlarmAlreadyUp(int intentId) {
-		Intent intent = new Intent(context, UpdateService.class);
+		Intent intent = new Intent(UpdateService.class.getName());
 		boolean alarmUp = (PendingIntent.getService(context.getApplicationContext(), intentId, intent, PendingIntent.FLAG_NO_CREATE) != null);
 
 		if (alarmUp) {

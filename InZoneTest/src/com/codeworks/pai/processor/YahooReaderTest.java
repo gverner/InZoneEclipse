@@ -41,6 +41,7 @@ public class YahooReaderTest extends AndroidTestCase {
 		assertTrue(reader.readRTPrice(security));
 		System.out.println(sdf.format(security.getPriceDate()));
 		System.out.println(security.getName());
+		assertNotNull(security.getLastClose());
 		/*
 	    security = new PaiStudy("QQQ");
 		assertTrue(reader.readRTPrice(security));

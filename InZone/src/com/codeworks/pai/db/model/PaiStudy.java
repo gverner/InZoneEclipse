@@ -241,9 +241,9 @@ public class PaiStudy implements Serializable {
 
 	public void setDelayedPrice(boolean delayed) {
 		if (delayed) {
-			statusMap = statusMap + STATUS_DELAYED_PRICE;
+			statusMap = statusMap | STATUS_DELAYED_PRICE;
 		} else {
-			statusMap = statusMap - STATUS_DELAYED_PRICE;
+			statusMap = statusMap ^ STATUS_DELAYED_PRICE;
 		}
 	}
 
@@ -257,9 +257,9 @@ public class PaiStudy implements Serializable {
 
 	public void setInsufficientHistory(boolean value) {
 		if (value) {
-			statusMap = statusMap + STATUS_INSUFFICIENT_HISTORY;
+			statusMap = statusMap | STATUS_INSUFFICIENT_HISTORY;
 		} else {
-			statusMap = statusMap - STATUS_INSUFFICIENT_HISTORY;
+			statusMap = statusMap ^ STATUS_INSUFFICIENT_HISTORY;
 		}
 	}
 
@@ -297,9 +297,9 @@ public class PaiStudy implements Serializable {
 
 	public void setNoPrice(boolean value) {
 		if (value) {
-			statusMap = statusMap + STATUS_NO_PRICE;
+			statusMap = statusMap | STATUS_NO_PRICE;
 		} else {
-			statusMap = statusMap - STATUS_NO_PRICE;
+			statusMap = statusMap ^ STATUS_NO_PRICE;
 		}
 	}
 

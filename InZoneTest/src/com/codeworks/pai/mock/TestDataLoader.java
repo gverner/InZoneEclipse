@@ -97,6 +97,7 @@ public class TestDataLoader {
 		while (cal.getTime().after(startDate) || cal.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
 			cal.add(Calendar.DAY_OF_MONTH, -1);
 		}
+		System.out.println("Last Date "+cal.getTime());
 		double close = endPrice;
 		do {
 			cal.add(Calendar.DAY_OF_MONTH, -1); // start before today

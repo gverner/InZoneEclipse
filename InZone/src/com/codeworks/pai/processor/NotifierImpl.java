@@ -65,7 +65,8 @@ public class NotifierImpl implements Notifier {
 				if (sendNotice) {
 
 					sendNotice(study.getSecurityId(), res.getString(study.getNotice().getSubject()),
-							String.format(res.getString(study.getNotice().getMessage()), study.getSymbol(), study.getPortfolioId()) + "\n" + additionalMessage);
+							study.getPortfolioId() + ") " + String.format(res.getString(study.getNotice().getMessage()), study.getSymbol()) + "\n"
+									+ additionalMessage);
 				}
 			}
 		}

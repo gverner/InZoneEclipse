@@ -37,11 +37,11 @@
     <string name="notice_in_sell_zone">In Sell Zone</string>
     <string name="notice_in_buy_zone">In Buy Zone</string>
     <string name="notice_has_traded_below_ma">Trading below moving average</string>
-    <string name="notice_possible_weekly_downtrend_termination_text">%2$s) %1$s is trading above moving average.</string>
-    <string name="notice_possible_weekly_uptrend_termination_text">%2$s) %1$s is trading below moving average</string>
-    <string name="notice_in_sell_zone_text">%2$s) %1$s is in the Sell Zone</string>
-    <string name="notice_in_buy_zone_text">%2$s) %1$s is in the Buy Zone</string>
-    <string name="notice_has_traded_below_ma_text">%1$s has traded below moving average</string>
+    <string name="notice_possible_weekly_downtrend_termination_text">%1$s is trading above moving average.</string>
+    <string name="notice_possible_weekly_uptrend_termination_text">%1$s is trading below moving average</string>
+    <string name="notice_in_sell_zone_text">%1$s is in the Sell Zone</string>
+    <string name="notice_in_buy_zone_text">%1$s is in the Buy Zone</string>
+    <string name="notice_has_traded_below_ma_text">has traded below moving average</string>
     <string name="alert_possible_weekly_downtrend_termination">Price is above moving average.</string>
     <string name="alert_possible_weekly_uptrend_termination">Price is below moving average</string>
     <string name="alert_in_sell_zone">Price is in the Sell Zone</string>

@@ -72,7 +72,7 @@ public class DataReaderYahoo implements DataReader {
 		}
 		return found;
 	}
-
+		
 	public boolean readRTPrice(PaiStudy security) {
 		boolean found = false;
 		BufferedReader br = null;
@@ -96,6 +96,7 @@ public class DataReaderYahoo implements DataReader {
 			conn.setConnectTimeout(15000 /* milliseconds */);
 			conn.setRequestMethod("GET");
 			conn.setDoInput(true);
+			conn.setRequestProperty("User-Agent","Desktop");
 			// Starts the query
 			conn.connect();
 			int response = conn.getResponseCode();

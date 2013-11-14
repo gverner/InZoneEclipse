@@ -2,17 +2,15 @@ package com.codeworks.pai.processor;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-
 import android.test.AndroidTestCase;
 
-import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Price;
 
 public class YahooReaderTest extends AndroidTestCase {
 	DataReaderYahoo reader;
@@ -34,6 +32,7 @@ public class YahooReaderTest extends AndroidTestCase {
 		}
 		
 	}
+
 	public void testReadRTPrice() {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mmaa zzz",Locale.US);
 		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));

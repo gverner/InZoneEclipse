@@ -234,7 +234,9 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 						studies = processor.process(null);
 						Log.i(TAG, "Processor process Runtime milliseconds=" + (System.currentTimeMillis() - startTime));
 					}
-					notifier.updateNotification(studies);
+					if (isMarketOpen()) { // Notify only during market hours
+						notifier.updateNotification(studies);
+					}
 					boolean historyReloaded = scanHistoryReloaded(studies);
 					int logMessage;
 					if (repeating && isMarketOpen()) {

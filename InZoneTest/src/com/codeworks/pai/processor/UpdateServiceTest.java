@@ -511,7 +511,7 @@ public class UpdateServiceTest extends AndroidTestCase {
 		//Thread.sleep(2000);
 		service.onStartCommand(dailyIntent, 0, 0);
 		assertEquals("Number of set alarm calls",2, startAlarmTimes.size());
-		assertEquals("Number of process Calls", 1, ((MockProcessor)service.processor).numberOfProcessCalls);
+		assertEquals("Number of process Calls", 2, ((MockProcessor)service.processor).numberOfProcessCalls);
 		assertEquals("Number of update Price Calls", 0, ((MockProcessor)service.processor).numberOfUpdatePriceCalls);
 		assertEquals("Number of ClearServiceLog Calls", 2, service.clearServiceLogCalls);
 

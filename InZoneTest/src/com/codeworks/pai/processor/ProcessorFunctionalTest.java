@@ -43,7 +43,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
 		assertEquals("MA week", 12.49d, PaiUtils.round(study.getMaWeek()));
 		assertEquals("MA month", 20.19d, PaiUtils.round(study.getMaMonth()));
-		assertEquals("MA last week", 12.85d, PaiUtils.round(study.getMaLastWeek()));
+//		assertEquals("MA last week", 12.85d, PaiUtils.round(study.getMaLastWeek()));
+		assertEquals("MA last week", 12.49d, PaiUtils.round(study.getMaLastWeek()));
 		assertEquals("MA last month", 21,36d, PaiUtils.round(study.getMaLastMonth()));
 		assertEquals("StdDev Week", 1.78d, PaiUtils.round(study.getStddevWeek()));
 		assertEquals("StdDev Month", 7.52d, PaiUtils.round(study.getStddevMonth()));

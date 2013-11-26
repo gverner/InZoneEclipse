@@ -108,11 +108,11 @@ public class StudySDetailFragment extends Fragment {
 			alert = true;
 			alertMsg.append("\n");
 			alertMsg.append(String.format(getResources().getString(study.getNotice().getMessage()), study.getSymbol()));
-			alertMsg.append("\n");
 		}
 		StringBuilder addAlert = rules.getAdditionalAlerts(getResources());
 		if (addAlert != null && addAlert.length() > 0) {
 			alert = true;
+			alertMsg.append("\n");
 			alertMsg.append(addAlert);
 		}
 		if (alertMsg.length() > 0) {

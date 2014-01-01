@@ -14,7 +14,7 @@ import android.test.ProviderTestCase2;
 import android.util.Log;
 
 import com.codeworks.pai.db.PriceHistoryTable;
-import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.ServiceLogTable;
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.db.model.ServiceType;
@@ -155,36 +155,36 @@ public class PaiContentProviderTest extends ProviderTestCase2<PaiContentProvider
 	
 	public Uri loadSettings() throws IOException {
 			ContentValues values = new ContentValues();
-			values.put(PaiStudyTable.COLUMN_SYMBOL, "SPY");
-			values.put(PaiStudyTable.COLUMN_MA_TYPE, "E");
-			values.put(PaiStudyTable.COLUMN_PRICE, 1.1d);
-			values.put(PaiStudyTable.COLUMN_NAME, "S&P");
-			values.put(PaiStudyTable.COLUMN_PORTFOLIO_ID, 1L);
+			values.put(StudyTable.COLUMN_SYMBOL, "SPY");
+			values.put(StudyTable.COLUMN_MA_TYPE, "E");
+			values.put(StudyTable.COLUMN_PRICE, 1.1d);
+			values.put(StudyTable.COLUMN_NAME, "S&P");
+			values.put(StudyTable.COLUMN_PORTFOLIO_ID, 1L);
 			return getMockContentResolver().insert(PaiContentProvider.PAI_STUDY_URI, values);
 	}
 
 	public void testSettings() throws IOException {
 		Uri settingsUri = loadSettings();
-		String[] projection = { PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_MA_TYPE, PaiStudyTable.COLUMN_PRICE,
-				PaiStudyTable.COLUMN_NAME };
+		String[] projection = { StudyTable.COLUMN_SYMBOL, StudyTable.COLUMN_MA_TYPE, StudyTable.COLUMN_PRICE,
+				StudyTable.COLUMN_NAME };
 
 		Cursor cursor = getMockContentResolver().query(settingsUri, projection, null, null ,null);
 		try {
 			assertEquals("one row", 1, cursor.getCount());
 			boolean rowResult = cursor.moveToFirst();
 			assertEquals("moveToFirst", true, rowResult);
-			assertEquals("SPY", cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_SYMBOL)));
-			assertEquals("E", cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_MA_TYPE)));
-			assertEquals(1.1d, cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_PRICE)));
-			assertEquals("S&P", cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_NAME)));
+			assertEquals("SPY", cursor.getString(cursor.getColumnIndex(StudyTable.COLUMN_SYMBOL)));
+			assertEquals("E", cursor.getString(cursor.getColumnIndex(StudyTable.COLUMN_MA_TYPE)));
+			assertEquals(1.1d, cursor.getDouble(cursor.getColumnIndex(StudyTable.COLUMN_PRICE)));
+			assertEquals("S&P", cursor.getString(cursor.getColumnIndex(StudyTable.COLUMN_NAME)));
 		} finally {
 			cursor.close();
 		}
 		ContentValues values = new ContentValues();
-		values.put(PaiStudyTable.COLUMN_SYMBOL, "QQQ");
-		values.put(PaiStudyTable.COLUMN_MA_TYPE, "S");
-		values.put(PaiStudyTable.COLUMN_PRICE, 2.2d);
-		values.put(PaiStudyTable.COLUMN_NAME, "THE Qs");
+		values.put(StudyTable.COLUMN_SYMBOL, "QQQ");
+		values.put(StudyTable.COLUMN_MA_TYPE, "S");
+		values.put(StudyTable.COLUMN_PRICE, 2.2d);
+		values.put(StudyTable.COLUMN_NAME, "THE Qs");
 		assertEquals("Rows Updated", 1, getMockContentResolver().update(settingsUri, values, null, null));
 		
 		cursor = getMockContentResolver().query(settingsUri, projection, null, null ,null);
@@ -192,10 +192,10 @@ public class PaiContentProviderTest extends ProviderTestCase2<PaiContentProvider
 			assertEquals("one row", 1, cursor.getCount());
 			boolean rowResult = cursor.moveToFirst();
 			assertEquals("moveToFirst", true, rowResult);
-			assertEquals("QQQ", cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_SYMBOL)));
-			assertEquals("S", cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_MA_TYPE)));
-			assertEquals(2.2d, cursor.getDouble(cursor.getColumnIndex(PaiStudyTable.COLUMN_PRICE)));
-			assertEquals("THE Qs", cursor.getString(cursor.getColumnIndex(PaiStudyTable.COLUMN_NAME)));
+			assertEquals("QQQ", cursor.getString(cursor.getColumnIndex(StudyTable.COLUMN_SYMBOL)));
+			assertEquals("S", cursor.getString(cursor.getColumnIndex(StudyTable.COLUMN_MA_TYPE)));
+			assertEquals(2.2d, cursor.getDouble(cursor.getColumnIndex(StudyTable.COLUMN_PRICE)));
+			assertEquals("THE Qs", cursor.getString(cursor.getColumnIndex(StudyTable.COLUMN_NAME)));
 		} finally {
 			cursor.close();
 		}

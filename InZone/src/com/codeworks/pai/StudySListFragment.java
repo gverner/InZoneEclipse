@@ -30,8 +30,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
-import com.codeworks.pai.db.PaiStudyTable;
-import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.StudyTable;
+import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
 import com.codeworks.pai.processor.UpdateService;
@@ -185,10 +185,10 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 	// Creates a new loader after the initLoader () call
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String selection = PaiStudyTable.COLUMN_PORTFOLIO_ID + " = ? ";
+		String selection = StudyTable.COLUMN_PORTFOLIO_ID + " = ? ";
 		String[] selectionArgs = { Long.toString(portfolioId) };
 		Log.i(TAG, "Prepare Cursor Loader portfolio "+portfolioId);
-		CursorLoader cursorLoader = new CursorLoader(getActivity(), PaiContentProvider.PAI_STUDY_URI, PaiStudyTable.getFullProjection(), selection, selectionArgs, null);
+		CursorLoader cursorLoader = new CursorLoader(getActivity(), PaiContentProvider.PAI_STUDY_URI, StudyTable.getFullProjection(), selection, selectionArgs, null);
 		return cursorLoader;
 	}
 
@@ -215,7 +215,7 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
 			if (null != cursor) {
-				PaiStudy study = PaiStudyTable.loadStudy(cursor);
+				Study study = StudyTable.loadStudy(cursor);
 				
 				Rules rules = new SmaRules(study);
 				// Set Symbol
@@ -223,7 +223,7 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 				symbol.setText(study.getSymbol());
 				// Price
 				TextView price = (TextView) view.findViewById(R.id.quoteList_Price);
-				price.setText(PaiStudy.format(study.getPrice()));
+				price.setText(Study.format(study.getPrice()));
 
 				if (study.isValidWeek()) {
 
@@ -231,7 +231,7 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 					setTrend(view, rules.isUpTrendWeekly(), R.id.quoteList_WeeklyTrend);
 					// Set EMA
 					TextView ema = (TextView) view.findViewById(R.id.quoteList_ema);
-					ema.setText(PaiStudy.format(study.getSmaMonth()));
+					ema.setText(Study.format(study.getSmaMonth()));
 
 					double net = study.getPrice() - study.getLastClose();
 					TextView textNet = (TextView) view.findViewById(R.id.quoteList_net);
@@ -247,21 +247,21 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 						price.setTextColor(getResources().getColor(R.color.net_negative));
 					}
 
-					TextView textBuyZoneBot = setDouble(view, rules.calcBuyZoneBottom(), R.id.quoteList_BuyZoneBottom);
+					//TextView textBuyZoneBot = setDouble(view, rules.calcBuyZoneBottom(), R.id.quoteList_BuyZoneBottom);
 					TextView textBuyZoneTop = setDouble(view, rules.calcBuyZoneTop(), R.id.quoteList_BuyZoneTop);
 
-					textBuyZoneBot.setBackgroundColor(rules.getBuyZoneBackgroundColor());
+					//textBuyZoneBot.setBackgroundColor(rules.getBuyZoneBackgroundColor());
 					textBuyZoneTop.setBackgroundColor(rules.getBuyZoneBackgroundColor());
-					textBuyZoneBot.setTextColor(rules.getBuyZoneTextColor());
+					//textBuyZoneBot.setTextColor(rules.getBuyZoneTextColor());
 					textBuyZoneTop.setTextColor(rules.getBuyZoneTextColor());
 
 					TextView textSellZoneBot = setDouble(view, rules.calcSellZoneBottom(), R.id.quoteList_SellZoneBottom);
-					TextView textSellZoneTop = setDouble(view, rules.calcSellZoneTop(), R.id.quoteList_SellZoneTop);
+					//TextView textSellZoneTop = setDouble(view, rules.calcSellZoneTop(), R.id.quoteList_SellZoneTop);
 
 					textSellZoneBot.setBackgroundColor(rules.getSellZoneBackgroundColor());
 					textSellZoneBot.setTextColor(rules.getSellZoneTextColor());
-					textSellZoneTop.setBackgroundColor(rules.getSellZoneBackgroundColor());
-					textSellZoneTop.setTextColor(rules.getSellZoneTextColor());
+					//textSellZoneTop.setBackgroundColor(rules.getSellZoneBackgroundColor());
+					//textSellZoneTop.setTextColor(rules.getSellZoneTextColor());
 
 					TextView lastUpdated = (TextView) getActivity().findViewById(R.id.studyList_lastUpdated);
 					if (study.getPriceDate() != null && lastUpdated != null) {
@@ -286,7 +286,7 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 		
 		TextView setDouble(View view, double value, int viewId) {
 			TextView textView = (TextView) view.findViewById(viewId);
-			textView.setText(PaiStudy.format(value));
+			textView.setText(Study.format(value));
 			return textView;
 		}
 

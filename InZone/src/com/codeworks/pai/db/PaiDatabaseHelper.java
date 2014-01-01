@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class PaiDatabaseHelper extends SQLiteOpenHelper {
 
   private static final String DATABASE_NAME = "inzone.db";
-  private static final int DATABASE_VERSION = 6;
+  private static final int DATABASE_VERSION = 7;
 
   public PaiDatabaseHelper(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -17,7 +17,7 @@ public class PaiDatabaseHelper extends SQLiteOpenHelper {
   @Override
   public void onCreate(SQLiteDatabase database) {
     PriceHistoryTable.onCreate(database);
-    PaiStudyTable.onCreate(database);
+    StudyTable.onCreate(database);
     ServiceLogTable.onCreate(database);
   }
 
@@ -27,7 +27,7 @@ public class PaiDatabaseHelper extends SQLiteOpenHelper {
   public void onUpgrade(SQLiteDatabase database, int oldVersion,
       int newVersion) {
     PriceHistoryTable.onUpgrade(database, oldVersion, newVersion);
-    PaiStudyTable.onUpgrade(database, oldVersion, newVersion);
+    StudyTable.onUpgrade(database, oldVersion, newVersion);
     ServiceLogTable.onUpgrade(database, oldVersion, newVersion);
   }
 }

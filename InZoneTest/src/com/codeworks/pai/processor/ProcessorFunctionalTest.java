@@ -12,7 +12,7 @@ import android.test.AndroidTestCase;
 
 import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.db.model.EmaRules;
-import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.mock.MockDataReader;
@@ -32,7 +32,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		return new BigDecimal(value).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 	}
 	public void testStudyGenDTSell() throws ParseException {
-		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
+		Study study = new Study(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
 		List<Price> history = TestDataLoader.generateHistory(40.00, 10.00, 500);
 		logHistory(history);
@@ -41,13 +41,13 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		logStudy(study);
 		assertEquals("Price", 9.10d, study.getPrice());
 		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
-		assertEquals("MA week", 12.49d, PaiUtils.round(study.getMaWeek()));
-		assertEquals("MA month", 20.19d, PaiUtils.round(study.getMaMonth()));
+		assertEquals("MA week", 12.49d, PaiUtils.round(study.getEmaWeek()));
+		assertEquals("MA month", 20.19d, PaiUtils.round(study.getEmaMonth()));
 //		assertEquals("MA last week", 12.85d, PaiUtils.round(study.getMaLastWeek()));
-		assertEquals("MA last week", 12.49d, PaiUtils.round(study.getMaLastWeek()));
-		assertEquals("MA last month", 21,36d, PaiUtils.round(study.getMaLastMonth()));
-		assertEquals("StdDev Week", 1.78d, PaiUtils.round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 7.52d, PaiUtils.round(study.getStddevMonth()));
+		assertEquals("MA last week", 12.49d, PaiUtils.round(study.getEmaLastWeek()));
+		assertEquals("MA last month", 21,36d, PaiUtils.round(study.getEmaLastMonth()));
+		assertEquals("StdDev Week", 1.78d, PaiUtils.round(study.getEmaStddevWeek()));
+		assertEquals("StdDev Month", 7.52d, PaiUtils.round(study.getEmaStddevMonth()));
 		assertEquals("DT Monthly", true, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", true, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
@@ -58,7 +58,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 	}
 	
 	public void testStudyGenDTBelowSell() throws ParseException {
-		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
+		Study study = new Study(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
 		List<Price> history = TestDataLoader.generateHistory(40.00, 10.00, 500);
 		logHistory(history);
@@ -67,12 +67,12 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		logStudy(study);
 		assertEquals("Price", 8.00d, study.getPrice());
 		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
-		assertEquals("MA week", 13,15d, PaiUtils.round(study.getMaWeek()));
-		assertEquals("MA month", 21.36d, PaiUtils.round(study.getMaMonth()));
-		assertEquals("MA last week", 13.15d, PaiUtils.round(study.getMaLastWeek()));
-		assertEquals("MA last month", 21.36, PaiUtils.round(study.getMaLastMonth()));
-		assertEquals("StdDev Week", 1.73d, PaiUtils.round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 7.53d, PaiUtils.round(study.getStddevMonth()));
+		assertEquals("MA week", 13,15d, PaiUtils.round(study.getEmaWeek()));
+		assertEquals("MA month", 21.36d, PaiUtils.round(study.getEmaMonth()));
+		assertEquals("MA last week", 13.15d, PaiUtils.round(study.getEmaLastWeek()));
+		assertEquals("MA last month", 21.36, PaiUtils.round(study.getEmaLastMonth()));
+		assertEquals("StdDev Week", 1.73d, PaiUtils.round(study.getEmaStddevWeek()));
+		assertEquals("StdDev Month", 7.53d, PaiUtils.round(study.getEmaStddevMonth()));
 		assertEquals("DT Monthly", true, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", true, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
@@ -82,7 +82,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("Sell", false, rules.isPriceInSellZone());
 	}	
 	public void testStudyGenSell() throws ParseException {
-		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
+		Study study = new Study(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
 		List<Price> history = TestDataLoader.generateHistory(10.00, 40.00, 500);
 		logHistory(history);
@@ -91,12 +91,12 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		logStudy(study);
 		assertEquals("Price", 41.10d, study.getPrice());
 		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
-		assertEquals("StdDev Week", 1.73d, PaiUtils.round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 7.53d, PaiUtils.round(study.getStddevMonth()));
-		assertEquals("MA week", 36.85D, PaiUtils.round(study.getMaWeek()));
-		assertEquals("MA month", 28.64d, PaiUtils.round(study.getMaMonth()));
-		assertEquals("MA last week", 36.85d, PaiUtils.round(study.getMaLastWeek()));
-		assertEquals("MA last month", 28.64d, PaiUtils.round(study.getMaLastMonth()));
+		assertEquals("StdDev Week", 1.73d, PaiUtils.round(study.getEmaStddevWeek()));
+		assertEquals("StdDev Month", 7.53d, PaiUtils.round(study.getEmaStddevMonth()));
+		assertEquals("MA week", 36.85D, PaiUtils.round(study.getEmaWeek()));
+		assertEquals("MA month", 28.64d, PaiUtils.round(study.getEmaMonth()));
+		assertEquals("MA last week", 36.85d, PaiUtils.round(study.getEmaLastWeek()));
+		assertEquals("MA last month", 28.64d, PaiUtils.round(study.getEmaLastMonth()));
 		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
@@ -107,7 +107,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 	}
 	
 	public void testStudyGenBuy() throws ParseException {
-		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
+		Study study = new Study(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
 		List<Price> history = TestDataLoader.generateHistory(10.00, 40.00, 500);
 		logHistory(history);
@@ -116,12 +116,12 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		logStudy(study);
 		assertEquals("Price", 37.50d, study.getPrice());
 		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
-		assertEquals("StdDev Week", 1.73d, PaiUtils.round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 7.53d, PaiUtils.round(study.getStddevMonth()));
-		assertEquals("MA week", 36.85d, PaiUtils.round(study.getMaWeek()));
-		assertEquals("MA month", 28.64d, PaiUtils.round(study.getMaMonth()));
-		assertEquals("MA last week", 36.85d, PaiUtils.round(study.getMaLastWeek()));
-		assertEquals("MA last month", 28.64d, PaiUtils.round(study.getMaLastMonth()));
+		assertEquals("StdDev Week", 1.73d, PaiUtils.round(study.getEmaStddevWeek()));
+		assertEquals("StdDev Month", 7.53d, PaiUtils.round(study.getEmaStddevMonth()));
+		assertEquals("MA week", 36.85d, PaiUtils.round(study.getEmaWeek()));
+		assertEquals("MA month", 28.64d, PaiUtils.round(study.getEmaMonth()));
+		assertEquals("MA last week", 36.85d, PaiUtils.round(study.getEmaLastWeek()));
+		assertEquals("MA last month", 28.64d, PaiUtils.round(study.getEmaLastMonth()));
 		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
@@ -132,7 +132,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 	}
 	
 	public void testStudyGenUTrendTT() throws ParseException {
-		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
+		Study study = new Study(TestDataLoader.SPY);
 		List<Price> history = TestDataLoader.generateHistory(10.00, 40.00, 500);
 		Rules rules = new EmaRules(study);
 		logHistory(history);
@@ -141,12 +141,12 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		logStudy(study);
 		assertEquals("Price", 36.50d, study.getPrice());
 		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
-		assertEquals("MA week", 36.85d, PaiUtils.round(study.getMaWeek()));
-		assertEquals("MA month", 28.64d, PaiUtils.round(study.getMaMonth()));
-		assertEquals("MA last week", 36.85d, PaiUtils.round(study.getMaLastWeek()));
-		assertEquals("MA last month", 28.64d, PaiUtils.round(study.getMaLastMonth()));
-		assertEquals("StdDev Week", 1.73d, PaiUtils.round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 7.53d, PaiUtils.round(study.getStddevMonth()));
+		assertEquals("MA week", 36.85d, PaiUtils.round(study.getEmaWeek()));
+		assertEquals("MA month", 28.64d, PaiUtils.round(study.getEmaMonth()));
+		assertEquals("MA last week", 36.85d, PaiUtils.round(study.getEmaLastWeek()));
+		assertEquals("MA last month", 28.64d, PaiUtils.round(study.getEmaLastMonth()));
+		assertEquals("StdDev Week", 1.73d, PaiUtils.round(study.getEmaStddevWeek()));
+		assertEquals("StdDev Month", 7.53d, PaiUtils.round(study.getEmaStddevMonth()));
 		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
 		assertEquals("TT", true, rules.isPossibleTrendTerminationWeekly());
@@ -162,7 +162,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		}
 	}
 	
-	void logStudy (PaiStudy study) {
+	void logStudy (Study study) {
 		Rules rules = new EmaRules(study);
 		System.out.println(study.getSymbol());
 		System.out.println("price         "+study.getPrice());
@@ -170,19 +170,19 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		System.out.println("BuyZone Botto "+rules.calcBuyZoneBottom());
 		System.out.println("SelZone Top   "+rules.calcSellZoneTop());
 		System.out.println("SelZone Botto "+rules.calcSellZoneBottom());
-		System.out.println("ma week       "+study.getMaWeek());
-		System.out.println("ma month      "+study.getMaMonth());
+		System.out.println("ma week       "+study.getEmaWeek());
+		System.out.println("ma month      "+study.getEmaMonth());
 		System.out.println("pr last week  "+study.getPriceLastWeek());
-		System.out.println("ma last week  "+study.getMaLastWeek());
+		System.out.println("ma last week  "+study.getEmaLastWeek());
 		System.out.println("pr last month "+study.getPriceLastMonth());
-		System.out.println("ma last month "+study.getMaLastMonth());
-		System.out.println("stddev  week  "+study.getStddevWeek());
-		System.out.println("stddev  month "+study.getStddevMonth());
+		System.out.println("ma last month "+study.getEmaLastMonth());
+		System.out.println("stddev  week  "+study.getEmaStddevWeek());
+		System.out.println("stddev  month "+study.getEmaStddevMonth());
 		
 	}
 	
 	public void testStudy() throws ParseException {
-		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
+		Study study = new Study(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
 		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY);
 		// history.add(buildPrice(MockPaiStudyDataReader.SPY_PRICE,
@@ -192,12 +192,12 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		logStudy(study);
 		assertEquals("Price", MockDataReader.SPY_PRICE, study.getPrice());
 		assertEquals("ATR", 2.1d, round(study.getAverageTrueRange()));
-		assertEquals("StdDev Week", 5.56d, PaiUtils.round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 10.94d, PaiUtils.round(study.getStddevMonth()));
-		assertEquals("MA week", 151.08d, PaiUtils.round(study.getMaWeek()));
-		assertEquals("MA month", 141.13d, PaiUtils.round(study.getMaMonth()));
-		assertEquals("MA last week", 150.27d, PaiUtils.round(study.getMaLastWeek()));
-		assertEquals("MA last month", 139.27d, PaiUtils.round(study.getMaLastMonth()));
+		assertEquals("StdDev Week", 5.56d, PaiUtils.round(study.getEmaStddevWeek()));
+		assertEquals("StdDev Month", 10.94d, PaiUtils.round(study.getEmaStddevMonth()));
+		assertEquals("MA week", 151.08d, PaiUtils.round(study.getEmaWeek()));
+		assertEquals("MA month", 141.13d, PaiUtils.round(study.getEmaMonth()));
+		assertEquals("MA last week", 150.27d, PaiUtils.round(study.getEmaLastWeek()));
+		assertEquals("MA last month", 139.27d, PaiUtils.round(study.getEmaLastMonth()));
 		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
@@ -208,8 +208,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 	}
 
 	public void testStudyMultiple() throws ParseException {
-		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
-		PaiStudy study2 = new PaiStudy(TestDataLoader.SPY);
+		Study study = new Study(TestDataLoader.SPY);
+		Study study2 = new Study(TestDataLoader.SPY);
 		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY);
 		MockDataReader.buildSecurity(study, "S&P 500", MockDataReader.SPY_PRICE,MockDataReader.PRICE_CLOSE_DATE);
 		MockDataReader.buildSecurity(study2, "S&P 500", MockDataReader.SPY_PRICE,MockDataReader.PRICE_CLOSE_DATE);
@@ -218,15 +218,15 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		logStudy(study);
 		logStudy(study2);
 		assertEquals(study.getAverageTrueRange(), study2.getAverageTrueRange());
-		assertEquals(study.getMaWeek(), study2.getMaWeek());
-		assertEquals(study.getMaMonth(), study2.getMaMonth());
-		assertEquals(study.getMaLastWeek(), study2.getMaLastWeek());
-		assertEquals(study.getMaLastMonth(), study2.getMaLastMonth());
+		assertEquals(study.getEmaWeek(), study2.getEmaWeek());
+		assertEquals(study.getEmaMonth(), study2.getEmaMonth());
+		assertEquals(study.getEmaLastWeek(), study2.getEmaLastWeek());
+		assertEquals(study.getEmaLastMonth(), study2.getEmaLastMonth());
 		
 	}
 	
 	public void testFridayCutoff() throws ParseException {
-		PaiStudy study = new PaiStudy(TestDataLoader.SPY);
+		Study study = new Study(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
 		List<Price> history = TestDataLoader.getTestHistory(TestDataLoader.SPY_FRIDAY_CLOSE);
 		// history.add(buildPrice(MockPaiStudyDataReader.SPY_PRICE,
@@ -237,8 +237,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		Date testDate = sdf.parse("07/26/2013 04:00pm EDT");
 		study.setPriceDate(testDate);
 		processor.calculateStudy(study, history);
-		assertEquals("MA week", 161.43d, PaiUtils.round(study.getMaWeek()));
-		assertEquals("MA last week", 161.43d, PaiUtils.round(study.getMaLastWeek()));
+		assertEquals("MA week", 161.43d, PaiUtils.round(study.getEmaWeek()));
+		assertEquals("MA last week", 161.43d, PaiUtils.round(study.getEmaLastWeek()));
 	}
 	
 	Price buildPrice(double price, String priceDate) throws ParseException {

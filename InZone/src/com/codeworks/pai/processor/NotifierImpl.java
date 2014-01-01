@@ -24,10 +24,10 @@ import com.codeworks.pai.PaiUtils;
 import com.codeworks.pai.R;
 import com.codeworks.pai.StudyActivity;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
-import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.EmaRules;
 import com.codeworks.pai.db.model.MaType;
-import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
 
@@ -43,10 +43,10 @@ public class NotifierImpl implements Notifier {
 	 * @see com.codeworks.pai.processor.Notifier#updateNotification(java.util.List)
 	 */
 	@Override
-	public void updateNotification(List<PaiStudy> studies) {
+	public void updateNotification(List<Study> studies) {
 		Resources res = context.getResources();
 
-		for (PaiStudy study : studies) {
+		for (Study study : studies) {
 			if (study.isValid() && !study.hasInsufficientHistory()) {
 				Rules rules;
 				if (MaType.S.equals(study.getMaType())) {
@@ -72,22 +72,22 @@ public class NotifierImpl implements Notifier {
 		}
 	}
 
-	boolean saveStudyNoticeIfChanged(PaiStudy study) {
+	boolean saveStudyNoticeIfChanged(Study study) {
 		boolean changed = false;
-		String[] projection = new String[] { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_NOTICE, PaiStudyTable.COLUMN_NOTICE_DATE };
+		String[] projection = new String[] { StudyTable.COLUMN_ID, StudyTable.COLUMN_NOTICE, StudyTable.COLUMN_NOTICE_DATE };
 		Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + study.getSecurityId());
 		Cursor studyCursor = getContentResolver().query(studyUri, projection, null, null, null);
 		try {
 			ContentValues values = new ContentValues();
-			values.put(PaiStudyTable.COLUMN_NOTICE, study.getNotice().getIndex());
-			values.put(PaiStudyTable.COLUMN_NOTICE_DATE, PaiStudyTable.noticeDateFormat.format(study.getNoticeDate()==null? new Date(): study.getNoticeDate()));
+			values.put(StudyTable.COLUMN_NOTICE, study.getNotice().getIndex());
+			values.put(StudyTable.COLUMN_NOTICE_DATE, StudyTable.noticeDateFormat.format(study.getNoticeDate()==null? new Date(): study.getNoticeDate()));
 			if (studyCursor.moveToFirst()) {
 				Notice lastNotice = Notice.fromIndex(studyCursor.getInt(1));
 				String lastNoticeDate = studyCursor.getString(2);
 				Log.d(TAG,
 						"Notice upd " + study.getSymbol() + " p=" + study.getPortfolioId() + " last=" + lastNotice.getIndex() + " new="
-								+ values.getAsString(PaiStudyTable.COLUMN_NOTICE) + " last=" + lastNoticeDate + " new="
-								+ values.getAsString(PaiStudyTable.COLUMN_NOTICE_DATE));
+								+ values.getAsString(StudyTable.COLUMN_NOTICE) + " last=" + lastNoticeDate + " new="
+								+ values.getAsString(StudyTable.COLUMN_NOTICE_DATE));
 				if (study.getNotice() != null && !study.getNotice().equals(lastNotice)) {
 					studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + study.getSecurityId());
 					if (getContentResolver().update(studyUri, values, null, null) != 1) {

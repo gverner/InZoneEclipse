@@ -5,9 +5,9 @@ import java.util.Date;
 import java.util.List;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
-import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.MaType;
-import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Study;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -25,14 +25,14 @@ public class NotifierTest extends AndroidTestCase {
 	 */
 	public void testNotice() {
 		NotifierImpl notifier = new NotifierImpl(getContext());
-		PaiStudy study = new PaiStudy("SPY");
+		Study study = new Study("SPY");
 		study.setPrice(1.0d);
-		study.setMaWeek(0.50d);
-		study.setMaMonth(.050d);
-		study.setStddevWeek(0.55d);
-		study.setStddevMonth(0.55d);
+		study.setEmaWeek(0.50d);
+		study.setEmaMonth(.050d);
+		study.setEmaStddevWeek(0.55d);
+		study.setEmaStddevMonth(0.55d);
 		study.setNotice(Notice.NONE);
-		List<PaiStudy> studies = new ArrayList<PaiStudy>();
+		List<Study> studies = new ArrayList<Study>();
 		studies.add(study);
 		notifier.updateNotification(studies);
 		study.setDelayedPrice(true);
@@ -70,15 +70,15 @@ public class NotifierTest extends AndroidTestCase {
 	
 	public void testNoticeSma() {
 		MockNotifier notifier = new MockNotifier(getContext());
-		PaiStudy study = fetchStudyAndUpdateNotice("SPY",Notice.NONE);
+		Study study = fetchStudyAndUpdateNotice("SPY",Notice.NONE);
 		study.setMaType(MaType.S);
 		study.setPrice(1.0d);
-		study.setMaWeek(0.50d);
-		study.setMaMonth(.050d);
-		study.setStddevWeek(0.55d);
-		study.setStddevMonth(0.55d);
+		study.setEmaWeek(0.50d);
+		study.setEmaMonth(.050d);
+		study.setEmaStddevWeek(0.55d);
+		study.setEmaStddevMonth(0.55d);
 		study.setNotice(Notice.NONE);
-		List<PaiStudy> studies = new ArrayList<PaiStudy>();
+		List<Study> studies = new ArrayList<Study>();
 		studies.add(study);
 		notifier.updateNotification(studies);
 		assertEquals(0, notifier.numberOfSendNoticeCalls );
@@ -102,17 +102,17 @@ public class NotifierTest extends AndroidTestCase {
 	
 	public void testNoticeEma() {
 		MockNotifier notifier = new MockNotifier(getContext());
-		PaiStudy study = fetchStudyAndUpdateNotice("SPY",Notice.NONE);
+		Study study = fetchStudyAndUpdateNotice("SPY",Notice.NONE);
 		study.setMaType(MaType.E);
 		study.setPrice(1.0d);
-		study.setMaWeek(0.50d);
-		study.setMaMonth(.050d);
+		study.setEmaWeek(0.50d);
+		study.setEmaMonth(.050d);
 		study.setSmaWeek(0.50d);
 		study.setSmaMonth(.050d);
-		study.setStddevWeek(0.55d);
-		study.setStddevMonth(0.55d);
+		study.setEmaStddevWeek(0.55d);
+		study.setEmaStddevMonth(0.55d);
 		study.setNotice(Notice.NONE);
-		List<PaiStudy> studies = new ArrayList<PaiStudy>();
+		List<Study> studies = new ArrayList<Study>();
 		studies.add(study);
 		notifier.updateNotification(studies);
 		assertEquals(0, notifier.numberOfSendNoticeCalls );
@@ -134,23 +134,34 @@ public class NotifierTest extends AndroidTestCase {
 		assertEquals(4, notifier.numberOfSendNoticeCalls );
 	}
 
-	PaiStudy fetchStudyAndUpdateNotice(String symbol, Notice notice) {
-		PaiStudy study = new PaiStudy(symbol);
+	Study fetchStudyAndUpdateNotice(String symbol, Notice notice) {
+		Study study = new Study(symbol);
 
-		String[] projection = new String[] { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_NOTICE, PaiStudyTable.COLUMN_NOTICE_DATE };
+		String[] projection = new String[] { StudyTable.COLUMN_ID, StudyTable.COLUMN_NOTICE, StudyTable.COLUMN_NOTICE_DATE };
 		String selection = "symbol = ? ";
 		String[] selectionArgs = new String[] { study.getSymbol() };
 		Cursor studyCursor = getContext().getContentResolver().query(PaiContentProvider.PAI_STUDY_URI, projection, selection, selectionArgs,
-				PaiStudyTable.COLUMN_ID);
+				StudyTable.COLUMN_ID);
 		try {
-			studyCursor.moveToFirst();
-			study.setSecurityId(studyCursor.getLong(studyCursor.getColumnIndex(PaiStudyTable.COLUMN_ID)));
-			study.setNotice(Notice.fromIndex(studyCursor.getInt(studyCursor.getColumnIndex(PaiStudyTable.COLUMN_NOTICE))));
-			study.setNotice(notice);
-			ContentValues values = new ContentValues();
-			values.put(PaiStudyTable.COLUMN_NOTICE, notice.getIndex());
-			Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + study.getSecurityId());
-			getContext().getContentResolver().update(studyUri, values, null, null);
+			if (studyCursor.moveToFirst()) {
+				study.setSecurityId(studyCursor.getLong(studyCursor.getColumnIndex(StudyTable.COLUMN_ID)));
+				study.setNotice(Notice.fromIndex(studyCursor.getInt(studyCursor.getColumnIndex(StudyTable.COLUMN_NOTICE))));
+				study.setNotice(notice);
+				ContentValues values = new ContentValues();
+				values.put(StudyTable.COLUMN_NOTICE, notice.getIndex());
+				Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + study.getSecurityId());
+				getContext().getContentResolver().update(studyUri, values, null, null);
+			} else {
+				//study.setSecurityId(studyCursor.getLong(studyCursor.getColumnIndex(StudyTable.COLUMN_ID)));
+				study.setNotice(notice);
+				ContentValues values = new ContentValues();
+				values.put(StudyTable.COLUMN_NOTICE, notice.getIndex());
+				values.put(StudyTable.COLUMN_SYMBOL, symbol);
+				values.put(StudyTable.COLUMN_PORTFOLIO_ID, 1);
+				values.put(StudyTable.COLUMN_NOTICE, notice.getIndex());
+				Uri returnUri = getContext().getContentResolver().insert(PaiContentProvider.PAI_STUDY_URI,  values);
+				Log.i("TAG", returnUri.toString());
+			}
 			return study;
 		} finally {
 			studyCursor.close();
@@ -159,7 +170,7 @@ public class NotifierTest extends AndroidTestCase {
 	
 	public void testSaveNotice() {
 		NotifierImpl notifier = new NotifierImpl(getContext());
-		PaiStudy study = fetchStudyAndUpdateNotice("SPY", Notice.NONE);
+		Study study = fetchStudyAndUpdateNotice("SPY", Notice.NONE);
 		study.setNotice(Notice.NONE);
 		study.setNoticeDate(new Date());
 		

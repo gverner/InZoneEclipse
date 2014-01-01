@@ -8,13 +8,13 @@ import com.codeworks.pai.study.Period;
 
 
 public class SmaRulesTest extends TestCase {
-	PaiStudy spyStudy;
-	PaiStudy gldStudy;
+	Study spyStudy;
+	Study gldStudy;
 	
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		spyStudy = new PaiStudy("SPY");
+		spyStudy = new Study("SPY");
 		// Numbers from 4/12/2013
 		spyStudy.setPrice(MockDataReader.SPY_PRICE);
 		spyStudy.setMaType(MaType.E);
@@ -28,15 +28,15 @@ public class SmaRulesTest extends TestCase {
 		spyStudy.setSmaStddevWeek(((158.99-153.91d)/2));
 		spyStudy.setSmaStddevMonth(7.89d);
 		
-		spyStudy.setMaLastWeek(153.04d);
-		spyStudy.setMaLastMonth(142.85d);
-		spyStudy.setMaWeek(153.91d);
-		spyStudy.setMaMonth(144.42d);
-		spyStudy.setStddevWeek(((158.99-153.91d)/2));
-		spyStudy.setStddevMonth(7.89d);
+		spyStudy.setEmaLastWeek(153.04d);
+		spyStudy.setEmaLastMonth(142.85d);
+		spyStudy.setEmaWeek(153.91d);
+		spyStudy.setEmaMonth(144.42d);
+		spyStudy.setEmaStddevWeek(((158.99-153.91d)/2));
+		spyStudy.setEmaStddevMonth(7.89d);
 		
 		
-		gldStudy = new PaiStudy("GLD");
+		gldStudy = new Study("GLD");
 		gldStudy.setPrice(MockDataReader.GLD_PRICE);
 		gldStudy.setPriceLastWeek(152.81d);
 		gldStudy.setPriceLastMonth(154.47d);
@@ -53,7 +53,7 @@ public class SmaRulesTest extends TestCase {
 
 	public void testSpyRules() {
 		SmaRules rules = new SmaRules(spyStudy);
-		PaiStudy study = spyStudy;
+		Study study = spyStudy;
 		assertEquals(spyStudy.getSmaMonth() , PaiUtils.round(rules.calcBuyZoneBottom()));
 		assertEquals(spyStudy.getSmaWeek(), rules.calcBuyZoneTop());
 		assertEquals(spyStudy.getSmaMonth() + (spyStudy.getSmaStddevMonth() * SmaRules.ZONE_OUTER) ,rules.calcSellZoneBottom());
@@ -79,7 +79,7 @@ public class SmaRulesTest extends TestCase {
 
 	public void testGldRules() {
 		SmaRules rules = new SmaRules(gldStudy);
-		PaiStudy study = gldStudy;
+		Study study = gldStudy;
 		assertEquals(163.08d, PaiUtils.round(rules.calcSellZoneTop()));
 		assertEquals(gldStudy.getSmaMonth() + (gldStudy.getSmaStddevMonth() * SmaRules.ZONE_OUTER), rules.calcSellZoneBottom());
 		assertEquals(gldStudy.getSmaWeek(), rules.calcBuyZoneTop());
@@ -105,15 +105,15 @@ public class SmaRulesTest extends TestCase {
 	}
 
 	public void testTradeBelowMovingAverageToday() {
-		PaiStudy study = spyStudy;
-		study.setLow(study.getMaWeek() - 0.01d );
+		Study study = spyStudy;
+		study.setLow(study.getEmaWeek() - 0.01d );
 		EmaRules rules = new EmaRules(study);
 		assertTrue(rules.isUpTrend(Period.Week));
 		assertTrue(rules.hasTradedBelowMAToday());
 		SmaRules smaRules = new SmaRules(study);
 		assertTrue(smaRules.isUpTrend(Period.Week));
 		assertFalse(smaRules.hasTradedBelowMAToday());
-		study.setLow(study.getMaWeek() + 0.01d );
+		study.setLow(study.getEmaWeek() + 0.01d );
 		assertFalse(rules.hasTradedBelowMAToday());
 		smaRules = new SmaRules(study);
 		assertFalse(smaRules.hasTradedBelowMAToday());

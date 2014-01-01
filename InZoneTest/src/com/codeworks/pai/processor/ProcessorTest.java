@@ -8,9 +8,9 @@ import android.net.Uri;
 import android.test.ProviderTestCase2;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
-import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.EmaRules;
-import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
 import com.codeworks.pai.mock.MockDataReader;
@@ -24,7 +24,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 	}
 
 	ProcessorImpl processor;
-	List<PaiStudy> studies;
+	List<Study> studies;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -36,8 +36,8 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 
 	public Uri insertSecurity(String symbol) {
 		ContentValues values = new ContentValues();
-		values.put(PaiStudyTable.COLUMN_SYMBOL, symbol);
-		values.put(PaiStudyTable.COLUMN_PORTFOLIO_ID, 1L);
+		values.put(StudyTable.COLUMN_SYMBOL, symbol);
+		values.put(StudyTable.COLUMN_PORTFOLIO_ID, 1L);
 		Uri uri = getMockContentResolver().insert(PaiContentProvider.PAI_STUDY_URI, values);
 		return uri;
 	}
@@ -53,8 +53,8 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		return new BigDecimal(value).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 	}
 
-	public PaiStudy getStudy(String symbol) {
-		for (PaiStudy study : studies) {
+	public Study getStudy(String symbol) {
+		for (Study study : studies) {
 			if (symbol.equalsIgnoreCase(study.getSymbol())) {
 				return study;
 			}
@@ -91,17 +91,17 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 	public void testUng() throws InterruptedException {
 		insertSecurity(TestDataLoader.UNG);
 		studies = processor.process(TestDataLoader.UNG);
-		PaiStudy study = getStudy(TestDataLoader.UNG);
+		Study study = getStudy(TestDataLoader.UNG);
 		Rules rules = new EmaRules(study);
 		
 		assertEquals("Price", MockDataReader.UNG_PRICE, study.getPrice());
 		assertEquals("ATR", 0.58d, round(study.getAverageTrueRange()));
-		assertEquals("StdDev Week", 1.46d, round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 5.62d, round(study.getStddevMonth()));
-		assertEquals("MA week", 20.46d, round(study.getMaWeek()));
-		assertEquals("MA month", 17.72d, round(study.getMaMonth()));
-		assertEquals("MA last week", 20.18d, round(study.getMaLastWeek()));
-		assertEquals("MA last month", 17.16d, round(study.getMaLastMonth()));
+		assertEquals("StdDev Week", 1.46d, round(study.getEmaStddevWeek()));
+		assertEquals("StdDev Month", 5.62d, round(study.getEmaStddevMonth()));
+		assertEquals("MA week", 20.46d, round(study.getEmaWeek()));
+		assertEquals("MA month", 17.72d, round(study.getEmaMonth()));
+		assertEquals("MA last week", 20.18d, round(study.getEmaLastWeek()));
+		assertEquals("MA last month", 17.16d, round(study.getEmaLastMonth()));
 		assertEquals("Price last week", 22.46d, round(study.getPriceLastWeek()));
 		assertEquals("Price last month", 21.88d, round(study.getPriceLastMonth()));
 		assertEquals("DT Monthly",false, rules.isDownTrendMonthly());
@@ -117,16 +117,16 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 	public void testGld() throws InterruptedException {
 		insertSecurity(TestDataLoader.GLD);
 		studies = processor.process(null);
-		PaiStudy study = getStudy(TestDataLoader.GLD);
+		Study study = getStudy(TestDataLoader.GLD);
 		Rules rules = new EmaRules(study);
 		assertEquals("Price", MockDataReader.GLD_PRICE, study.getPrice());
 		assertEquals("ATR", 1.94d, round(study.getAverageTrueRange()));
-		assertEquals("StdDev Week", 5.42d, round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 7.15d, round(study.getStddevMonth()));
-		assertEquals("MA week", 156.61d, round(study.getMaWeek()));
-		assertEquals("MA month", 155.75d, round(study.getMaMonth()));
-		assertEquals("MA last week", 157.94d, round(study.getMaLastWeek()));
-		assertEquals("MA last month", 156.99d, round(study.getMaLastMonth()));
+		assertEquals("StdDev Week", 5.42d, round(study.getEmaStddevWeek()));
+		assertEquals("StdDev Month", 7.15d, round(study.getEmaStddevMonth()));
+		assertEquals("MA week", 156.61d, round(study.getEmaWeek()));
+		assertEquals("MA month", 155.75d, round(study.getEmaMonth()));
+		assertEquals("MA last week", 157.94d, round(study.getEmaLastWeek()));
+		assertEquals("MA last month", 156.99d, round(study.getEmaLastMonth()));
 		assertEquals("DT Monthly",true, rules.isDownTrendMonthly());
 		assertEquals("UT Monthly",false, rules.isUpTrendMonthly());
 		
@@ -143,18 +143,18 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 	public void testSpy() throws InterruptedException {
 		insertSecurity(TestDataLoader.SPY);
 		studies = processor.process(TestDataLoader.SPY);
-		PaiStudy study = getStudy(TestDataLoader.SPY);
+		Study study = getStudy(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
 		assertEquals("Price", MockDataReader.SPY_PRICE, study.getPrice());
 		assertEquals("ATR", 1.46d, round(study.getAverageTrueRange()));
-		assertEquals("MA week", 151.08d, round(study.getMaWeek()));
-		assertEquals("MA month", 141.13d, round(study.getMaMonth()));
-		assertEquals("MA last week", 150.27d, round(study.getMaLastWeek()));
-		assertEquals("MA last month", 139.27d, round(study.getMaLastMonth()));
+		assertEquals("MA week", 151.08d, round(study.getEmaWeek()));
+		assertEquals("MA month", 141.13d, round(study.getEmaMonth()));
+		assertEquals("MA last week", 150.27d, round(study.getEmaLastWeek()));
+		assertEquals("MA last month", 139.27d, round(study.getEmaLastMonth()));
 		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
-		assertEquals("StdDev Week", 5.56d, round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 10.94d, round(study.getStddevMonth()));
+		assertEquals("StdDev Week", 5.56d, round(study.getEmaStddevWeek()));
+		assertEquals("StdDev Month", 10.94d, round(study.getEmaStddevMonth()));
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
 		assertEquals("TT", false, rules.isPossibleUptrendTermination(Period.Week));
 		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
@@ -166,7 +166,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 	public void testSmaSpy() throws InterruptedException {
 		insertSecurity(TestDataLoader.SPY);
 		studies = processor.process(TestDataLoader.SPY);
-		PaiStudy study = getStudy(TestDataLoader.SPY);
+		Study study = getStudy(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
 		assertEquals("Price", MockDataReader.SPY_PRICE, study.getPrice());
 		assertEquals("ATR", 1.46d, round(study.getAverageTrueRange()));
@@ -189,16 +189,16 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		insertSecurity(TestDataLoader.QQQ);
 		studies = processor.process(null);
 		
-		PaiStudy study = getStudy(TestDataLoader.QQQ);
+		Study study = getStudy(TestDataLoader.QQQ);
 		Rules rules = new EmaRules(study);
 		assertEquals("Price", MockDataReader.QQQ_PRICE, study.getPrice());
 		assertEquals("ATR", 0.75, round(study.getAverageTrueRange()));
-		assertEquals("MA week", 67.57d, round(study.getMaWeek()));
-		assertEquals("MA month", 63.99d, round(study.getMaMonth()));
-		assertEquals("MA last week", 67.32d, round(study.getMaLastWeek()));
-		assertEquals("MA last month", 63.36d, round(study.getMaLastMonth()));
-		assertEquals("StdDev Week", 1.55d, round(study.getStddevWeek()));
-		assertEquals("StdDev Month", 4.75d, round(study.getStddevMonth()));
+		assertEquals("MA week", 67.57d, round(study.getEmaWeek()));
+		assertEquals("MA month", 63.99d, round(study.getEmaMonth()));
+		assertEquals("MA last week", 67.32d, round(study.getEmaLastWeek()));
+		assertEquals("MA last month", 63.36d, round(study.getEmaLastMonth()));
+		assertEquals("StdDev Week", 1.55d, round(study.getEmaStddevWeek()));
+		assertEquals("StdDev Month", 4.75d, round(study.getEmaStddevMonth()));
 		assertEquals("DT Monthly", false, rules.isDownTrendMonthly());
 		assertEquals("DT Weekly", false, rules.isDownTrendWeekly());
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
@@ -212,7 +212,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		insertSecurity(TestDataLoader.QQQ);
 		studies = processor.process(null);
 
-		PaiStudy study = getStudy(TestDataLoader.QQQ);
+		Study study = getStudy(TestDataLoader.QQQ);
 	
 		Rules smaRules = new SmaRules(study);
 		assertEquals("Price", MockDataReader.QQQ_PRICE, study.getPrice());

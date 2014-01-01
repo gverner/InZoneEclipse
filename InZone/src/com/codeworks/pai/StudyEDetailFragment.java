@@ -11,10 +11,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
-import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.EmaRules;
 import com.codeworks.pai.db.model.MaType;
-import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
 import com.codeworks.pai.processor.Notice;
@@ -54,11 +54,11 @@ public class StudyEDetailFragment extends Fragment {
 
 	private void fillData(Long id) {
 		Uri uri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + id);
-		Cursor cursor = getActivity().getContentResolver().query(uri, PaiStudyTable.getFullProjection(), null, null, null);
+		Cursor cursor = getActivity().getContentResolver().query(uri, StudyTable.getFullProjection(), null, null, null);
 		if (cursor != null)
 			try {
 				cursor.moveToFirst();
-				PaiStudy security = PaiStudyTable.loadStudy(cursor); 
+				Study security = StudyTable.loadStudy(cursor); 
 				
 				((TextView) getView().findViewById(R.id.sdfSymbol)).setText(security.getSymbol());
 				((TextView) getView().findViewById(R.id.sdfName)).setText(security.getName());
@@ -73,7 +73,7 @@ public class StudyEDetailFragment extends Fragment {
 			}
 	}
 
-	void populateView(PaiStudy study) {
+	void populateView(Study study) {
 		Rules rules;
 		if (MaType.E.equals(study.getMaType())) {
 			rules = new EmaRules(study);
@@ -87,7 +87,7 @@ public class StudyEDetailFragment extends Fragment {
 		setDouble(getView(), study.getHigh(), R.id.sdfHigh);
 		if (study.isValidWeek()) {
 			setDouble(getView(), study.getAverageTrueRange() / 4, R.id.sdfAtr25);
-			setDouble(getView(), study.getMaWeek() + (study.getAverageTrueRange() / 4), R.id.sdfPricePlusAtr25);
+			setDouble(getView(), study.getEmaWeek() + (study.getAverageTrueRange() / 4), R.id.sdfPricePlusAtr25);
 			setDouble(getView(), rules.calcUpperSellZoneTop(Period.Week), R.id.sdfWeeklyUpperSellTop);
 			setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Week), R.id.sdfWeeklyUpperSellBottom);
 			setDouble(getView(), rules.calcUpperBuyZoneTop(Period.Week), R.id.sdfWeeklyUpperBuyTop);
@@ -100,14 +100,13 @@ public class StudyEDetailFragment extends Fragment {
 			setDouble(getView(), rules.calcUpperSellZoneTop(Period.Month), R.id.sdfMonthlyUpperSellTop);
 			setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Month), R.id.sdfMonthlyUpperSellBottom);
 			setDouble(getView(), rules.calcUpperBuyZoneTop(Period.Month), R.id.sdfMonthlyUpperBuyTop);
-			setDouble(getView(), study.getMaMonth(), R.id.sdfMaMonthly);
+			setDouble(getView(), study.getEmaMonth(), R.id.sdfMaMonthly);
 			setDouble(getView(), rules.calcLowerSellZoneBottom(Period.Month), R.id.sdfMonthlyLowerSellBottom);
 			setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Month), R.id.sdfMonthlyLowerBuyTop);
 			setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Month), R.id.sdfMonthlyLowerBuyBottom);
 		}
 		
 		rules.updateNotice();
-		
 		StringBuilder alertMsg = new StringBuilder();
 		alertMsg.append(rules.getTrendText(getResources()));
 		boolean alert = false;
@@ -141,7 +140,7 @@ public class StudyEDetailFragment extends Fragment {
 
 	TextView setDouble(View view, double value, int viewId) {
 		TextView textView = (TextView) view.findViewById(viewId);
-		textView.setText(PaiStudy.format(value));
+		textView.setText(Study.format(value));
 		return textView;
 	}
 	TextView setString(View view, String value, int viewId) {

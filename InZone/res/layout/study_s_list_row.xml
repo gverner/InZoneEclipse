@@ -32,8 +32,8 @@
     <TextView
         android:id="@+id/quoteList_symbol"
         android:layout_width="40dp"
-        android:layout_height="30dp"
-        android:paddingTop="9dip"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dip"
         android:layout_marginLeft="1sp" 
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"        
@@ -43,8 +43,7 @@
     <ImageView
         android:id="@+id/quoteList_MonthyTrend"
         android:layout_width="10dp"
-        android:layout_height="30dp"
-        android:paddingTop="5dip"
+        android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/quoteList_symbol"
         android:gravity="right"
@@ -56,8 +55,7 @@
     <ImageView
         android:id="@+id/quoteList_WeeklyTrend"
         android:layout_width="10dp"
-        android:layout_height="30dp"
-        android:paddingTop="5dip"
+        android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/quoteList_MonthyTrend"
         android:gravity="right"
@@ -69,8 +67,8 @@
     <TextView
         android:id="@+id/quoteList_Price"
         android:layout_width="55dp"
-        android:layout_height="30dp"
-        android:paddingTop="9dip"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dip"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/quoteList_WeeklyTrend"
         android:gravity="right"
@@ -81,8 +79,8 @@
     <TextView
         android:id="@+id/quoteList_net"
         android:layout_width="36dp"
-        android:layout_height="30dp"
-        android:paddingTop="9dip"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dip"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/quoteList_Price"
 		android:gravity="right"
@@ -93,8 +91,8 @@
     <TextView
         android:id="@+id/quoteList_ema"
         android:layout_width="55dp"
-        android:layout_height="30dp"
-        android:paddingTop="9dip"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dip"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/quoteList_net"
 		android:gravity="right"
@@ -106,48 +104,26 @@
         android:id="@+id/quoteList_BuyZoneTop"
         android:layout_width="55dp"
         android:layout_height="wrap_content"
+        android:paddingTop="4dip"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/quoteList_ema"
 		android:gravity="right"
         android:textAlignment="viewEnd"
         android:textSize="12sp"
-        android:textAppearance="?android:attr/textAppearanceSmall"
         android:textIsSelectable="false" />
     
-    <TextView
-        android:id="@+id/quoteList_BuyZoneBottom"
-        android:layout_width="55dp"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/quoteList_BuyZoneTop"
-        android:layout_below="@+id/quoteList_BuyZoneTop"        
-		android:gravity="right"
-        android:textAlignment="viewEnd"
-        android:textSize="12sp"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textIsSelectable="false" />
 
-    <TextView
-        android:id="@+id/quoteList_SellZoneTop"
-        android:layout_width="55dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/quoteList_BuyZoneTop"
-		android:gravity="right"
-        android:textAlignment="viewEnd"
-        android:textSize="12sp"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textIsSelectable="false" />
     
     <TextView
         android:id="@+id/quoteList_SellZoneBottom"
         android:layout_width="55dp"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/quoteList_SellZoneTop"
-        android:layout_below="@+id/quoteList_SellZoneTop"        
+        android:paddingTop="4dip"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/quoteList_BuyZoneTop"
 		android:gravity="right"
         android:textAlignment="viewEnd"
         android:textSize="12sp"
-        android:textAppearance="?android:attr/textAppearanceSmall"
         android:textIsSelectable="false" />
 
 

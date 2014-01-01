@@ -21,7 +21,7 @@ import android.widget.TextView;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.ServiceLogTable;
-import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.ServiceType;
 
 public class ServiceLogListActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -151,7 +151,7 @@ public class ServiceLogListActivity extends ListActivity implements LoaderManage
 
 		TextView setDouble(View view, double value, int viewId) {
 			TextView textView = (TextView) view.findViewById(viewId);
-			textView.setText(PaiStudy.format(value));
+			textView.setText(Study.format(value));
 			return textView;
 		}
 

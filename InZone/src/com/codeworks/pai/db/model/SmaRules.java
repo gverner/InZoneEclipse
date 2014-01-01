@@ -12,7 +12,7 @@ public class SmaRules  extends RulesBase {
 	public static double				ZONE_INNER			= 0.5d;
 	public static double				ZONE_OUTER			= 2d;
 
-	public SmaRules(PaiStudy study) {
+	public SmaRules(Study study) {
 		this.study = study;
 	}
 
@@ -72,29 +72,68 @@ public class SmaRules  extends RulesBase {
 		return calcLowerBuyZoneTop(period) - pierceOffset();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.codeworks.pai.db.model.Rules#calcBuyZoneBottom()
+	 */
+	@Override
 	public double calcBuyZoneBottom() {
-		if (study.getSmaWeek() == Double.NaN || study.getSmaStddevMonth() == Double.NaN) {
+		if (study.getSmaWeek() == Double.NaN || study.getSmaStddevWeek() == Double.NaN) {
 			return 0;
 		}
-		return study.getSmaMonth();
+		return calcBuyZoneTop();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.codeworks.pai.db.model.Rules#calcBuyZoneTop()
+	 */
+	@Override
 	public double calcBuyZoneTop() {
 		if (study.getSmaWeek() == Double.NaN || study.getSmaStddevWeek() == Double.NaN) {
 			return 0;
 		}
-		return study.getSmaWeek();
+		if (isUpTrendWeekly()) {
+			return study.getSmaWeek();
+		} else {
+			return study.getSmaWeek() - (study.getSmaStddevWeek() * ZONE_OUTER);
+		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.codeworks.pai.db.model.Rules#calcSellZoneBottom()
+	 */
+	@Override
 	public double calcSellZoneBottom() {
-		return calcUpperSellZoneBottom(Period.Month);
-	}
-
-	public double calcSellZoneTop() {
-		if (study.getSmaMonth() == Double.NaN || study.getSmaStddevWeek() == Double.NaN) {
+		if (study.getSmaWeek() == Double.NaN || study.getSmaStddevWeek() == Double.NaN) {
 			return 0;
 		}
-		return calcUpperSellZoneTop(Period.Month);
+		if (isUpTrendWeekly()) {
+			if (isWeeklyUpperSellZoneExpandedByMonthly()) {
+				return calcUpperSellZoneBottom(Period.Month);
+			} else {
+			return study.getSmaWeek() + (study.getSmaStddevWeek() * ZONE_OUTER);
+			}
+		} else {
+			return study.getSmaWeek();
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.codeworks.pai.db.model.Rules#calcSellZoneTop()
+	 */
+	@Override
+	public double calcSellZoneTop() {
+		if (study.getSmaWeek() == Double.NaN || study.getSmaStddevWeek() == Double.NaN) {
+			return 0;
+		}
+		return calcSellZoneBottom();
 	}
 
 	double pierceOffset() {
@@ -127,20 +166,20 @@ public class SmaRules  extends RulesBase {
 		sb.append("Symbol=");
 		sb.append(study.getSymbol());
 		sb.append(" ema=");
-		sb.append(PaiStudy.format(study.getMaWeek()));
+		sb.append(Study.format(study.getEmaWeek()));
 		sb.append(" buy zone bottom=");
-		sb.append(PaiStudy.format(this.calcBuyZoneBottom()));
+		sb.append(Study.format(this.calcBuyZoneBottom()));
 		sb.append(" top=");
-		sb.append(PaiStudy.format(this.calcBuyZoneTop()));
+		sb.append(Study.format(this.calcBuyZoneTop()));
 		sb.append(" sell zone bottom=");
-		sb.append(PaiStudy.format(this.calcSellZoneBottom()));
+		sb.append(Study.format(this.calcSellZoneBottom()));
 		sb.append(" top=");
-		sb.append(PaiStudy.format(this.calcSellZoneTop()));
+		sb.append(Study.format(this.calcSellZoneTop()));
 		sb.append(" WUT=" + isUpTrendWeekly());
 		sb.append(" MUT=" + isUpTrendMonthly());
-		sb.append(" PLW=" + PaiStudy.format(study.getPriceLastWeek()));
-		sb.append(" maLM=" + PaiStudy.format(study.getMaLastMonth()));
-		sb.append(" PLM=" + PaiStudy.format(study.getPriceLastMonth()));
+		sb.append(" PLW=" + Study.format(study.getPriceLastWeek()));
+		sb.append(" maLM=" + Study.format(study.getEmaLastMonth()));
+		sb.append(" PLM=" + Study.format(study.getPriceLastMonth()));
 		return sb.toString();
 	}
 	
@@ -271,6 +310,8 @@ public class SmaRules  extends RulesBase {
 				rule = "Sell Stock and Sell Puts at Proximal demand level (PDL)";
 			}
 		}
+		rule = rule+rule+rule+rule;
+
 		return rule;
 	}
 

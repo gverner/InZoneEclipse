@@ -9,7 +9,7 @@ import java.util.TimeZone;
 
 import android.test.AndroidTestCase;
 
-import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Price;
 
 public class YahooReaderTest extends AndroidTestCase {
@@ -36,7 +36,7 @@ public class YahooReaderTest extends AndroidTestCase {
 	public void testReadRTPrice() {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mmaa zzz",Locale.US);
 		sdf.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
-		PaiStudy security = new PaiStudy("SPY");
+		Study security = new Study("SPY");
 		assertTrue(reader.readRTPrice(security));
 		System.out.println(sdf.format(security.getPriceDate()));
 		System.out.println(security.getName());
@@ -57,20 +57,20 @@ public class YahooReaderTest extends AndroidTestCase {
 		*/
 	}
 	public void testReadCurrentPrice() {
-		PaiStudy security = new PaiStudy("SPY");
+		Study security = new Study("SPY");
 		assertTrue(reader.readCurrentPrice(security));
 		assertNotSame(0d,security.getPrice());
 	}
 
 	public void testReadBlankCurrentPrice() {
-		PaiStudy security = new PaiStudy("");
+		Study security = new Study("");
 		assertFalse(reader.readCurrentPrice(security));
 		assertEquals(0d,security.getPrice());
 	}
 
 
 	public void testReadNullCurrentPrice() {
-		PaiStudy security = new PaiStudy(null);
+		Study security = new Study(null);
 		assertFalse(reader.readCurrentPrice(security));
 		assertEquals(0d,security.getPrice());
 	}

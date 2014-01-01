@@ -21,7 +21,7 @@ import android.text.Spanned;
 import android.util.Log;
 import au.com.bytecode.opencsv.CSVReader;
 
-import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Price;
 
 public class DataReaderYahoo implements DataReader {
@@ -39,7 +39,7 @@ public class DataReaderYahoo implements DataReader {
 	 * @see com.codeworks.pai.processor.SecurityDataReader#readCurrentPrice(com.codeworks.pai.db.model.Security)
 	 */
 	@Override
-	public boolean readCurrentPrice(PaiStudy security) {
+	public boolean readCurrentPrice(Study security) {
 		List<String[]> results;// "MM/dd/yyyy hh:mmaa"
 		boolean found = false;
 		double quote = 0;
@@ -73,7 +73,7 @@ public class DataReaderYahoo implements DataReader {
 		return found;
 	}
 		
-	public boolean readRTPrice(PaiStudy security) {
+	public boolean readRTPrice(Study security) {
 		boolean found = false;
 		BufferedReader br = null;
 		try {

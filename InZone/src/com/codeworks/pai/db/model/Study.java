@@ -5,11 +5,11 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Date;
 
-import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.processor.Notice;
 import com.codeworks.pai.study.Period;
 
-public class PaiStudy implements Serializable {
+public class Study implements Serializable {
 
 	private static final long	serialVersionUID	= -1275103175237753227L;
 	// Status Bit Map
@@ -30,34 +30,36 @@ public class PaiStudy implements Serializable {
 	double						open;
 	double						high;
 	double						low;
+	double						lastClose;
 	double						priceLastWeek;
 	double						priceLastMonth;
-	double						maMonth;
-	double						maWeek;
-	double						maLastWeek;
-	double						maLastMonth;
-	double						stddevWeek;
-	double						stddevMonth;
-	double						smaMonth;
-	double						smaLastMonth;
-	double						smaStddevMonth;
-	double						smaWeek;
-	double						smaLastWeek;
-	double						smaStddevWeek;
-	double						lastClose;
 	double						averageTrueRange;
+	double						stochasticK;
+	double						stochasticD;
+	double						emaMonth;
+	double						emaWeek;
+	double						emaLastWeek;
+	double						emaLastMonth;
+	double						emaStddevWeek;
+	double						emaStddevMonth;
+	double						smaWeek;
+	double						smaMonth;
+	double						smaLastWeek;
+	double						smaLastMonth;
+	double						smaStddevWeek;
+	double						smaStddevMonth;
 	long						securityId;
 	int							portfolioId;
-	int							contracts;
 	Notice						notice;
 	Date						noticeDate;
+	int							contracts;
 
 	Date						priceDate;
 	int							statusMap;
 	
 	boolean						historyReloaded = false;
 
-	public PaiStudy(String symbol) {
+	public Study(String symbol) {
 		this.symbol = symbol;
 	}
 
@@ -81,32 +83,32 @@ public class PaiStudy implements Serializable {
 		return low;
 	}
 
-	public double getMaLastMonth() {
-		return maLastMonth;
+	public double getEmaLastMonth() {
+		return emaLastMonth;
 	}
 
-	public double getMaLastWeek() {
-		return maLastWeek;
+	public double getEmaLastWeek() {
+		return emaLastWeek;
 	}
 
-	public double getMaMonth() {
-		return maMonth;
+	public double getEmaMonth() {
+		return emaMonth;
 	}
 
 	public MaType getMaType() {
 		return maType;
 	}
 
-	public double getMaWeek() {
-		return maWeek;
+	public double getEmaWeek() {
+		return emaWeek;
 	}
 
 	public double getMovingAverage(Period period) {
 		if (MaType.E.equals(maType)) {
 			if (Period.Week.equals(period)) {
-				return getMaWeek();
+				return getEmaWeek();
 			} else {
-				return getMaMonth();
+				return getEmaMonth();
 			}
 		} else {
 			if (Period.Week.equals(period)) {
@@ -186,12 +188,12 @@ public class PaiStudy implements Serializable {
 		return statusMap;
 	}
 
-	public double getStddevMonth() {
-		return stddevMonth;
+	public double getEmaStddevMonth() {
+		return emaStddevMonth;
 	}
 
-	public double getStddevWeek() {
-		return stddevWeek;
+	public double getEmaStddevWeek() {
+		return emaStddevWeek;
 	}
 
 	public String getSymbol() {
@@ -219,12 +221,12 @@ public class PaiStudy implements Serializable {
 	}
 
 	public boolean isValidMonth() {
-		return (getMaMonth() != 0) && (getSmaMonth() != 0);
+		return (getEmaMonth() != 0) && (getSmaMonth() != 0);
 		
 	}
 
 	public boolean isValidWeek() {
-		return (getMaWeek() != 0) && (getSmaWeek() != 0);
+		return (getEmaWeek() != 0) && (getSmaWeek() != 0);
 	}
 
 	public double round(double value) {
@@ -243,7 +245,7 @@ public class PaiStudy implements Serializable {
 		if (delayed) {
 			statusMap = statusMap | STATUS_DELAYED_PRICE;
 		} else {
-			statusMap = statusMap ^ STATUS_DELAYED_PRICE;
+			statusMap = statusMap & -STATUS_DELAYED_PRICE;
 		}
 	}
 
@@ -259,7 +261,7 @@ public class PaiStudy implements Serializable {
 		if (value) {
 			statusMap = statusMap | STATUS_INSUFFICIENT_HISTORY;
 		} else {
-			statusMap = statusMap ^ STATUS_INSUFFICIENT_HISTORY;
+			statusMap = statusMap & -STATUS_INSUFFICIENT_HISTORY;
 		}
 	}
 
@@ -271,24 +273,24 @@ public class PaiStudy implements Serializable {
 		this.low = low;
 	}
 
-	public void setMaLastMonth(double maLastMonth) {
-		this.maLastMonth = maLastMonth;
+	public void setEmaLastMonth(double maLastMonth) {
+		this.emaLastMonth = maLastMonth;
 	}
 
-	public void setMaLastWeek(double maLastWeek) {
-		this.maLastWeek = maLastWeek;
+	public void setEmaLastWeek(double maLastWeek) {
+		this.emaLastWeek = maLastWeek;
 	}
 
-	public void setMaMonth(double ma_month) {
-		this.maMonth = ma_month;
+	public void setEmaMonth(double ma_month) {
+		this.emaMonth = ma_month;
 	}
 
 	public void setMaType(MaType maType) {
 		this.maType = maType;
 	}
 
-	public void setMaWeek(double maWeek) {
-		this.maWeek = maWeek;
+	public void setEmaWeek(double maWeek) {
+		this.emaWeek = maWeek;
 	}
 
 	public void setName(String name) {
@@ -299,7 +301,7 @@ public class PaiStudy implements Serializable {
 		if (value) {
 			statusMap = statusMap | STATUS_NO_PRICE;
 		} else {
-			statusMap = statusMap ^ STATUS_NO_PRICE;
+			statusMap = statusMap & -STATUS_NO_PRICE;
 		}
 	}
 
@@ -331,7 +333,7 @@ public class PaiStudy implements Serializable {
 		if (priceDateStr == null) {
 			this.priceDate = null;
 		} else {
-			this.priceDate = PaiStudyTable.priceDateFormat.parse(priceDateStr);
+			this.priceDate = StudyTable.priceDateFormat.parse(priceDateStr);
 		}
 	}
 
@@ -375,16 +377,32 @@ public class PaiStudy implements Serializable {
 		this.statusMap = statusMap;
 	}
 
-	public void setStddevMonth(double stddev_month) {
-		this.stddevMonth = stddev_month;
+	public void setEmaStddevMonth(double stddev_month) {
+		this.emaStddevMonth = stddev_month;
 	}
 
-	public void setStddevWeek(double stdDeviation) {
-		this.stddevWeek = stdDeviation;
+	public void setEmaStddevWeek(double stdDeviation) {
+		this.emaStddevWeek = stdDeviation;
 	}
 
 	public void setSymbol(String symbol) {
 		this.symbol = symbol;
+	}
+
+	public double getStochasticK() {
+		return stochasticK;
+	}
+
+	public double getStochasticD() {
+		return stochasticD;
+	}
+
+	public void setStochasticK(double stochastic_k) {
+		this.stochasticK = stochastic_k;
+	}
+
+	public void setStochasticD(double stochastic_d) {
+		this.stochasticD = stochastic_d;
 	}
 
 	public String toString() {
@@ -392,9 +410,9 @@ public class PaiStudy implements Serializable {
 		sb.append("Symbol=");
 		sb.append(symbol);
 		sb.append(" ema=");
-		sb.append(format(this.getMaWeek()));
+		sb.append(format(this.getEmaWeek()));
 		sb.append(" PLW=" + format(priceLastWeek));
-		sb.append(" maLM=" + format(maLastMonth));
+		sb.append(" maLM=" + format(emaLastMonth));
 		sb.append(" PLM=" + format(priceLastMonth));
 		return sb.toString();
 	}

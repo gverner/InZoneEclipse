@@ -27,7 +27,7 @@ import android.widget.ProgressBar;
 import com.codeworks.pai.R;
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.ServiceLogTable;
-import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.ServiceType;
 
 public class UpdateService extends Service implements OnSharedPreferenceChangeListener {
@@ -226,7 +226,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 					Log.d(TAG, "Update Running " + msg.arg1);
 					startTime = System.currentTimeMillis();
 					progressBarStart();
-					List<PaiStudy> studies;
+					List<Study> studies;
 					if (priceOnly) {
 						studies = processor.updatePrice(null);
 						Log.i(TAG, "Processor UpdatePrice Runtime milliseconds=" + (System.currentTimeMillis() - startTime));
@@ -425,9 +425,9 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		Log.d(TAG, "Broadcast Progress Bar 100");
 	}
 
-	boolean scanHistoryReloaded(List<PaiStudy> studies) {
+	boolean scanHistoryReloaded(List<Study> studies) {
 		boolean historyReloaded = false;
-		for (PaiStudy study : studies) {
+		for (Study study : studies) {
 			if (study.wasHistoryReloaded()) {
 				historyReloaded = true;
 			}
@@ -447,7 +447,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		public void run() {
 			try {
 				Log.d(TAG, "One Time Update Running for " + symbol);
-				List<PaiStudy> studies = processor.process(symbol);
+				List<Study> studies = processor.process(symbol);
 				notifier.updateNotification(studies);
 				Log.d(TAG, "One Time Update Complete for " + symbol);
 			} catch (InterruptedException e) {

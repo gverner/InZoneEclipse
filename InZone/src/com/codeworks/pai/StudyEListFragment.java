@@ -34,10 +34,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
-import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.EmaRules;
 import com.codeworks.pai.db.model.MaType;
-import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.processor.DateUtils;
 import com.codeworks.pai.processor.UpdateService;
 
@@ -196,10 +196,10 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 	// Creates a new loader after the initLoader () call
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String selection = PaiStudyTable.COLUMN_PORTFOLIO_ID + " = ? ";
+		String selection = StudyTable.COLUMN_PORTFOLIO_ID + " = ? ";
 		String[] selectionArgs = { Long.toString(portfolioId) };
 		Log.i(TAG, "Prepare Cursor Loader portfolio "+portfolioId);
-		CursorLoader cursorLoader = new CursorLoader(getActivity(), PaiContentProvider.PAI_STUDY_URI, PaiStudyTable.getFullProjection(), selection, selectionArgs, null);
+		CursorLoader cursorLoader = new CursorLoader(getActivity(), PaiContentProvider.PAI_STUDY_URI, StudyTable.getFullProjection(), selection, selectionArgs, null);
 		return cursorLoader;
 	}
 
@@ -228,7 +228,7 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 		public void bindView(View view, Context context, Cursor cursor) {
 			if (null != cursor) {
 
-				PaiStudy study = PaiStudyTable.loadStudy(cursor);
+				Study study = StudyTable.loadStudy(cursor);
 				study.setMaType(MaType.E);
 				// Set the Menu Image
 				// ImageView
@@ -240,14 +240,14 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				symbol.setText(study.getSymbol());
 				// Price
 				TextView price = (TextView) view.findViewById(R.id.quoteList_Price);
-				price.setText(PaiStudy.format(study.getPrice()));
+				price.setText(Study.format(study.getPrice()));
 
 				if (study.isValidWeek()) {
 					setTrend(view, rules.isUpTrendMonthly(), R.id.quoteList_MonthyTrend);
 					setTrend(view, rules.isUpTrendWeekly(), R.id.quoteList_WeeklyTrend);
 					// Set EMA
 					TextView ema = (TextView) view.findViewById(R.id.quoteList_ema);
-					ema.setText(PaiStudy.format(study.getMaWeek()));
+					ema.setText(Study.format(study.getEmaWeek()));
 
 					if (rules.hasTradedBelowMAToday()) {
 						price.setTextColor(getResources().getColor(R.color.net_negative));
@@ -325,7 +325,7 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 
 		TextView setDouble(View view, double value, int viewId) {
 			TextView textView = (TextView) view.findViewById(viewId);
-			textView.setText(PaiStudy.format(value));
+			textView.setText(Study.format(value));
 			return textView;
 		}
 

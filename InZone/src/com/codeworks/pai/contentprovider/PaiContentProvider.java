@@ -15,7 +15,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import com.codeworks.pai.db.PaiDatabaseHelper;
-import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.PriceHistoryTable;
 import com.codeworks.pai.db.ServiceLogTable;
 
@@ -103,12 +103,12 @@ public class PaiContentProvider extends ContentProvider {
 		case PRICE_HISTORY_MAX_DATE:
 			break;
 		case PAI_STUDY:
-			queryBuilder.setTables(PaiStudyTable.TABLE_STUDY);
+			queryBuilder.setTables(StudyTable.TABLE_STUDY);
 			break;
 		case PAI_STUDY_ID:
-			queryBuilder.setTables(PaiStudyTable.TABLE_STUDY);
+			queryBuilder.setTables(StudyTable.TABLE_STUDY);
 			// Adding the ID to the original query
-			queryBuilder.appendWhere(PaiStudyTable.COLUMN_ID + "=" + uri.getLastPathSegment());
+			queryBuilder.appendWhere(StudyTable.COLUMN_ID + "=" + uri.getLastPathSegment());
 			break;
 		case SERVICE_LOG:
 			queryBuilder.setTables(ServiceLogTable.TABLE_SERVICE_LOG);
@@ -145,7 +145,7 @@ public class PaiContentProvider extends ContentProvider {
 			id = sqlDB.insert(PriceHistoryTable.TABLE_PRICE_HISTORY, null, values);
 			break;
 		case PAI_STUDY:
-			id = sqlDB.insert(PaiStudyTable.TABLE_STUDY, null, values);
+			id = sqlDB.insert(StudyTable.TABLE_STUDY, null, values);
 			break;
 		case SERVICE_LOG:
 			id = sqlDB.insert(ServiceLogTable.TABLE_SERVICE_LOG, null, values);
@@ -177,14 +177,14 @@ public class PaiContentProvider extends ContentProvider {
 			}
 			break;
 		case PAI_STUDY:
-			rowsDeleted = sqlDB.delete(PaiStudyTable.TABLE_STUDY, selection, selectionArgs);
+			rowsDeleted = sqlDB.delete(StudyTable.TABLE_STUDY, selection, selectionArgs);
 			break;
 		case PAI_STUDY_ID:
 			String quoteId = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
-				rowsDeleted = sqlDB.delete(PaiStudyTable.TABLE_STUDY, PaiStudyTable.COLUMN_ID + "=" + quoteId, null);
+				rowsDeleted = sqlDB.delete(StudyTable.TABLE_STUDY, StudyTable.COLUMN_ID + "=" + quoteId, null);
 			} else {
-				rowsDeleted = sqlDB.delete(PaiStudyTable.TABLE_STUDY, PaiStudyTable.COLUMN_ID + "=" + quoteId + " and " + selection,
+				rowsDeleted = sqlDB.delete(StudyTable.TABLE_STUDY, StudyTable.COLUMN_ID + "=" + quoteId + " and " + selection,
 						selectionArgs);
 			}
 			break;
@@ -227,15 +227,15 @@ public class PaiContentProvider extends ContentProvider {
 			}
 			break;
 		case PAI_STUDY:
-			rowsUpdated = sqlDB.update(PaiStudyTable.TABLE_STUDY, values, selection, selectionArgs);
+			rowsUpdated = sqlDB.update(StudyTable.TABLE_STUDY, values, selection, selectionArgs);
 			break;
 		case PAI_STUDY_ID:
 			String quoteId = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
-				rowsUpdated = sqlDB.update(PaiStudyTable.TABLE_STUDY, values, PaiStudyTable.COLUMN_ID + "=" + quoteId, null);
+				rowsUpdated = sqlDB.update(StudyTable.TABLE_STUDY, values, StudyTable.COLUMN_ID + "=" + quoteId, null);
 			} else {
-				rowsUpdated = sqlDB.update(PaiStudyTable.TABLE_STUDY, values,
-						PaiStudyTable.COLUMN_ID + "=" + quoteId + " and " + selection, selectionArgs);
+				rowsUpdated = sqlDB.update(StudyTable.TABLE_STUDY, values,
+						StudyTable.COLUMN_ID + "=" + quoteId + " and " + selection, selectionArgs);
 			}
 			break;
 		case SERVICE_LOG:
@@ -276,7 +276,7 @@ public class PaiContentProvider extends ContentProvider {
 		if (projection != null) {
 			HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
 			HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));
-			availableColumns.addAll(Arrays.asList(PaiStudyTable.getFullProjection()));
+			availableColumns.addAll(Arrays.asList(StudyTable.getFullProjection()));
 			// Check if all columns which are requested are available
 			if (!availableColumns.containsAll(requestedColumns)) {
 				throw new IllegalArgumentException("Unknown columns in projection");

@@ -11,10 +11,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
-import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.EmaRules;
 import com.codeworks.pai.db.model.MaType;
-import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
 import com.codeworks.pai.processor.Notice;
@@ -55,11 +55,11 @@ public class StudySDetailFragment extends Fragment {
 	private void fillData(Long id) {
 
 		Uri uri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + id);
-		Cursor cursor = getActivity().getContentResolver().query(uri, PaiStudyTable.getFullProjection(), null, null, null);
+		Cursor cursor = getActivity().getContentResolver().query(uri, StudyTable.getFullProjection(), null, null, null);
 		if (cursor != null)
 			try {
 				cursor.moveToFirst();
-				PaiStudy security = PaiStudyTable.loadStudy(cursor); 
+				Study security = StudyTable.loadStudy(cursor); 
 				
 				((TextView) getView().findViewById(R.id.sdfSymbol)).setText(security.getSymbol());
 				((TextView) getView().findViewById(R.id.sdfName)).setText(security.getName());
@@ -74,7 +74,7 @@ public class StudySDetailFragment extends Fragment {
 			}
 	}
 
-	void populateView(PaiStudy study) {
+	void populateView(Study study) {
 		Rules rules;
 		if (MaType.E.equals(study.getMaType())) {
 			rules = new EmaRules(study);
@@ -87,19 +87,32 @@ public class StudySDetailFragment extends Fragment {
 		setDouble(getView(), study.getLow(), R.id.sdfLow);
 		setDouble(getView(), study.getHigh(), R.id.sdfHigh);		
 		setDouble(getView(), study.getAverageTrueRange() / 4, R.id.sdfAtr25);
-		setDouble(getView(), study.getMaWeek() + (study.getAverageTrueRange() / 4), R.id.sdfPricePlusAtr25);
+		setDouble(getView(), study.getEmaWeek() + (study.getAverageTrueRange() / 4), R.id.sdfPricePlusAtr25);
 		
 		if (study.isValidWeek()) {
+			setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Week), R.id.sdfWeeklyUpperBand);
 			setDouble(getView(), study.getSmaWeek(), R.id.sdfMaWeekly);
+			setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Week), R.id.sdfWeeklyLowerBand);
+			if (rules.isUpTrend(Period.Week)) {
+				setString(getView(),  getResources().getString(R.string.sdfZoneTypeSeller) , R.id.sdfZoneUpperType);
+				setString(getView(),  getResources().getString(R.string.sdfZoneTypeBuyer) , R.id.sdfZoneMidType);
+				setString(getView(),  "" , R.id.sdfZoneLowerType);
+			} else {
+				setString(getView(),  "" , R.id.sdfZoneUpperType);
+				setString(getView(),  getResources().getString(R.string.sdfZoneTypeSeller) , R.id.sdfZoneMidType);
+				setString(getView(),  getResources().getString(R.string.sdfZoneTypeBuyer) , R.id.sdfZoneLowerType);
+			}
 		}
 		
 		if (study.isValidMonth()) {
-			setDouble(getView(), rules.calcUpperSellZoneTop(Period.Month), R.id.sdfMonthlySellTop);
-			setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Month), R.id.sdfMonthlySellBottom);
+			setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Month), R.id.sdfMonthlyUpperBand);
 			setDouble(getView(), rules.calcUpperBuyZoneBottom(Period.Month), R.id.sdfMaMonthly);
-			setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Month), R.id.sdfMonthlyPDL1);
-			setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Month), R.id.sdfMonthlyPDL2);
+			setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Month), R.id.sdfMonthlyLowerBand);
+			//setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Month), R.id.sdfMonthlyPDL2);
 		}
+		setDouble(getView(), study.getStochasticK(), R.id.sdfStochasticK);
+		setDouble(getView(), study.getStochasticD(), R.id.sdfStochasticD);
+		
 		rules.updateNotice();
 		StringBuilder alertMsg = new StringBuilder();
 		alertMsg.append(rules.getTrendText(getResources()));
@@ -133,7 +146,7 @@ public class StudySDetailFragment extends Fragment {
 
 	TextView setDouble(View view, double value, int viewId) {
 		TextView textView = (TextView) view.findViewById(viewId);
-		textView.setText(PaiStudy.format(value));
+		textView.setText(Study.format(value));
 		return textView;
 	}
 	TextView setString(View view, String value, int viewId) {

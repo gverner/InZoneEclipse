@@ -31,19 +31,19 @@ public class PaiUtils {
 	}
 	
 	public static String getDefaultPortfolioName(Resources resources, int portfolioId) {
-		int tab_id = R.string.tab_protfolio_1;
+		int tab_id = R.string.pref_portfolio_name1_defaultValue;
 		switch (portfolioId) {
 		case 1:
-			tab_id = R.string.tab_protfolio_1;
+			tab_id = R.string.pref_portfolio_name1_defaultValue;
 			break;
 		case 2:
-			tab_id = R.string.tab_protfolio_2;
+			tab_id = R.string.pref_portfolio_name2_defaultValue;
 			break;
 		case 3:
-			tab_id = R.string.tab_protfolio_3;
+			tab_id = R.string.pref_portfolio_name3_defaultValue;
 			break;
 		default:
-			tab_id = R.string.tab_protfolio_1;
+			tab_id = R.string.pref_portfolio_name1_defaultValue;
 			break;
 		}
 		String preferenceName = resources.getString(tab_id);

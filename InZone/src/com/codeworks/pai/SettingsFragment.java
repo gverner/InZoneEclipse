@@ -1,7 +1,7 @@
 package com.codeworks.pai;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
-import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.StudyTable;
 
 import android.content.ContentValues;
 import android.content.SharedPreferences;
@@ -134,10 +134,10 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 		    	portfolioId = "3";
 		    }
 			String value = updateSummaryType(key);
-			String selection = PaiStudyTable.COLUMN_PORTFOLIO_ID + " = ?";
+			String selection = StudyTable.COLUMN_PORTFOLIO_ID + " = ?";
 			String[] selectionArgs = { portfolioId };
 			ContentValues values = new ContentValues();
-			values.put(PaiStudyTable.COLUMN_MA_TYPE, String.valueOf(value.charAt(0)));
+			values.put(StudyTable.COLUMN_MA_TYPE, String.valueOf(value.charAt(0)));
 			getActivity().getContentResolver().update(PaiContentProvider.PAI_STUDY_URI, values, selection, selectionArgs);
 		} else if (PaiUtils.PREF_RINGTONE.equals(key)) {
 			updateRingtoneSummary();

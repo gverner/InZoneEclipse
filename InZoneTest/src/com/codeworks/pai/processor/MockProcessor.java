@@ -3,25 +3,25 @@ package com.codeworks.pai.processor;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Study;
 
 public class MockProcessor implements Processor {
 	int numberOfProcessCalls = 0;
 	int numberOfUpdatePriceCalls = 0;
 	
 	@Override
-	public List<PaiStudy> process(String symbol) throws InterruptedException {
+	public List<Study> process(String symbol) throws InterruptedException {
 		numberOfProcessCalls++;
-		List<PaiStudy> studies = new ArrayList<PaiStudy>();
-		PaiStudy study = new PaiStudy("SPY");
+		List<Study> studies = new ArrayList<Study>();
+		Study study = new Study("SPY");
 		studies.add(study);
 		study.setPrice(150.00d);
-		study.setMaLastMonth(150.00d);
-		study.setMaLastWeek(150.00d);
+		study.setEmaLastMonth(150.00d);
+		study.setEmaLastWeek(150.00d);
 		study.setAverageTrueRange(0);
 		study.setNotice(Notice.NONE);
-		study.setMaMonth(150.00d);
-		study.setMaWeek(150.00d);
+		study.setEmaMonth(150.00d);
+		study.setEmaWeek(150.00d);
 		study.setPriceLastMonth(150.00d);
 		study.setPriceLastWeek(150.00d);
 		study.setName("S&P");
@@ -29,9 +29,9 @@ public class MockProcessor implements Processor {
 	}
 
 	@Override
-	public List<PaiStudy> updatePrice(String symbol) throws InterruptedException {
+	public List<Study> updatePrice(String symbol) throws InterruptedException {
 		numberOfUpdatePriceCalls++;
-		return new ArrayList<PaiStudy>();
+		return new ArrayList<Study>();
 	}
 
 }

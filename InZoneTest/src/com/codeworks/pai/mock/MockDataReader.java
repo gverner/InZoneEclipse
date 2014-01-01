@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Price;
 import com.codeworks.pai.processor.DataReader;
 
@@ -23,7 +23,7 @@ public class MockDataReader implements DataReader {
 	public static final double HYG_PRICE = 92.36d;
 
 	@Override
-	public boolean readCurrentPrice(PaiStudy security) {
+	public boolean readCurrentPrice(Study security) {
 		if (TestDataLoader.SPY.equalsIgnoreCase(security.getSymbol())) {
 			buildSecurity(security, "S&P 500", SPY_PRICE,PRICE_CLOSE_DATE);
 		} else if (TestDataLoader.QQQ.equalsIgnoreCase(security.getSymbol())) {
@@ -40,7 +40,7 @@ public class MockDataReader implements DataReader {
 		return true;
 	}
 
-	public static void buildSecurity(PaiStudy security, String name, double price, String date) {
+	public static void buildSecurity(Study security, String name, double price, String date) {
 		try {
 			security.setPrice(price);
 			security.setName(name);
@@ -58,7 +58,7 @@ public class MockDataReader implements DataReader {
 	}
 
 	@Override
-	public boolean readRTPrice(PaiStudy security) {
+	public boolean readRTPrice(Study security) {
 		return readCurrentPrice(security);
 	}
 

@@ -2,7 +2,7 @@ package com.codeworks.pai.processor;
 
 import java.util.List;
 
-import com.codeworks.pai.db.model.PaiStudy;
+import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.processor.Notifier;
 
 public class MockNotifier implements Notifier {
@@ -10,9 +10,9 @@ public class MockNotifier implements Notifier {
 	int numberOfStudies = 0;
 	int numberOfSendNoticeCalls = 0;
 	@Override
-	public void updateNotification(List<PaiStudy> studies) {
+	public void updateNotification(List<Study> studies) {
 		numberOfCalls++;
-		for (PaiStudy study : studies) {
+		for (Study study : studies) {
 			numberOfStudies++;
 			System.out.println("Mock Notifier received study "+study.toString());
 		}

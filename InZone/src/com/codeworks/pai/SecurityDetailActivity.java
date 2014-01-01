@@ -14,7 +14,7 @@ import android.view.MenuItem;
 import android.widget.EditText;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
-import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.processor.UpdateService;
 
 /*
@@ -59,14 +59,14 @@ public class SecurityDetailActivity extends Activity {
 	}
 
 	private void fillData(Uri uri) {
-		String[] projection = { PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_PORTFOLIO_ID };
+		String[] projection = { StudyTable.COLUMN_SYMBOL, StudyTable.COLUMN_PORTFOLIO_ID };
 		Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
 		if (cursor != null)
 			try {
 				cursor.moveToFirst();
-				String symbol = cursor.getString(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_SYMBOL));
+				String symbol = cursor.getString(cursor.getColumnIndexOrThrow(StudyTable.COLUMN_SYMBOL));
 				mSymbolText.setText(symbol);
-				portfolioId = cursor.getInt(cursor.getColumnIndexOrThrow(PaiStudyTable.COLUMN_PORTFOLIO_ID));
+				portfolioId = cursor.getInt(cursor.getColumnIndexOrThrow(StudyTable.COLUMN_PORTFOLIO_ID));
 			} finally {
 				// Always close the cursor
 				cursor.close();
@@ -120,9 +120,9 @@ public class SecurityDetailActivity extends Activity {
 		//String maType = sharedPreferences.getString(PaiUtils.PREF_PORTFOLIO_MA_TYPE+portfolioId, portfolioId == 1 ? PaiUtils.MA_TYPE_EMA : PaiUtils.MA_TYPE_SMA);
 		String maType = PaiUtils.getStrategy(this, portfolioId);
 		ContentValues values = new ContentValues();
-		values.put(PaiStudyTable.COLUMN_SYMBOL, symbol.trim());
-		values.put(PaiStudyTable.COLUMN_PORTFOLIO_ID, portfolioId);
-		values.put(PaiStudyTable.COLUMN_MA_TYPE, maType);
+		values.put(StudyTable.COLUMN_SYMBOL, symbol.trim());
+		values.put(StudyTable.COLUMN_PORTFOLIO_ID, portfolioId);
+		values.put(StudyTable.COLUMN_MA_TYPE, maType);
 
 		if (securityUri == null) {
 			// New security

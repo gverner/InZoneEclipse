@@ -20,7 +20,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
-import com.codeworks.pai.db.PaiStudyTable;
+import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.PriceHistoryTable;
 
 public class SecurityListActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -182,7 +182,7 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 		// Must include the _id column for the adapter to work
 		// PaiStudyTable.COLUMN_ID,
 
-		String[] from = new String[] { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_NAME };
+		String[] from = new String[] { StudyTable.COLUMN_ID, StudyTable.COLUMN_SYMBOL, StudyTable.COLUMN_NAME };
 		// Fields on the UI to which we map
 		int[] to = new int[] { R.id.securityId, R.id.securitySymbol, R.id.securityName };
 		getLoaderManager().initLoader(0, null, this);
@@ -194,8 +194,8 @@ public class SecurityListActivity extends ListActivity implements LoaderManager.
 	// Creates a new loader after the initLoader () call
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = { PaiStudyTable.COLUMN_ID, PaiStudyTable.COLUMN_SYMBOL, PaiStudyTable.COLUMN_NAME };
-		String selection = PaiStudyTable.COLUMN_PORTFOLIO_ID + " = ? ";
+		String[] projection = { StudyTable.COLUMN_ID, StudyTable.COLUMN_SYMBOL, StudyTable.COLUMN_NAME };
+		String selection = StudyTable.COLUMN_PORTFOLIO_ID + " = ? ";
 		String[] selectionArgs = { Long.toString(portfolioId) };
 		CursorLoader cursorLoader = new CursorLoader(this, PaiContentProvider.PAI_STUDY_URI, projection, selection, selectionArgs, null);
 		return cursorLoader;

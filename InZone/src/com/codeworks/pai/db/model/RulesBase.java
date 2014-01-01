@@ -16,7 +16,7 @@ import com.codeworks.pai.study.Period;
 
 public abstract class RulesBase implements Rules {
 	private String TAG = RulesBase.class.getName();
-	protected PaiStudy	study;
+	protected Study	study;
 
 	@Override
 	public String formatNet(double net) {
@@ -87,9 +87,9 @@ public abstract class RulesBase implements Rules {
 	@Override
 	public boolean isPossibleUptrendTermination(Period period) {
 		if (Period.Week.equals(period)) {
-			return (isUpTrendWeekly() && study.getPrice() < study.getMaWeek()); 
+			return (isUpTrendWeekly() && study.getPrice() < study.getEmaWeek()); 
 		} else {
-			return (isUpTrendMonthly() && study.getPrice() < study.getMaMonth()); 
+			return (isUpTrendMonthly() && study.getPrice() < study.getEmaMonth()); 
 		}
 	}
 
@@ -101,9 +101,9 @@ public abstract class RulesBase implements Rules {
 	@Override
 	public boolean isPossibleDowntrendTermination(Period period) {
 		if (Period.Week.equals(period)) {
-			return (isDownTrendWeekly() && study.getPrice() > study.getMaWeek());
+			return (isDownTrendWeekly() && study.getPrice() > study.getEmaWeek());
 		} else {
-			return (isDownTrendMonthly() && study.getPrice() > study.getMaMonth());
+			return (isDownTrendMonthly() && study.getPrice() > study.getEmaMonth());
 		}
 	}
 

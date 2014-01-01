@@ -12,7 +12,7 @@ public class EmaRules extends RulesBase {
 	protected static double	ZONE_INNER	= 0.5d;
 	protected static double	ZONE_OUTER	= 2d;
 
-	public EmaRules(PaiStudy study) {
+	public EmaRules(Study study) {
 		this.study = study;
 	}
 
@@ -38,9 +38,9 @@ public class EmaRules extends RulesBase {
 	@Override
 	public double calcUpperSellZoneBottom(Period period) {
 		if (Period.Week.equals(period)) {
-			return study.getMaWeek() + (study.getStddevWeek() * ZONE_OUTER);
+			return study.getEmaWeek() + (study.getEmaStddevWeek() * ZONE_OUTER);
 		} else {
-			return study.getMaMonth() + (study.getStddevMonth() * ZONE_OUTER);
+			return study.getEmaMonth() + (study.getEmaStddevMonth() * ZONE_OUTER);
 		}
 	}
 
@@ -54,9 +54,9 @@ public class EmaRules extends RulesBase {
 	@Override
 	public double calcUpperBuyZoneTop(Period period) {
 		if (Period.Week.equals(period)) {
-			return study.getMaWeek() + (study.getStddevWeek() * ZONE_INNER);
+			return study.getEmaWeek() + (study.getEmaStddevWeek() * ZONE_INNER);
 		} else {
-			return study.getMaMonth() + (study.getStddevMonth() * ZONE_INNER);
+			return study.getEmaMonth() + (study.getEmaStddevMonth() * ZONE_INNER);
 		}
 	}
 
@@ -70,9 +70,9 @@ public class EmaRules extends RulesBase {
 	@Override
 	public double calcUpperBuyZoneBottom(Period period) {
 		if (Period.Week.equals(period)) {
-			return study.getMaWeek();
+			return study.getEmaWeek();
 		} else {
-			return study.getMaMonth();
+			return study.getEmaMonth();
 		}
 	}
 
@@ -86,9 +86,9 @@ public class EmaRules extends RulesBase {
 	@Override
 	public double calcLowerSellZoneTop(Period period) {
 		if (Period.Week.equals(period)) {
-			return study.getMaWeek();
+			return study.getEmaWeek();
 		} else {
-			return study.getMaMonth();
+			return study.getEmaMonth();
 		}
 	}
 
@@ -102,9 +102,9 @@ public class EmaRules extends RulesBase {
 	@Override
 	public double calcLowerSellZoneBottom(Period period) {
 		if (Period.Week.equals(period)) {
-			return study.getMaWeek() - (study.getStddevWeek() * ZONE_INNER);
+			return study.getEmaWeek() - (study.getEmaStddevWeek() * ZONE_INNER);
 		} else {
-			return study.getMaMonth() - (study.getStddevMonth() * ZONE_INNER);
+			return study.getEmaMonth() - (study.getEmaStddevMonth() * ZONE_INNER);
 		}
 	}
 
@@ -118,9 +118,9 @@ public class EmaRules extends RulesBase {
 	@Override
 	public double calcLowerBuyZoneTop(Period period) {
 		if (Period.Week.equals(period)) {
-			return study.getMaWeek() - (study.getStddevWeek() * ZONE_OUTER);
+			return study.getEmaWeek() - (study.getEmaStddevWeek() * ZONE_OUTER);
 		} else {
-			return study.getMaMonth() - (study.getStddevMonth() * ZONE_OUTER);
+			return study.getEmaMonth() - (study.getEmaStddevMonth() * ZONE_OUTER);
 		}
 	}
 
@@ -143,13 +143,13 @@ public class EmaRules extends RulesBase {
 	 */
 	@Override
 	public double calcBuyZoneBottom() {
-		if (study.getMaWeek() == Double.NaN || study.getStddevWeek() == Double.NaN) {
+		if (study.getEmaWeek() == Double.NaN || study.getEmaStddevWeek() == Double.NaN) {
 			return 0;
 		}
 		if (isUpTrendWeekly()) {
-			return study.getMaWeek();
+			return study.getEmaWeek();
 		} else {
-			return study.getMaWeek() - (study.getStddevWeek() * ZONE_OUTER) - pierceOffset();
+			return study.getEmaWeek() - (study.getEmaStddevWeek() * ZONE_OUTER) - pierceOffset();
 		}
 	}
 
@@ -160,11 +160,11 @@ public class EmaRules extends RulesBase {
 	 */
 	@Override
 	public double calcBuyZoneTop() {
-		if (study.getMaWeek() == Double.NaN || study.getStddevWeek() == Double.NaN) {
+		if (study.getEmaWeek() == Double.NaN || study.getEmaStddevWeek() == Double.NaN) {
 			return 0;
 		}
 		if (isUpTrendWeekly()) {
-			return study.getMaWeek() + (study.getStddevWeek() * ZONE_INNER);
+			return study.getEmaWeek() + (study.getEmaStddevWeek() * ZONE_INNER);
 		} else {
 			/*
 			if (isWeeklyLowerBuyZoneCompressedByMonthly()) {
@@ -172,7 +172,7 @@ public class EmaRules extends RulesBase {
 			} else {
 				return study.getMaWeek() - (study.getStddevWeek() * ZONE_OUTER);
 			}*/
-			return study.getMaWeek() - (study.getStddevWeek() * ZONE_OUTER);
+			return study.getEmaWeek() - (study.getEmaStddevWeek() * ZONE_OUTER);
 		}
 	}
 
@@ -183,17 +183,17 @@ public class EmaRules extends RulesBase {
 	 */
 	@Override
 	public double calcSellZoneBottom() {
-		if (study.getMaWeek() == Double.NaN || study.getStddevWeek() == Double.NaN) {
+		if (study.getEmaWeek() == Double.NaN || study.getEmaStddevWeek() == Double.NaN) {
 			return 0;
 		}
 		if (isUpTrendWeekly()) {
 			if (isWeeklyUpperSellZoneExpandedByMonthly()) {
 				return calcUpperSellZoneBottom(Period.Month);
 			} else {
-			return study.getMaWeek() + (study.getStddevWeek() * ZONE_OUTER);
+			return study.getEmaWeek() + (study.getEmaStddevWeek() * ZONE_OUTER);
 			}
 		} else {
-			return study.getMaWeek() - (study.getStddevWeek() * ZONE_INNER);
+			return study.getEmaWeek() - (study.getEmaStddevWeek() * ZONE_INNER);
 		}
 	}
 
@@ -204,13 +204,13 @@ public class EmaRules extends RulesBase {
 	 */
 	@Override
 	public double calcSellZoneTop() {
-		if (study.getMaWeek() == Double.NaN || study.getStddevWeek() == Double.NaN) {
+		if (study.getEmaWeek() == Double.NaN || study.getEmaStddevWeek() == Double.NaN) {
 			return 0;
 		}
 		if (isUpTrendWeekly()) {
-			return study.getMaWeek() + (study.getStddevWeek() * ZONE_OUTER) + pierceOffset();
+			return study.getEmaWeek() + (study.getEmaStddevWeek() * ZONE_OUTER) + pierceOffset();
 		} else {
-			return study.getMaWeek();
+			return study.getEmaWeek();
 		}
 	}
 
@@ -269,9 +269,9 @@ public class EmaRules extends RulesBase {
 	@Override
 	public boolean isUpTrend(Period period) {
 		if (Period.Month.equals(period)) {
-			return study.getMaMonth() <= study.getPrice();
+			return study.getEmaMonth() <= study.getPrice();
 		} else {
-			return study.getMaLastWeek() <= study.getPriceLastWeek();
+			return study.getEmaLastWeek() <= study.getPriceLastWeek();
 		}
 	}
 
@@ -291,20 +291,20 @@ public class EmaRules extends RulesBase {
 		sb.append("Symbol=");
 		sb.append(study.getSymbol());
 		sb.append(" ema=");
-		sb.append(PaiStudy.format(study.getMaWeek()));
+		sb.append(Study.format(study.getEmaWeek()));
 		sb.append(" buy zone bottom=");
-		sb.append(PaiStudy.format(this.calcBuyZoneBottom()));
+		sb.append(Study.format(this.calcBuyZoneBottom()));
 		sb.append(" top=");
-		sb.append(PaiStudy.format(this.calcBuyZoneTop()));
+		sb.append(Study.format(this.calcBuyZoneTop()));
 		sb.append(" sell zone bottom=");
-		sb.append(PaiStudy.format(this.calcSellZoneBottom()));
+		sb.append(Study.format(this.calcSellZoneBottom()));
 		sb.append(" top=");
-		sb.append(PaiStudy.format(this.calcSellZoneTop()));
+		sb.append(Study.format(this.calcSellZoneTop()));
 		sb.append(" WUT=" + isUpTrendWeekly());
 		sb.append(" MUT=" + isUpTrendMonthly());
-		sb.append(" PLW=" + PaiStudy.format(study.getPriceLastWeek()));
-		sb.append(" maLM=" + PaiStudy.format(study.getMaLastMonth()));
-		sb.append(" PLM=" + PaiStudy.format(study.getPriceLastMonth()));
+		sb.append(" PLW=" + Study.format(study.getPriceLastWeek()));
+		sb.append(" maLM=" + Study.format(study.getEmaLastMonth()));
+		sb.append(" PLM=" + Study.format(study.getPriceLastMonth()));
 		return sb.toString();
 	}
 

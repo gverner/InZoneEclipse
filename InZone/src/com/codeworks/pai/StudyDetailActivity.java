@@ -45,8 +45,8 @@ public class StudyDetailActivity extends Activity {
 				newFragment.setArguments(args);
 			}
 
-			// Add the fragment to the 'fragment_container' FrameLayout
-			getFragmentManager().beginTransaction().add(R.id.study_detail_frame, newFragment).commit();
+			// Add (replace so we don't get 2) the fragment to the 'fragment_container' FrameLayout
+			getFragmentManager().beginTransaction().replace(R.id.study_detail_frame, newFragment).commit();
 		}
 
 	}

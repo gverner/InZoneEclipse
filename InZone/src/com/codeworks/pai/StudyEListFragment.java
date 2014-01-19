@@ -19,7 +19,6 @@ import android.content.Loader;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,6 +44,8 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 	private static final String		TAG					= StudyEListFragment.class.getSimpleName();
 
 	public static final String	ARG_PORTFOLIO_ID	= "com.codeworks.pai.portfolioId";
+	public static final String	DOWNTREND	= "downtrend";
+	public static final String	UPTREND	= "uptrend";
 
 	// private Cursor cursor;
 	private PaiCursorAdapter		adapter;
@@ -81,7 +82,9 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				if (view.getId() == R.id.quoteList_symbol) {
 					Toast.makeText(getActivity().getApplicationContext(), "Item in position " + position + " clicked " + ((TextView)view).getText(), Toast.LENGTH_LONG)
 							.show();
-					updateDetail(id);
+					ImageView imageView = (ImageView) view.findViewById(R.id.quoteList_WeeklyTrend);
+					Log.i(TAG, "LongClick " + imageView.getContentDescription().toString());
+					updateDetail(id, imageView.getContentDescription().toString());
 					// Return true to consume the click event. In this case the
 					// onListItemClick listener is not called anymore.
 					return true;
@@ -170,14 +173,16 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 	}
 
 	// May also be triggered from the Activity
-	public void updateDetail(long id) {
+	public void updateDetail(long id, String trend) {
 		listener.onStudySelected(id);
 	}
 	
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		updateDetail(id);
+		ImageView imageView = (ImageView) v.findViewById(R.id.quoteList_WeeklyTrend);
+		Log.i(TAG, "ItemClick " + imageView.getContentDescription().toString());
+		updateDetail(id, imageView.getContentDescription().toString());
 	}
 
 	public void setPortfolioId(long id) {
@@ -333,8 +338,10 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 			ImageView imageView = (ImageView) inView.findViewById(viewId);
 			if (isUptrend) {
 				imageView.setImageResource(R.drawable.ic_market_up);
+				imageView.setContentDescription(UPTREND);
 			} else {
 				imageView.setImageResource(R.drawable.ic_market_down);
+				imageView.setContentDescription(DOWNTREND);
 			}
 		}
 

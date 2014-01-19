@@ -1,22 +1,27 @@
 package com.codeworks.pai;
 
 import android.app.Fragment;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.EmaRules;
 import com.codeworks.pai.db.model.MaType;
-import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
+import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.processor.Notice;
 import com.codeworks.pai.study.Period;
 
@@ -74,6 +79,7 @@ public class StudyEDetailFragment extends Fragment {
 	}
 
 	void populateView(Study study) {
+		Log.i(TAG,"PopulateView");
 		Rules rules;
 		if (MaType.E.equals(study.getMaType())) {
 			rules = new EmaRules(study);
@@ -95,6 +101,43 @@ public class StudyEDetailFragment extends Fragment {
 			setDouble(getView(), rules.calcLowerSellZoneBottom(Period.Week), R.id.sdfWeeklyLowerSellBottom);
 			setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Week), R.id.sdfWeeklyLowerBuyTop);
 			setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Week), R.id.sdfWeeklyLowerBuyBottom);
+
+			if (rules.isUpTrend(Period.Week)) {
+				setDouble(getView(), rules.calcUpperSellZoneTop(Period.Week), R.id.sdfWeeklyUpperSellTop).setBackgroundColor(Color.LTGRAY);
+				setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Week), R.id.sdfWeeklyUpperSellBottom).setBackgroundColor(Color.LTGRAY);
+				setDouble(getView(), rules.calcUpperBuyZoneTop(Period.Week), R.id.sdfWeeklyUpperBuyTop).setBackgroundColor(Color.LTGRAY);
+				setDouble(getView(), rules.calcUpperBuyZoneBottom(Period.Week), R.id.sdfMaWeekly).setBackgroundColor(Color.LTGRAY);
+				setDouble(getView(), rules.calcLowerSellZoneBottom(Period.Week), R.id.sdfWeeklyLowerSellBottom);
+				setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Week), R.id.sdfWeeklyLowerBuyTop);
+				setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Week), R.id.sdfWeeklyLowerBuyBottom);
+
+				TextView sellZone = setString(getView(),  getResources().getString(R.string.sdfZoneTypeSeller) , R.id.sdfUpperWS);
+				TextView buyZone = setString(getView(),  getResources().getString(R.string.sdfZoneTypeBuyer) , R.id.sdfUpperWB);
+				sellZone.setBackgroundColor(Color.LTGRAY);
+				buyZone.setBackgroundColor(Color.LTGRAY);
+
+				((LayoutParams)buyZone.getLayoutParams()).weight = 2;
+				((LayoutParams)setString(getView(),  "" , R.id.sdfLowerWS).getLayoutParams()).weight = 1;
+				setString(getView(),  "" , R.id.sdfLowerWB);
+
+			} else {
+				setDouble(getView(), rules.calcUpperSellZoneTop(Period.Week), R.id.sdfWeeklyUpperSellTop);
+				setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Week), R.id.sdfWeeklyUpperSellBottom);
+				setDouble(getView(), rules.calcUpperBuyZoneTop(Period.Week), R.id.sdfWeeklyUpperBuyTop);
+				setDouble(getView(), rules.calcUpperBuyZoneBottom(Period.Week), R.id.sdfMaWeekly).setBackgroundColor(Color.LTGRAY);
+				setDouble(getView(), rules.calcLowerSellZoneBottom(Period.Week), R.id.sdfWeeklyLowerSellBottom).setBackgroundColor(Color.LTGRAY);
+				setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Week), R.id.sdfWeeklyLowerBuyTop).setBackgroundColor(Color.LTGRAY);
+				setDouble(getView(), rules.calcLowerBuyZoneBottom(Period.Week), R.id.sdfWeeklyLowerBuyBottom).setBackgroundColor(Color.LTGRAY);
+				TextView sellZone = setString(getView(),  getResources().getString(R.string.sdfZoneTypeSeller) , R.id.sdfLowerWS);
+				TextView buyZone = setString(getView(),  getResources().getString(R.string.sdfZoneTypeBuyer) , R.id.sdfLowerWB);
+				sellZone.setBackgroundColor(Color.LTGRAY);
+				buyZone.setBackgroundColor(Color.LTGRAY);
+
+				((LayoutParams)sellZone.getLayoutParams()).weight = 2;
+				((LayoutParams)setString(getView(),  "" , R.id.sdfUpperWB).getLayoutParams()).weight = 1;
+				setString(getView(),  "" , R.id.sdfUpperWS);
+			}
+			
 		}
 		if (study.isValidMonth()) {
 			setDouble(getView(), rules.calcUpperSellZoneTop(Period.Month), R.id.sdfMonthlyUpperSellTop);
@@ -138,6 +181,11 @@ public class StudyEDetailFragment extends Fragment {
 
 	}
 
+	TextView setBackground(View view, int viewId, int color) {
+		TextView textView = (TextView) view.findViewById(viewId);
+		textView.setBackgroundColor(color);
+		return textView;
+	}
 	TextView setDouble(View view, double value, int viewId) {
 		TextView textView = (TextView) view.findViewById(viewId);
 		textView.setText(Study.format(value));

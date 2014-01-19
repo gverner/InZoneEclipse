@@ -2,6 +2,7 @@ package com.codeworks.pai;
 
 import android.app.Fragment;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -94,13 +95,19 @@ public class StudySDetailFragment extends Fragment {
 			setDouble(getView(), study.getSmaWeek(), R.id.sdfMaWeekly);
 			setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Week), R.id.sdfWeeklyLowerBand);
 			if (rules.isUpTrend(Period.Week)) {
-				setString(getView(),  getResources().getString(R.string.sdfZoneTypeSeller) , R.id.sdfZoneUpperType);
-				setString(getView(),  getResources().getString(R.string.sdfZoneTypeBuyer) , R.id.sdfZoneMidType);
+				setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Week), R.id.sdfWeeklyUpperBand).setBackgroundColor(Color.LTGRAY);
+				setDouble(getView(), study.getSmaWeek(), R.id.sdfMaWeekly).setBackgroundColor(Color.LTGRAY);
+				setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Week), R.id.sdfWeeklyLowerBand);
+				setString(getView(),  getResources().getString(R.string.sdfZoneTypeSeller) , R.id.sdfZoneUpperType).setBackgroundColor(Color.LTGRAY);
+				setString(getView(),  getResources().getString(R.string.sdfZoneTypeBuyer) , R.id.sdfZoneMidType).setBackgroundColor(Color.LTGRAY);
 				setString(getView(),  "" , R.id.sdfZoneLowerType);
 			} else {
+				setDouble(getView(), rules.calcUpperSellZoneBottom(Period.Week), R.id.sdfWeeklyUpperBand);
+				setDouble(getView(), study.getSmaWeek(), R.id.sdfMaWeekly).setBackgroundColor(Color.LTGRAY);
+				setDouble(getView(), rules.calcLowerBuyZoneTop(Period.Week), R.id.sdfWeeklyLowerBand).setBackgroundColor(Color.LTGRAY);
 				setString(getView(),  "" , R.id.sdfZoneUpperType);
-				setString(getView(),  getResources().getString(R.string.sdfZoneTypeSeller) , R.id.sdfZoneMidType);
-				setString(getView(),  getResources().getString(R.string.sdfZoneTypeBuyer) , R.id.sdfZoneLowerType);
+				setString(getView(),  getResources().getString(R.string.sdfZoneTypeSeller) , R.id.sdfZoneMidType).setBackgroundColor(Color.LTGRAY);
+				setString(getView(),  getResources().getString(R.string.sdfZoneTypeBuyer) , R.id.sdfZoneLowerType).setBackgroundColor(Color.LTGRAY);
 			}
 		}
 		

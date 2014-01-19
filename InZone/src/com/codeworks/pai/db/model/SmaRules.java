@@ -9,7 +9,7 @@ import com.codeworks.pai.processor.Notice;
 import com.codeworks.pai.study.Period;
 
 public class SmaRules  extends RulesBase {
-	public static double				ZONE_INNER			= 0.5d;
+	//public static double				ZONE_INNER			= 0.5d;
 	public static double				ZONE_OUTER			= 2d;
 
 	public SmaRules(Study study) {
@@ -29,11 +29,7 @@ public class SmaRules  extends RulesBase {
 	}
 
 	public double calcUpperBuyZoneTop(Period period) {
-		if (Period.Week.equals(period)) {
-			return study.getSmaWeek() + (study.getSmaStddevWeek() * ZONE_INNER);
-		} else {
-			return study.getSmaMonth() + (study.getSmaStddevMonth() * ZONE_INNER);
-		}
+		return calcUpperBuyZoneBottom(period);
 	}
 
 	public double calcUpperBuyZoneBottom(Period period) {
@@ -53,11 +49,7 @@ public class SmaRules  extends RulesBase {
 	}
 
 	public double calcLowerSellZoneBottom(Period period) {
-		if (Period.Week.equals(period)) {
-			return study.getSmaWeek() - (study.getSmaStddevWeek() * ZONE_INNER);
-		} else {
-			return study.getSmaMonth() - (study.getSmaStddevMonth() * ZONE_INNER);
-		}
+		return calcLowerSellZoneTop(period);
 	}
 
 	public double calcLowerBuyZoneTop(Period period) {
@@ -310,7 +302,6 @@ public class SmaRules  extends RulesBase {
 				rule = "Sell Stock and Sell Puts at Proximal demand level (PDL)";
 			}
 		}
-		rule = rule+rule+rule+rule;
 
 		return rule;
 	}

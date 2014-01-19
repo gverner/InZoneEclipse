@@ -109,7 +109,7 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 	
 	@Override
 	public void onSStudySelected(Long studyId) {
-		onStudySelected(studyId);
+		onStudySelected(studyId); 
 	}		
 	  @Override
 	public void onStudySelected(Long studyId) {

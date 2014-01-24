@@ -1,6 +1,9 @@
 package com.codeworks.pai;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -15,7 +18,6 @@ import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,9 +33,10 @@ import android.widget.Toast;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
 import com.codeworks.pai.db.StudyTable;
-import com.codeworks.pai.db.model.Study;
 import com.codeworks.pai.db.model.Rules;
 import com.codeworks.pai.db.model.SmaRules;
+import com.codeworks.pai.db.model.Study;
+import com.codeworks.pai.processor.DateUtils;
 import com.codeworks.pai.processor.UpdateService;
 
 public class StudySListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -232,8 +235,13 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 					// Set EMA
 					TextView ema = (TextView) view.findViewById(R.id.quoteList_ema);
 					ema.setText(Study.format(study.getSmaMonth()));
-
-					double net = study.getPrice() - study.getLastClose();
+					
+					double net = 0;
+					Calendar cal = GregorianCalendar.getInstance();
+					if ((study.getPriceDate() != null && DateUtils.isSameDay(study.getPriceDate(), new Date()))
+							|| cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+						net = study.getPrice() - study.getLastClose();
+					}
 					TextView textNet = (TextView) view.findViewById(R.id.quoteList_net);
 					if (net < 0) {
 						textNet.setText(rules.formatNet(net));

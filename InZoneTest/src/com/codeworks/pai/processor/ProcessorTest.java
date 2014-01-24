@@ -135,7 +135,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		assertEquals("TT", false, rules.isPossibleTrendTerminationWeekly());
 		assertEquals("TT", false, rules.isPossibleUptrendTermination(Period.Week));
 		assertEquals("TT", false, rules.isPossibleDowntrendTermination(Period.Week));
-		assertEquals("Buy", true, rules.isPriceInBuyZone());
+		assertEquals("Buy", false, rules.isPriceInBuyZone());
 		assertEquals("Sell", false, rules.isPriceInSellZone());
 
 	}

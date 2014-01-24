@@ -121,6 +121,7 @@
    	<string name="sdfLabelZonePDL2">PDL2</string>
    	<string name="sdfZoneTypeBuyer">WB</string>
    	<string name="sdfZoneTypeSeller">WS</string>
+   	<string name="sdfZoneTypePDL">PDL1\nPDL2</string>
    	<string name="sdfZoneUpperType"></string>
     <string name="sdfLabelStochasticK">Slow-Stoch-K</string>
    	<string name="sdfLabelStochasticD">Slow-Stoch-D</string>

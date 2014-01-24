@@ -25,7 +25,7 @@ public class EmaRules extends RulesBase {
 	 */
 	@Override
 	public double calcUpperSellZoneTop(Period period) {
-		return calcUpperSellZoneBottom(period) + pierceOffset();
+		return calcUpperSellZoneBottom(period) + pierceOffset(period);
 	}
 
 	/*
@@ -133,7 +133,7 @@ public class EmaRules extends RulesBase {
 	 */
 	@Override
 	public double calcLowerBuyZoneBottom(Period period) {
-		return calcLowerBuyZoneTop(period) - pierceOffset();
+		return calcLowerBuyZoneTop(period) - pierceOffset(period);
 	}
 
 	/*
@@ -149,7 +149,11 @@ public class EmaRules extends RulesBase {
 		if (isUpTrendWeekly()) {
 			return study.getEmaWeek();
 		} else {
-			return study.getEmaWeek() - (study.getEmaStddevWeek() * ZONE_OUTER) - pierceOffset();
+			if (isWeeklyLowerBuyZoneCompressedByMonthly()) {
+				return calcLowerBuyZoneBottom(Period.Month);
+			} else {
+				return calcLowerBuyZoneBottom(Period.Week);
+			}
 		}
 	}
 
@@ -166,13 +170,11 @@ public class EmaRules extends RulesBase {
 		if (isUpTrendWeekly()) {
 			return study.getEmaWeek() + (study.getEmaStddevWeek() * ZONE_INNER);
 		} else {
-			/*
 			if (isWeeklyLowerBuyZoneCompressedByMonthly()) {
 				return calcLowerBuyZoneTop(Period.Month);
 			} else {
-				return study.getMaWeek() - (study.getStddevWeek() * ZONE_OUTER);
-			}*/
-			return study.getEmaWeek() - (study.getEmaStddevWeek() * ZONE_OUTER);
+				return calcLowerBuyZoneTop(Period.Week);
+			}
 		}
 	}
 
@@ -208,7 +210,7 @@ public class EmaRules extends RulesBase {
 			return 0;
 		}
 		if (isUpTrendWeekly()) {
-			return study.getEmaWeek() + (study.getEmaStddevWeek() * ZONE_OUTER) + pierceOffset();
+			return study.getEmaWeek() + (study.getEmaStddevWeek() * ZONE_OUTER) + pierceOffset(Period.Week);
 		} else {
 			return study.getEmaWeek();
 		}
@@ -224,17 +226,16 @@ public class EmaRules extends RulesBase {
 	}
 	@Override
 	public boolean isWeeklyLowerBuyZoneCompressedByMonthly() {
-		/*
-		if (isDownTrendWeekly() && calcLowerBuyZoneTop(Period.Month) < calcLowerBuyZoneTop(Period.Week)) {
+		
+		if (isDownTrendWeekly() && isDownTrendMonthly() && calcLowerBuyZoneTop(Period.Month) < calcLowerBuyZoneTop(Period.Week)) {
 			return true;
 		} else {
 			return false;
-		}*/
-		return false;
+		}
 	}
 
-	double pierceOffset() {
-		return (study.getPrice() / 100d) * 2d;
+	double pierceOffset(Period period) {
+		return (study.getPrice() / 100d) * (Period.Week.equals(period) ? 2d : 5d);
 	}
 
 	/*

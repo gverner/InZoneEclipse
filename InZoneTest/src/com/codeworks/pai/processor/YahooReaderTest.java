@@ -150,6 +150,7 @@ public class YahooReaderTest extends AndroidTestCase {
 	public void testReadLatestDate() {
 		Date latestDate = reader.latestHistoryDate("SPY");
 		System.out.println("Latest Hitory Date ="+latestDate);
+		System.out.println("Last Probable Date = "+ DateUtils.lastProbableTradeDate());
 		assertNotNull(latestDate);
 		assertTrue(DateUtils.toDatabaseFormat(latestDate).compareTo(DateUtils.lastProbableTradeDate()) >= 0);
 	}

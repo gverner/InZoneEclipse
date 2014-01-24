@@ -281,10 +281,13 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 					}
 					TextView textBuyZoneBot = setDouble(view, rules.calcBuyZoneBottom(), R.id.quoteList_BuyZoneBottom);
 					TextView textBuyZoneTop = setDouble(view, rules.calcBuyZoneTop(), R.id.quoteList_BuyZoneTop);
-					/*
-					 * if (rules.isWeeklyLowerBuyZoneCompressedByMonthly()) {
-					 * textBuyZoneTop.setText("*"+textBuyZoneTop.getText()); }
-					 */
+
+					if (rules.isWeeklyLowerBuyZoneCompressedByMonthly()) {
+						textBuyZoneTop.setText("*" + textBuyZoneTop.getText());
+						textBuyZoneBot.setText("*" + textBuyZoneBot.getText());
+						weeklyZoneModifiedByMonthly = true;
+					}
+					
 					textBuyZoneBot.setBackgroundColor(rules.getBuyZoneBackgroundColor());
 					textBuyZoneTop.setBackgroundColor(rules.getBuyZoneBackgroundColor());
 					textBuyZoneBot.setTextColor(rules.getBuyZoneTextColor());

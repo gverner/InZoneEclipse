@@ -85,8 +85,8 @@ public class ProcessorImpl implements Processor {
 					if (Thread.interrupted()) {
 						throw new InterruptedException();
 					}
-					calculateStudy(security, history); // shallow copy of cashed history because it is modified.
-					saveStudy(security);
+					calculateStudy(security, history); // shallow copy of cashed history because it is modified
+//					saveStudy(security);
 				} else {
 					security.setInsufficientHistory(true);
 				}
@@ -94,6 +94,7 @@ public class ProcessorImpl implements Processor {
 				security.setNoPrice(true);
 			}
 		}
+		batchSaveStudy(studies);
 		return studies;
 	}
 	
@@ -522,6 +523,32 @@ public class ProcessorImpl implements Processor {
 	}
 	
 	void saveStudy(Study study) {
+		ContentValues values = populateStudyContentValues(study);
+		Log.d(TAG, "Updating Study " + study.toString());
+		Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + study.getSecurityId());
+		getContentResolver().update(studyUri, values, null, null);
+	}
+
+	void batchSaveStudy(List<Study> studies) {
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		db.beginTransaction();
+		try {
+			for (Study study : studies) {
+				ContentValues values = populateStudyContentValues(study);
+				db.update(StudyTable.TABLE_STUDY, values, StudyTable.COLUMN_ID + "=?", new String[] { Long.toString(study.getSecurityId()) });
+			}
+			db.setTransactionSuccessful();
+		} finally {
+			db.endTransaction();
+		}
+		context.getContentResolver().notifyChange(PaiContentProvider.PAI_STUDY_URI, null);
+	}
+    /**
+     * populate ContentValues for Study no Notice
+     * @param study
+     * @return
+     */
+	ContentValues populateStudyContentValues(Study study) {
 		ContentValues values = new ContentValues();
 		values.put(StudyTable.COLUMN_PORTFOLIO_ID, study.getPortfolioId());
 		values.put(StudyTable.COLUMN_SYMBOL, study.getSymbol());
@@ -549,11 +576,7 @@ public class ProcessorImpl implements Processor {
 		values.put(StudyTable.COLUMN_SMA_STDDEV_WEEK,study.getSmaStddevWeek());
 		values.put(StudyTable.COLUMN_SMA_STDDEV_MONTH, study.getSmaStddevMonth());
 		values.put(StudyTable.COLUMN_STATUSMAP, study.getStatusMap());
-
-		
-		Log.d(TAG, "Updating Study " + study.toString());
-		Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + study.getSecurityId());
-		getContentResolver().update(studyUri, values, null, null);
+		return values;
 	}
 	
 	void removeObsoleteStudies(List<Study> securities) {

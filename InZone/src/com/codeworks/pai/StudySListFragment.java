@@ -106,14 +106,6 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.studylist_main, container, false);
-		/*
-		 * Button button = (Button) view.findViewById(R.id.button1);
-		 * button.setOnClickListener(new View.OnClickListener() {
-		 * 
-		 * @Override public void onClick(View v) { updateDetail(); } });
-		 */
-		
-		
 		return view;
 	}
 
@@ -174,8 +166,6 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 
 	public void setPortfolioId(long id) {
 			portfolioId = id;
-			//adapter.notifyDataSetChanged();
-			//fillData();
 	}
 
 	private void fillData() {

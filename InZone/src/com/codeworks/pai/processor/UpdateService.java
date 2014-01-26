@@ -82,7 +82,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		processor = new ProcessorImpl(getContentResolver(), new DataReaderYahoo());
+		processor = new ProcessorImpl(getContentResolver(), new DataReaderYahoo(),getApplicationContext());
 		notifier = new NotifierImpl(getApplicationContext());
 		SharedPreferences sharedPref = getSharedPreferences();
 		sharedPref.registerOnSharedPreferenceChangeListener(this);
@@ -131,6 +131,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		}
 
 		if (processor != null) {
+			processor.onClose();
 			processor = null;
 		}
 

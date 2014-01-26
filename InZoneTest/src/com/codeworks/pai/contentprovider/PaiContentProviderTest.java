@@ -152,7 +152,7 @@ public class PaiContentProviderTest extends ProviderTestCase2<PaiContentProvider
 		}
 	}
 
-	
+
 	public Uri loadSettings() throws IOException {
 			ContentValues values = new ContentValues();
 			values.put(StudyTable.COLUMN_SYMBOL, "SPY");

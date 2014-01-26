@@ -4,10 +4,13 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.net.Uri;
 import android.test.ProviderTestCase2;
+import android.test.mock.MockContext;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
+import com.codeworks.pai.db.PriceHistoryTable;
 import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.model.EmaRules;
 import com.codeworks.pai.db.model.Study;
@@ -29,7 +32,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		processor = new ProcessorImpl(getMockContentResolver(), new MockDataReader());
+		processor = new ProcessorImpl(getMockContentResolver(), new MockDataReader(), getContext());
 		//createSecurities();
 		//studies = processor.process();
 	}
@@ -276,4 +279,16 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		}
 	}
 	*/
+	public void testLastHistoryDate() {
+		Cursor cursor = getContext().getContentResolver().query(PaiContentProvider.PRICE_HISTORY_URI, new String[]{PriceHistoryTable.COLUMN_DATE}, 
+				PriceHistoryTable.COLUMN_SYMBOL + " = ? ", new String[]{"SPY"}, PriceHistoryTable.COLUMN_DATE+" desc");
+		String expectedDate = "";
+		if (cursor.moveToFirst()) {
+		   expectedDate = cursor.getString(0);
+		}
+		cursor.close();
+		String lastHistoryDate = processor.getLastSavedHistoryDate("SPY");
+		System.out.println("last history date for spy = "+lastHistoryDate);
+		assertEquals(expectedDate,lastHistoryDate);
+	}
 }

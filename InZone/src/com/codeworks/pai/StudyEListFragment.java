@@ -82,9 +82,7 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				if (view.getId() == R.id.quoteList_symbol) {
 					Toast.makeText(getActivity().getApplicationContext(), "Item in position " + position + " clicked " + ((TextView)view).getText(), Toast.LENGTH_LONG)
 							.show();
-					ImageView imageView = (ImageView) view.findViewById(R.id.quoteList_WeeklyTrend);
-					Log.i(TAG, "LongClick " + imageView.getContentDescription().toString());
-					updateDetail(id, imageView.getContentDescription().toString());
+					updateDetail(id);
 					// Return true to consume the click event. In this case the
 					// onListItemClick listener is not called anymore.
 					return true;
@@ -173,16 +171,14 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 	}
 
 	// May also be triggered from the Activity
-	public void updateDetail(long id, String trend) {
+	public void updateDetail(long id) {
 		listener.onStudySelected(id);
 	}
 	
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		ImageView imageView = (ImageView) v.findViewById(R.id.quoteList_WeeklyTrend);
-		Log.i(TAG, "ItemClick " + imageView.getContentDescription().toString());
-		updateDetail(id, imageView.getContentDescription().toString());
+		updateDetail(id);
 	}
 
 	public void setPortfolioId(long id) {

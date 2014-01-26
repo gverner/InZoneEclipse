@@ -2,6 +2,7 @@ package com.codeworks.pai.contentprovider;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -9,18 +10,22 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.codeworks.pai.db.PaiDatabaseHelper;
 import com.codeworks.pai.db.StudyTable;
 import com.codeworks.pai.db.PriceHistoryTable;
 import com.codeworks.pai.db.ServiceLogTable;
+import com.codeworks.pai.db.model.Price;
+import com.codeworks.pai.processor.DateUtils;
 
 public class PaiContentProvider extends ContentProvider {
-
+	static final String TAG = PaiContentProvider.class.getSimpleName();
 	// database
 	private PaiDatabaseHelper database;
 
@@ -146,6 +151,7 @@ public class PaiContentProvider extends ContentProvider {
 			break;
 		case PAI_STUDY:
 			id = sqlDB.insert(StudyTable.TABLE_STUDY, null, values);
+			getContext().getContentResolver().notifyChange(uri, null);
 			break;
 		case SERVICE_LOG:
 			id = sqlDB.insert(ServiceLogTable.TABLE_SERVICE_LOG, null, values);
@@ -154,10 +160,74 @@ public class PaiContentProvider extends ContentProvider {
 			throw new IllegalArgumentException("Unknown URI: " + uri);
 		}
 		
-		getContext().getContentResolver().notifyChange(uri, null);
 		return ContentUris.withAppendedId(uri, id);
 	}
+	@Override
+	public int bulkInsert(Uri uri, ContentValues[] values){
+	    int numInserted = 0;
+	    String table;
 
+	    int uriType = sURIMatcher.match(uri);
+
+		switch (uriType) {
+		case PRICE_HISTORY:
+			table = PriceHistoryTable.TABLE_PRICE_HISTORY;
+			break;
+		case PAI_STUDY:
+			table = StudyTable.TABLE_STUDY;
+			break;
+		case SERVICE_LOG:
+			table = ServiceLogTable.TABLE_SERVICE_LOG;
+			break;
+		default:
+			throw new IllegalArgumentException("Unknown URI: " + uri);
+		}
+	    SQLiteDatabase sqlDB = database.getWritableDatabase();
+	    sqlDB.beginTransaction();
+	    try {
+	        for (ContentValues cv : values) {
+	            long newID = sqlDB.insertOrThrow(table, null, cv);
+	            if (newID <= 0) {
+	                throw new SQLException("Failed to insert row into " + uri);
+	            }
+	        }
+	        sqlDB.setTransactionSuccessful();
+	        getContext().getContentResolver().notifyChange(uri, null);
+	        numInserted = values.length;
+	    } finally {         
+	        sqlDB.endTransaction();
+	    }
+	    return numInserted;
+	}
+	
+	public void batchInsertHistory(List<Price> historyList, String symbol) {
+		PaiDatabaseHelper database = new PaiDatabaseHelper(getContext());
+		SQLiteDatabase sqlDB = database.getWritableDatabase();
+		sqlDB.beginTransaction();
+		try {
+			for (Price price : historyList) {
+				ContentValues values = new ContentValues();
+				values.put(PriceHistoryTable.COLUMN_ADJUSTED_CLOSE, price.getAdjustedClose());
+				values.put(PriceHistoryTable.COLUMN_CLOSE, price.getClose());
+				if (price.getDate() != null) {
+					values.put(PriceHistoryTable.COLUMN_DATE, DateUtils.toDatabaseFormat(price.getDate()));
+				}
+				values.put(PriceHistoryTable.COLUMN_HIGH, price.getHigh());
+				values.put(PriceHistoryTable.COLUMN_LOW, price.getLow());
+				values.put(PriceHistoryTable.COLUMN_OPEN, price.getOpen());
+				values.put(PriceHistoryTable.COLUMN_SYMBOL, symbol);
+				sqlDB.insert(PriceHistoryTable.TABLE_PRICE_HISTORY, null, values);
+				sqlDB.setTransactionSuccessful();
+			}
+		} catch (Exception e) {
+			Log.e(TAG, "Exception in Batch Insert History ", e);
+		} finally {
+			sqlDB.endTransaction();
+		}
+		sqlDB.close();
+		database.close();
+	}
+	
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
 		int uriType = sURIMatcher.match(uri);

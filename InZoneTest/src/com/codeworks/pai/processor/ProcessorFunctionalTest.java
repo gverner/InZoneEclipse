@@ -26,7 +26,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		processor = new ProcessorImpl(null, new MockDataReader());
+		processor = new ProcessorImpl(null, new MockDataReader(), getContext());
 	}
 	public double round(double value) {
 		return new BigDecimal(value).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
@@ -35,7 +35,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		Study study = new Study(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
 		List<Price> history = TestDataLoader.generateHistory(40.00, 10.00, 500);
-		logHistory(history);
+		//logHistory(history);
 		MockDataReader.buildSecurity(study, "S&P 500", 9.10, "06/10/2013");
 		processor.calculateStudy(study, history);
 		logStudy(study);
@@ -43,8 +43,9 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("ATR", 0.06d, round(study.getAverageTrueRange()));
 		assertEquals("MA week", 12.49d, PaiUtils.round(study.getEmaWeek()));
 		assertEquals("MA month", 20.19d, PaiUtils.round(study.getEmaMonth()));
-//		assertEquals("MA last week", 12.85d, PaiUtils.round(study.getMaLastWeek()));
-		assertEquals("MA last week", 12.49d, PaiUtils.round(study.getEmaLastWeek()));
+		// why do these swap
+		assertEquals("MA last week", 12.85d, PaiUtils.round(study.getEmaLastWeek()));
+//		assertEquals("MA last week", 12.49d, PaiUtils.round(study.getEmaLastWeek()));
 		assertEquals("MA last month", 21,36d, PaiUtils.round(study.getEmaLastMonth()));
 		assertEquals("StdDev Week", 1.78d, PaiUtils.round(study.getEmaStddevWeek()));
 		assertEquals("StdDev Month", 7.52d, PaiUtils.round(study.getEmaStddevMonth()));

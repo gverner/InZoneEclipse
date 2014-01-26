@@ -6,14 +6,14 @@ import java.io.Reader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
-import android.text.format.DateUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
+
 import au.com.bytecode.opencsv.CSVReader;
 
 import com.codeworks.pai.PaiUtils;
@@ -82,32 +82,23 @@ public class TestDataLoader {
 		}
 	}
 
-	private static Date getGeneratedHistoryLastDate() throws ParseException {
-		SimpleDateFormat sdf  = new SimpleDateFormat("MM/dd/yyyy",Locale.US);
-		Date startDate = sdf.parse("06/15/2013");
-		return startDate;
-	}
-
 	public static List<Price> generateHistory(double startPrice, double endPrice, int days) throws ParseException {
 		double diff = endPrice - startPrice;
-		Date startDate = getGeneratedHistoryLastDate();
 		double perday = PaiUtils.round(diff / days);
 		List<Price> history = new ArrayList<Price>();
-		Calendar cal = GregorianCalendar.getInstance(Locale.US);
-		// role calendar so we always start on the same date and generate weekly values based on the same value.
-		while (cal.getTime().after(startDate) || cal.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
-			cal.add(Calendar.DAY_OF_MONTH, -1);
-		}
-		System.out.println("Last Date "+cal.getTime());
+		DateTime dt = new DateTime(2013, 06, 10, 0, 0);
+
+		System.out.println("Last Date " + dt.toString());
 		double close = endPrice;
 		do {
-			cal.add(Calendar.DAY_OF_MONTH, -1); // start before today
-			while (cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
-				cal.add(Calendar.DAY_OF_MONTH, -1);
+			dt = dt.minusDays(1);
+			while (dt.getDayOfWeek() == DateTimeConstants.SUNDAY || dt.getDayOfWeek() == DateTimeConstants.SATURDAY) {
+				dt = dt.minusDays(1);
 			}
-			history.add(buildPrice(cal.getTime(), close));
+			history.add(buildPrice(dt.toDate(), close));
 			close = PaiUtils.round(close - perday);
 		} while (history.size() <= days);
+
 		Collections.sort(history);
 		return history;
 	}

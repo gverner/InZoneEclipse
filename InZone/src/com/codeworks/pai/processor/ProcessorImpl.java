@@ -14,11 +14,14 @@ import org.joda.time.DateTimeComparator;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.util.Log;
 
 import com.codeworks.pai.contentprovider.PaiContentProvider;
+import com.codeworks.pai.db.PaiDatabaseHelper;
 import com.codeworks.pai.db.PriceHistoryTable;
 import com.codeworks.pai.db.ServiceLogTable;
 import com.codeworks.pai.db.StudyTable;
@@ -38,12 +41,22 @@ public class ProcessorImpl implements Processor {
 	DataReader reader = new DataReaderYahoo();
 	ContentResolver contentResolver;
 	public static SimpleDateFormat dbStringDateFormat = new SimpleDateFormat("yyyyMMdd", Locale.US);
-
-	public ProcessorImpl(ContentResolver contentResolver2, DataReader reader) {
+	Context context;
+	PaiDatabaseHelper dbHelper;
+	
+	public ProcessorImpl(ContentResolver contentResolver2, DataReader reader, Context context) {
 		this.contentResolver = contentResolver2;
 		this.reader = reader;
+		this.context = context;
+		dbHelper = new PaiDatabaseHelper(context);
 	}
-
+	
+	public void onClose() {
+		if (dbHelper != null) {
+			dbHelper.close();
+		}
+	}
+	
 	/**
 	 * Process all securities.
 	 * lookup current price and cal¯culates study
@@ -94,6 +107,9 @@ public class ProcessorImpl implements Processor {
 	public List<Study> updatePrice(String symbol) throws InterruptedException {
 		List<Study> studies = getSecurities(symbol);
 		updateCurrentPrice(studies);
+		long start = System.currentTimeMillis();
+		batchSaveStudyPrice(studies);
+		/*
 		for (Study security : studies) {
 			if (security.getPrice() != 0) {
 					saveStudyPrice(security);
@@ -101,6 +117,8 @@ public class ProcessorImpl implements Processor {
 				security.setNoPrice(true);
 			}
 		}
+		*/
+		Log.d(TAG,"Time to update db prices "+(System.currentTimeMillis() - start));
 		return studies;
 	}
 	
@@ -282,32 +300,34 @@ public class ProcessorImpl implements Processor {
 		getContentResolver().update(securityUri, values, null, null);
 	}
 
-	List<Price> getPriceHistory(Study study, String lastOnlineHistoryDbDate) {
+	List<Price> getPriceHistory2(Study study, String lastOnlineHistoryDbDate) {
 		String TAG = "Get Price History";
 		long readDbHistoryStartTime = System.currentTimeMillis();
 		String nowDbDate = DateUtils.toDatabaseFormat(new Date());
-		String[] projection = { PriceHistoryTable.COLUMN_SYMBOL, PriceHistoryTable.COLUMN_CLOSE, PriceHistoryTable.COLUMN_DATE,
-				PriceHistoryTable.COLUMN_HIGH, PriceHistoryTable.COLUMN_LOW, PriceHistoryTable.COLUMN_OPEN,
-				PriceHistoryTable.COLUMN_ADJUSTED_CLOSE };
-		String selection = StudyTable.COLUMN_SYMBOL + " = ? ";
-		String[] selectionArgs = { study.getSymbol() };
-		Log.d(TAG, "Get History from database "+ study.getSymbol());
-		Cursor historyCursor = getContentResolver().query(PaiContentProvider.PRICE_HISTORY_URI, projection, selection, selectionArgs,
-				PriceHistoryTable.COLUMN_DATE);
 		boolean reloadHistory = true;
 		List<Price> history = new ArrayList<Price>();
-		try {
-			if (historyCursor != null) {
-				if (historyCursor.moveToLast()) {
+		String[] projection = { PriceHistoryTable.COLUMN_SYMBOL, PriceHistoryTable.COLUMN_CLOSE, PriceHistoryTable.COLUMN_DATE, PriceHistoryTable.COLUMN_HIGH,
+				PriceHistoryTable.COLUMN_LOW, PriceHistoryTable.COLUMN_OPEN, PriceHistoryTable.COLUMN_ADJUSTED_CLOSE };
+		String selection = StudyTable.COLUMN_SYMBOL + " = ? ";
+		String[] selectionArgs = { study.getSymbol() };
+		Log.d(TAG, "Get History from database " + study.getSymbol());
+		/*
+		 * Note this query has two purposes 1) get lastHistoryDate (requires sort) and (when lastHistoryDate is up-to date) 2) get History
+		 */
+		Cursor historyCursor = getContentResolver().query(PaiContentProvider.PRICE_HISTORY_URI, projection, selection, selectionArgs,
+				PriceHistoryTable.COLUMN_DATE + " desc");
+		if (historyCursor != null) {
+			try {
+				if (historyCursor.moveToFirst()) {
 					String lastHistoryDate = historyCursor.getString(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_DATE));
-					// how does lastHistoryDate get to be after now? added check
-					// 9/21/2013
-					if (lastHistoryDate.compareTo(lastOnlineHistoryDbDate) >= 0 && lastHistoryDate.compareTo(nowDbDate) <= 0) {
-						double lastClose = historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_CLOSE));
-						Log.d(TAG, study.getSymbol() + " is upto date using data from database lastDate=" + lastHistoryDate + " now" + nowDbDate
-								+ " last Close " + lastClose);
-						reloadHistory = false;
-						if (historyCursor.moveToFirst()) {
+					if (lastHistoryDate != null && (lastHistoryDate.compareTo(lastOnlineHistoryDbDate) >= 0 && lastHistoryDate.compareTo(nowDbDate) <= 0)) {
+						// how does lastHistoryDate get to be after now? added
+						// check
+						// 9/21/2013
+						Log.d(TAG, study.getSymbol() + " is upto date using data from database lastDate=" + lastHistoryDate + " now " + nowDbDate);
+
+						if (lastHistoryDate.compareTo(lastOnlineHistoryDbDate) >= 0 && lastHistoryDate.compareTo(nowDbDate) <= 0) {
+							reloadHistory = false;
 							do {
 								Price price = new Price();
 								price.setAdjustedClose(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_ADJUSTED_CLOSE)));
@@ -329,24 +349,108 @@ public class ProcessorImpl implements Processor {
 						Log.d(TAG, "Last History Date " + lastHistoryDate + " not equal Last on line History Date " + lastOnlineHistoryDbDate);
 					}
 				}
+			} finally {
+				historyCursor.close();
 			}
-		} finally {
-			historyCursor.close();
 		}
-		Log.d(TAG, "Time to read db history ms = " + (System.currentTimeMillis()-readDbHistoryStartTime) + " Obsolete "+reloadHistory);
+		Log.d(TAG, "Time to read db history ms = " + (System.currentTimeMillis() - readDbHistoryStartTime) + " Obsolete " + reloadHistory);
 
 		if (reloadHistory) {
-			long readHistoryStartTime = System.currentTimeMillis();
-			Log.d(TAG, "Price History is out-of-date reloading from history provider");
-			history = reader.readHistory(study.getSymbol());
-			study.setHistoryReloaded(true);
-			Log.d(TAG, "Time to read on line history ms = " + (System.currentTimeMillis()-readHistoryStartTime));
-			long dbUpdateStartTime = System.currentTimeMillis();
-			if (history != null && history.size() > 0) {
+			history = rebuildHistoryBatch(study, TAG);
+		}
+		Log.d(TAG, "Returning " + history.size() + " Price History records for symbol " + study.getSymbol());
+		return history;
+	}
+
+	List<Price> getPriceHistory(Study study, String lastOnlineHistoryDbDate) {
+		String TAG = "Get Price History";
+		long readDbHistoryStartTime = System.currentTimeMillis();
+		String nowDbDate = DateUtils.toDatabaseFormat(new Date());
+		boolean reloadHistory = true;
+		List<Price> history = new ArrayList<Price>();
+		String lastHistoryDate = getLastSavedHistoryDate(study.getSymbol());
+		if (lastHistoryDate != null && (lastHistoryDate.compareTo(lastOnlineHistoryDbDate) >= 0 && lastHistoryDate.compareTo(nowDbDate) <= 0)) {
+			Log.d(TAG, study.getSymbol() + " is upto date using data from database lastDate=" + lastHistoryDate + " now " + nowDbDate);
+			String[] projection = { PriceHistoryTable.COLUMN_SYMBOL, PriceHistoryTable.COLUMN_CLOSE, PriceHistoryTable.COLUMN_DATE,
+					PriceHistoryTable.COLUMN_HIGH, PriceHistoryTable.COLUMN_LOW, PriceHistoryTable.COLUMN_OPEN, PriceHistoryTable.COLUMN_ADJUSTED_CLOSE };
+			String selection = StudyTable.COLUMN_SYMBOL + " = ? ";
+			String[] selectionArgs = { study.getSymbol() };
+			Log.d(TAG, "Get History from database " + study.getSymbol());
+			Cursor historyCursor = getContentResolver().query(PaiContentProvider.PRICE_HISTORY_URI, projection, selection, selectionArgs,null);
+			try {
+				if (historyCursor != null) {
+					if (historyCursor.moveToFirst()) {
+						reloadHistory = false;
+						do {
+							Price price = new Price();
+							price.setAdjustedClose(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_ADJUSTED_CLOSE)));
+							price.setClose(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_CLOSE)));
+							price.setOpen(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_OPEN)));
+							price.setLow(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_LOW)));
+							price.setHigh(historyCursor.getDouble(historyCursor.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_HIGH)));
+							try {
+								price.setDate(dbStringDateFormat.parse(historyCursor.getString(historyCursor
+										.getColumnIndexOrThrow(PriceHistoryTable.COLUMN_DATE))));
+								// must have valid date
+								history.add(price);
+							} catch (Exception e) {
+								Log.d(TAG, "failed to parse price history date ");
+							}
+						} while (historyCursor.moveToNext());
+					} else {
+						Log.d(TAG, "Last History Date " + lastHistoryDate + " not equal Last on line History Date " + lastOnlineHistoryDbDate);
+					}
+				}
+			} finally {
+				historyCursor.close();
+			}
+		}
+		Log.d(TAG, "Time to read db history ms = " + (System.currentTimeMillis() - readDbHistoryStartTime) + " Obsolete " + reloadHistory);
+
+		if (reloadHistory) {
+			history = rebuildHistoryBatch(study, TAG);
+		}
+		Log.d(TAG, "Returning " + history.size() + " Price History records for symbol " + study.getSymbol());
+		return history;
+	}
+	
+	String getLastSavedHistoryDate(String symbol) {
+		String returnDate = null;
+		String[] selectionArgs = { symbol };
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		try {
+			Cursor historyCursor = db.rawQuery("select max(date) from pricehistory where symbol = ? ", selectionArgs);
+			if (historyCursor != null) {
+				if (historyCursor.moveToFirst()) {
+					returnDate = historyCursor.getString(0);
+				}
+			}
+		} catch (Exception e) {
+			Log.e(TAG, "Error in getLastSavedHistoryDate ");
+		}
+		Log.d(TAG, "Get Max History Date from database for " + symbol + " returned " + returnDate);
+		return returnDate;
+	}
+
+	List<Price> rebuildHistoryBatch(Study study, String TAG) {
+		String selection = StudyTable.COLUMN_SYMBOL + " = ? ";
+		String[] selectionArgs = { study.getSymbol() };
+		List<Price> history;
+		long readHistoryStartTime = System.currentTimeMillis();
+		Log.d(TAG, "Price History is out-of-date reloading from history provider");
+		history = reader.readHistory(study.getSymbol());
+		study.setHistoryReloaded(true);
+		Log.d(TAG, "Time to read on line history ms = " + (System.currentTimeMillis() - readHistoryStartTime));
+		long dbUpdateStartTime = System.currentTimeMillis();
+		if (history != null && history.size() > 0)
+			try {
 				Log.d(TAG, "Replacing Price History in database");
 				int rowsDeleted = getContentResolver().delete(PaiContentProvider.PRICE_HISTORY_URI, selection, selectionArgs);
 				Log.d(TAG, "Deleted " + rowsDeleted + " history rows");
-				for (Price price : history) try {
+				ContentValues[] valueArray = new ContentValues[history.size()];
+				int ndx = 0;
+
+				for (Price price : history) {
 					ContentValues values = new ContentValues();
 					values.put(PriceHistoryTable.COLUMN_ADJUSTED_CLOSE, price.getAdjustedClose());
 					values.put(PriceHistoryTable.COLUMN_CLOSE, price.getClose());
@@ -355,15 +459,15 @@ public class ProcessorImpl implements Processor {
 					values.put(PriceHistoryTable.COLUMN_LOW, price.getLow());
 					values.put(PriceHistoryTable.COLUMN_OPEN, price.getOpen());
 					values.put(PriceHistoryTable.COLUMN_SYMBOL, study.getSymbol());
-					getContentResolver().insert(PaiContentProvider.PRICE_HISTORY_URI, values);
-				} catch (Exception e) {
-					Log.e(TAG,"Exception on Insert History ",e);
+					valueArray[ndx] = values;
+					ndx++;
 				}
-				Log.d(TAG, "Time to delete/insert history ms = " + (System.currentTimeMillis()-dbUpdateStartTime));
+				getContentResolver().bulkInsert(PaiContentProvider.PRICE_HISTORY_URI, valueArray);
+
+				Log.d(TAG, "Time to delete/insert history ms = " + (System.currentTimeMillis() - dbUpdateStartTime));
+			} catch (Exception e) {
+				Log.e(TAG, "Exception on Insert History ", e);
 			}
-			
-		}
-		Log.d(TAG, "Returning " + history.size() + " Price History records for symbol " + study.getSymbol());
 		return history;
 	}
 
@@ -394,6 +498,27 @@ public class ProcessorImpl implements Processor {
 		Log.d(TAG, "Updating Price Study " + study.toString());
 		Uri studyUri = Uri.parse(PaiContentProvider.PAI_STUDY_URI + "/" + study.getSecurityId());
 		getContentResolver().update(studyUri, values, null, null);
+	}
+
+	void batchSaveStudyPrice(List<Study> studies) {
+		SQLiteDatabase db = dbHelper.getWritableDatabase();
+		db.beginTransaction();
+		try {
+			for (Study study : studies) {
+				ContentValues values = new ContentValues();
+				values.put(StudyTable.COLUMN_PRICE, study.getPrice());
+				values.put(StudyTable.COLUMN_PRICE_DATE, StudyTable.priceDateFormat.format(study.getPriceDate()));
+				if (study.getStatusMap() != 0) {
+					values.put(StudyTable.COLUMN_STATUSMAP, study.getStatusMap());
+				}
+				Log.d(TAG, "Updating Price Study " + study.toString());
+				db.update(StudyTable.TABLE_STUDY, values, StudyTable.COLUMN_ID + "=?", new String[] { Long.toString(study.getSecurityId()) });
+			}
+			db.setTransactionSuccessful();
+		} finally {
+			db.endTransaction();
+		}
+		context.getContentResolver().notifyChange(PaiContentProvider.PAI_STUDY_URI, null);
 	}
 	
 	void saveStudy(Study study) {
@@ -473,12 +598,6 @@ public class ProcessorImpl implements Processor {
 				if (cursor.moveToFirst())
 					do {
 						Study security = StudyTable.loadStudy(cursor);
-						/* Three Columns were not being set when using custom load code
-						String noticeDateStr = cursor.getString(cursor.getColumnIndexOrThrow(StudyTable.COLUMN_NOTICE_DATE));
-						study.setNoticeDate(noticeDateFormat.parse(noticeDateStr));
-						study.setNotice(Notice.fromIndex(cursor.getInt(cursor.getColumnIndexOrThrow(StudyTable.COLUMN_NOTICE))));
-						study.setStatusMap(cursor.getInt(cursor.getColumnIndexOrThrow(StudyTable.COLUMN_STATUSMAP)));
-						*/
 						securities.add(security);
 
 					} while (cursor.moveToNext());

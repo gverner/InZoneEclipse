@@ -59,7 +59,7 @@ public class ProcessorImpl implements Processor {
 	
 	/**
 	 * Process all securities.
-	 * lookup current price and cal¯culates study
+	 * lookup current price and calculates study
 	 * 
 	 * @param symbol when symbol is null all securities are processed.
 	 * @return
@@ -87,6 +87,8 @@ public class ProcessorImpl implements Processor {
 					}
 					calculateStudy(security, history); // shallow copy of cashed history because it is modified
 //					saveStudy(security);
+					security.setInsufficientHistory(false);
+					security.setNoPrice(false);
 				} else {
 					security.setInsufficientHistory(true);
 				}
@@ -110,15 +112,6 @@ public class ProcessorImpl implements Processor {
 		updateCurrentPrice(studies);
 		long start = System.currentTimeMillis();
 		batchSaveStudyPrice(studies);
-		/*
-		for (Study security : studies) {
-			if (security.getPrice() != 0) {
-					saveStudyPrice(security);
-			} else {
-				security.setNoPrice(true);
-			}
-		}
-		*/
 		Log.d(TAG,"Time to update db prices "+(System.currentTimeMillis() - start));
 		return studies;
 	}
@@ -252,6 +245,7 @@ public class ProcessorImpl implements Processor {
 		Map<String,Study> cacheQuotes = new HashMap<String, Study>();
 		for (Study quote : securities) {
 			Log.d(TAG, quote.getSymbol());
+			quote.setDelayedPrice(false);
 			String oldName = quote.getName();
 			Study cachedQuote = cacheQuotes.get(quote.getSymbol());
 			if (cachedQuote == null) {
@@ -290,7 +284,7 @@ public class ProcessorImpl implements Processor {
 			if (Thread.interrupted()) {
 				throw new InterruptedException();
 			}
-			Log.d(TAG,"Price="+quote.getPrice()+" Low="+quote.getLow()+" High="+quote.getHigh()+ " Open="+quote.getOpen()+" Date="+quote.getPriceDate());
+			Log.d(TAG,"Price="+quote.getPrice()+" Low="+quote.getLow()+" High="+quote.getHigh()+ " Open="+quote.getOpen()+" Date="+quote.getPriceDate()+ " delayed="+quote.hasDelayedPrice());
 		}
 	}
 

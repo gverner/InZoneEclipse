@@ -34,4 +34,10 @@ public class MockProcessor implements Processor {
 		return new ArrayList<Study>();
 	}
 
+	@Override
+	public void onClose() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

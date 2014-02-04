@@ -10,6 +10,8 @@ public class PaiStudyTest extends AndroidTestCase {
 		assertTrue(!study.hasDelayedPrice());
 		study.setDelayedPrice(true);
 		assertTrue(study.hasDelayedPrice());
+		assertFalse(study.hasInsufficientHistory());
+		assertFalse(study.hasNoPrice());
 	}
 
 	public void testNoPrice() {
@@ -18,6 +20,8 @@ public class PaiStudyTest extends AndroidTestCase {
 		assertTrue(!study.hasNoPrice());
 		study.setNoPrice(true);
 		assertTrue(study.hasNoPrice());
+		assertFalse(study.hasDelayedPrice());
+		assertFalse(study.hasInsufficientHistory());
 	}
 
 	public void testInsufficientPrice() {
@@ -26,6 +30,8 @@ public class PaiStudyTest extends AndroidTestCase {
 		assertTrue(!study.hasInsufficientHistory());
 		study.setInsufficientHistory(true);
 		assertTrue(study.hasInsufficientHistory());
+		assertFalse(study.hasDelayedPrice());
+		assertFalse(study.hasNoPrice());
 	}
 
 	public void testStatusMap() {

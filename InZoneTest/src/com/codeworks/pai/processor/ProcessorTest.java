@@ -98,7 +98,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		Rules rules = new EmaRules(study);
 		
 		assertEquals("Price", MockDataReader.UNG_PRICE, study.getPrice());
-		assertEquals("ATR", 0.58d, round(study.getAverageTrueRange()));
+		assertEquals("ATR", 0.61d, round(study.getAverageTrueRange()));
 		assertEquals("StdDev Week", 1.46d, round(study.getEmaStddevWeek()));
 		assertEquals("StdDev Month", 5.62d, round(study.getEmaStddevMonth()));
 		assertEquals("MA week", 20.46d, round(study.getEmaWeek()));
@@ -123,7 +123,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		Study study = getStudy(TestDataLoader.GLD);
 		Rules rules = new EmaRules(study);
 		assertEquals("Price", MockDataReader.GLD_PRICE, study.getPrice());
-		assertEquals("ATR", 1.94d, round(study.getAverageTrueRange()));
+		assertEquals("ATR", 2.21d, round(study.getAverageTrueRange()));
 		assertEquals("StdDev Week", 5.42d, round(study.getEmaStddevWeek()));
 		assertEquals("StdDev Month", 7.15d, round(study.getEmaStddevMonth()));
 		assertEquals("MA week", 156.61d, round(study.getEmaWeek()));
@@ -149,7 +149,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		Study study = getStudy(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
 		assertEquals("Price", MockDataReader.SPY_PRICE, study.getPrice());
-		assertEquals("ATR", 1.46d, round(study.getAverageTrueRange()));
+		assertEquals("ATR", 1.48d, round(study.getAverageTrueRange()));
 		assertEquals("MA week", 151.08d, round(study.getEmaWeek()));
 		assertEquals("MA month", 141.13d, round(study.getEmaMonth()));
 		assertEquals("MA last week", 150.27d, round(study.getEmaLastWeek()));
@@ -172,7 +172,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		Study study = getStudy(TestDataLoader.SPY);
 		Rules rules = new EmaRules(study);
 		assertEquals("Price", MockDataReader.SPY_PRICE, study.getPrice());
-		assertEquals("ATR", 1.46d, round(study.getAverageTrueRange()));
+		assertEquals("ATR", 1.48d, round(study.getAverageTrueRange()));
 		assertEquals("MA last week", 149.03d, round(study.getSmaLastWeek()));
 		assertEquals("MA last month", 142.85d, round(study.getSmaLastMonth()));
 		assertEquals("MA week", 149.91d, round(study.getSmaWeek()));
@@ -195,7 +195,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 		Study study = getStudy(TestDataLoader.QQQ);
 		Rules rules = new EmaRules(study);
 		assertEquals("Price", MockDataReader.QQQ_PRICE, study.getPrice());
-		assertEquals("ATR", 0.75, round(study.getAverageTrueRange()));
+		assertEquals("ATR", 0.77, round(study.getAverageTrueRange()));
 		assertEquals("MA week", 67.57d, round(study.getEmaWeek()));
 		assertEquals("MA month", 63.99d, round(study.getEmaMonth()));
 		assertEquals("MA last week", 67.32d, round(study.getEmaLastWeek()));
@@ -219,7 +219,7 @@ public class ProcessorTest extends ProviderTestCase2<PaiContentProvider> {
 	
 		Rules smaRules = new SmaRules(study);
 		assertEquals("Price", MockDataReader.QQQ_PRICE, study.getPrice());
-		assertEquals("ATR", 0.75, round(study.getAverageTrueRange()));
+		assertEquals("ATR", 0.77, round(study.getAverageTrueRange()));
 		assertEquals("MA week", 67.15d, round(study.getSmaWeek()));
 		assertEquals("MA month", 66.38d, round(study.getSmaMonth()));
 		assertEquals("MA last week", 66.89d, round(study.getSmaLastWeek()));

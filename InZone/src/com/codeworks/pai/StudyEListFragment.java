@@ -43,45 +43,45 @@ import com.codeworks.pai.processor.UpdateService;
 public class StudyEListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final String		TAG					= StudyEListFragment.class.getSimpleName();
 
-	public static final String	ARG_PORTFOLIO_ID	= "com.codeworks.pai.portfolioId";
-	public static final String	DOWNTREND	= "downtrend";
-	public static final String	UPTREND	= "uptrend";
+	public static final String		ARG_PORTFOLIO_ID	= "com.codeworks.pai.portfolioId";
+	public static final String		DOWNTREND			= "downtrend";
+	public static final String		UPTREND				= "uptrend";
 
 	// private Cursor cursor;
 	private PaiCursorAdapter		adapter;
 	SimpleDateFormat				lastUpdatedFormat	= new SimpleDateFormat("MM/dd/yyyy hh:mmaa", Locale.US);
-	
+
 	private OnItemSelectedListener	listener;
-	private long portfolioId = 1;
-	View footerView;
-	
+	private long					portfolioId			= 1;
+	View							footerView;
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		
+
 		if (getArguments() != null)
-		if (getArguments().getInt(ARG_PORTFOLIO_ID)  != 0) {
-			portfolioId = getArguments().getInt(ARG_PORTFOLIO_ID);
-		}
-		Log.i(TAG, "Activity Created portfolioid="+portfolioId);
+			if (getArguments().getInt(ARG_PORTFOLIO_ID) != 0) {
+				portfolioId = getArguments().getInt(ARG_PORTFOLIO_ID);
+			}
+		Log.i(TAG, "Activity Created portfolioid=" + portfolioId);
 		lastUpdatedFormat.setTimeZone(TimeZone.getTimeZone("US/Eastern"));
-		
+
 		ListView list = getListView();
-		
+
 		View headerView = View.inflate(getActivity(), R.layout.study_e_list_header, null);
 		list.addHeaderView(headerView);
-		
+
 		footerView = View.inflate(getActivity(), R.layout.studylist_footer, null);
 		list.addFooterView(footerView);
-		
-		//ListView list = getListView();
-	    list.setOnItemLongClickListener(new OnItemLongClickListener() {
 
-	      @Override
+		// ListView list = getListView();
+		list.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 				if (view.getId() == R.id.quoteList_symbol) {
-					Toast.makeText(getActivity().getApplicationContext(), "Item in position " + position + " clicked " + ((TextView)view).getText(), Toast.LENGTH_LONG)
-							.show();
+					Toast.makeText(getActivity().getApplicationContext(), "Item in position " + position + " clicked " + ((TextView) view).getText(),
+							Toast.LENGTH_LONG).show();
 					updateDetail(id);
 					// Return true to consume the click event. In this case the
 					// onListItemClick listener is not called anymore.
@@ -91,17 +91,14 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 				}
 			}
 		});
-	    /*	
-		getListView().setOnItemClickListener(
-		new OnItemClickListener() {
-
-			@Override
-			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-				updateDetail();
-			}
-			
-		});
-		*/
+		/*
+		 * getListView().setOnItemClickListener( new OnItemClickListener() {
+		 * 
+		 * @Override public void onItemClick(AdapterView<?> arg0, View arg1, int
+		 * arg2, long arg3) { updateDetail(); }
+		 * 
+		 * });
+		 */
 		fillData();
 	}
 
@@ -114,8 +111,7 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 		 * 
 		 * @Override public void onClick(View v) { updateDetail(); } });
 		 */
-		
-		
+
 		return view;
 	}
 
@@ -125,12 +121,10 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 		adapter.notifyDataSetChanged();
 		// if progress was active probably done.
 		setProgressBar(100);
-		// Register mMessageReceiver to receive messages.
-		//LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(UpdateService.BROADCAST_UPDATE_PROGRESS_BAR));
 		getActivity().registerReceiver(mMessageReceiver, new IntentFilter(UpdateService.BROADCAST_UPDATE_PROGRESS_BAR));
 	}
 
-	  @Override
+	@Override
 	public void onPause() {
 		// Unregister since the activity is not visible
 		getActivity().unregisterReceiver(mMessageReceiver);
@@ -155,11 +149,11 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 			progressBar.setVisibility(ProgressBar.INVISIBLE);
 		}
 	}
-											
+
 	public interface OnItemSelectedListener {
 		public void onStudySelected(Long studyId);
 	}
-
+ 
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
@@ -174,7 +168,7 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 	public void updateDetail(long id) {
 		listener.onStudySelected(id);
 	}
-	
+
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
@@ -182,9 +176,9 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 	}
 
 	public void setPortfolioId(long id) {
-			portfolioId = id;
-			//adapter.notifyDataSetChanged();
-			//fillData();
+		portfolioId = id;
+		// adapter.notifyDataSetChanged();
+		// fillData();
 	}
 
 	private void fillData() {
@@ -199,8 +193,9 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		String selection = StudyTable.COLUMN_PORTFOLIO_ID + " = ? ";
 		String[] selectionArgs = { Long.toString(portfolioId) };
-		Log.i(TAG, "Prepare Cursor Loader portfolio "+portfolioId);
-		CursorLoader cursorLoader = new CursorLoader(getActivity(), PaiContentProvider.PAI_STUDY_URI, StudyTable.getFullProjection(), selection, selectionArgs, null);
+		Log.i(TAG, "Prepare Cursor Loader portfolio " + portfolioId);
+		CursorLoader cursorLoader = new CursorLoader(getActivity(), PaiContentProvider.PAI_STUDY_URI, StudyTable.getFullProjection(), selection, selectionArgs,
+				null);
 		return cursorLoader;
 	}
 
@@ -217,8 +212,8 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 
 	class PaiCursorAdapter extends CursorAdapter {
 		private LayoutInflater	mInflator;
-		private boolean weeklyZoneModifiedByMonthly = false;
-		
+		private boolean			weeklyZoneModifiedByMonthly	= false;
+
 		public PaiCursorAdapter(Context context) {
 			super(context, null, 0);
 			// Log.d("TAG", "CursorAdapter Constr..");
@@ -227,8 +222,9 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
+			Log.d(TAG,"bindView");
 			if (null != cursor) {
-
+				
 				Study study = StudyTable.loadStudy(cursor);
 				study.setMaType(MaType.E);
 				// Set the Menu Image
@@ -283,7 +279,7 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 						textBuyZoneBot.setText("*" + textBuyZoneBot.getText());
 						weeklyZoneModifiedByMonthly = true;
 					}
-					
+
 					textBuyZoneBot.setBackgroundColor(rules.getBuyZoneBackgroundColor());
 					textBuyZoneTop.setBackgroundColor(rules.getBuyZoneBackgroundColor());
 					textBuyZoneBot.setTextColor(rules.getBuyZoneTextColor());
@@ -315,7 +311,7 @@ public class StudyEListFragment extends ListFragment implements LoaderManager.Lo
 					setText(view, "", R.id.quoteList_BuyZoneTop);
 					setText(view, "", R.id.quoteList_SellZoneBottom);
 					setText(view, "", R.id.quoteList_SellZoneTop);
-					
+
 				}
 
 			}

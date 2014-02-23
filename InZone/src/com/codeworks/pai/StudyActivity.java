@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (C) 2011 The Android Open Source Project
+ * Copyright (C) 2011 The Andrfoid Open Source Project
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
@@ -239,16 +239,17 @@ public class StudyActivity extends Activity implements StudyEListFragment.OnItem
 	@Override
 	protected void onResume() {
 		super.onResume();
-		
+	}
+	
+	@Override
+	protected void onStart() {
+		super.onStart();
 		if (!serviceStartedByCreate) {
 			dailyIntent = new Intent(this, UpdateService.class);
 			dailyIntent.putExtra(UpdateService.SERVICE_ACTION, UpdateService.ACTION_PRICE_UPDATE);
 			startService(dailyIntent);
 		}
 		serviceStartedByCreate = false;
-		//SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		//Toast.makeText(this, "Ringtone: " + pref.getString(PaiUtils.PREF_RINGTONE, "none"), Toast.LENGTH_SHORT).show();
-		
 	}
 
 	public void showToast(final String toast)

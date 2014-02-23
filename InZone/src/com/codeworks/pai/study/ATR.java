@@ -1,16 +1,16 @@
 package com.codeworks.pai.study;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.codeworks.pai.db.model.Price;
 
 public class ATR {
 	private boolean			isFirst	= true;
-	private double			atr;
+	private double			emaAtr;
+	private double          smaAtr;
 	private int				periods;
 	private int 			cnt;
-
+	private double alpha;
 	/**
 	 * Construct an <tt>ATR</tt> instance.
 	 * we are using SMA
@@ -21,34 +21,42 @@ public class ATR {
 	 * @param numberPeriods
 	 */
 	public ATR(int numberPeriods) {
-		//alpha = 2d / (numberPeriods + 1d); // EMA
+		alpha = 2d / (numberPeriods + 1d); // EMA
+		//alpha = 2d / (3 + 1d); // EMA
 		periods = numberPeriods;
 		cnt = 0;
+		System.out.println("alpha="+alpha);
 	}
 
-	public double getAtr() {
-		return atr;
+	public double getEmaAtr() {
+		return emaAtr;
+	}
+	public double getSmaAtr() {
+		return smaAtr;
 	}
 
 	public double compute(double high, double low, double prevClose) {
 		double tr = Math.max(Math.max(Math.abs(high - low), Math.abs(high - prevClose)), Math.abs(low - prevClose));
 		//System.out.println("hi="+format(high)+" lo="+format(low)+" pCls="+format(prevClose)+" tr="+format(tr)+" hl="+format(Math.abs(high - low))+" hp="+format(Math.abs(high - prevClose))+" lp="+format(Math.abs(low - prevClose)));
 		if (isFirst) {
-			atr = tr;
-			//satr = tr;
+			emaAtr = high - low; // on first use high - low
+			smaAtr = emaAtr;
 			isFirst = false;
 			cnt++;
 		} else {
 			/* NOT NECESSARY TO start average at period */
 			
 			cnt++;
-			if (cnt <= periods) {
-				atr = (atr + tr);
-			} else {
-				if (cnt == periods + 1) {
-					atr = atr / (periods);
-				}
-				atr = ((atr * (periods - 1)) + tr) / periods;
+			
+			if (cnt < (periods)) {
+				emaAtr = (emaAtr + tr);
+				smaAtr = emaAtr;
+			} else if (cnt == (periods)) {
+				emaAtr = (emaAtr + tr) / (periods);
+				smaAtr = emaAtr;
+			} else  {
+				smaAtr = ((smaAtr * (periods - 1)) + tr) / periods;
+				emaAtr = (tr * alpha) + (emaAtr * (1d - alpha));
 			}
 
 			//atr = ((atr * (periods - 1)) + tr) / periods;
@@ -58,7 +66,8 @@ public class ATR {
 			// -- Divide the total by 14
 			//atr = (tr * alpha) + (atr * (1d - alpha));
 		}
-		return atr;
+		//System.out.println("cnt="+cnt+"satr="+satr+ " eatr="+atr);
+		return emaAtr;
 	}
 
 	public static double compute(List<Price> priceList, int noPeriods) {
@@ -71,7 +80,7 @@ public class ATR {
 			atr.compute(price.getHigh(), price.getLow(), prev.getClose());
 			prev = price;
 		}
-		return atr.getAtr();
+		return atr.getEmaAtr();
 	}
 	/*
 	static String format(double value) {

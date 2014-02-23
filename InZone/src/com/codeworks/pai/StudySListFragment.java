@@ -207,6 +207,7 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
+			Log.d(TAG,"bindView");
 			if (null != cursor) {
 				Study study = StudyTable.loadStudy(cursor);
 				

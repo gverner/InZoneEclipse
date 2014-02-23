@@ -44,8 +44,8 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		assertEquals("MA week", 12.49d, PaiUtils.round(study.getEmaWeek()));
 		assertEquals("MA month", 20.19d, PaiUtils.round(study.getEmaMonth()));
 		// why do these swap
-		assertEquals("MA last week", 12.85d, PaiUtils.round(study.getEmaLastWeek()));
-//		assertEquals("MA last week", 12.49d, PaiUtils.round(study.getEmaLastWeek()));
+//		assertEquals("MA last week", 12.85d, PaiUtils.round(study.getEmaLastWeek()));
+		assertEquals("MA last week", 12.49d, PaiUtils.round(study.getEmaLastWeek()));
 		assertEquals("MA last month", 21,36d, PaiUtils.round(study.getEmaLastMonth()));
 		assertEquals("StdDev Week", 1.78d, PaiUtils.round(study.getEmaStddevWeek()));
 		assertEquals("StdDev Month", 7.52d, PaiUtils.round(study.getEmaStddevMonth()));
@@ -192,7 +192,7 @@ public class ProcessorFunctionalTest extends AndroidTestCase {
 		processor.calculateStudy(study, history);
 		logStudy(study);
 		assertEquals("Price", MockDataReader.SPY_PRICE, study.getPrice());
-		assertEquals("ATR", 2.1d, round(study.getAverageTrueRange()));
+		assertEquals("ATR", 2.08d, round(study.getAverageTrueRange()));
 		assertEquals("StdDev Week", 5.56d, PaiUtils.round(study.getEmaStddevWeek()));
 		assertEquals("StdDev Month", 10.94d, PaiUtils.round(study.getEmaStddevMonth()));
 		assertEquals("MA week", 151.08d, PaiUtils.round(study.getEmaWeek()));

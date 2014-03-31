@@ -269,10 +269,8 @@ public class StudySListFragment extends ListFragment implements LoaderManager.Lo
 				} else {
 					setText(view, "", R.id.quoteList_net);
 					setText(view, "", R.id.quoteList_ema);
-					setText(view, "", R.id.quoteList_BuyZoneBottom);
 					setText(view, "", R.id.quoteList_BuyZoneTop);
 					setText(view, "", R.id.quoteList_SellZoneBottom);
-					setText(view, "", R.id.quoteList_SellZoneTop);
 				}
 			}
 		}

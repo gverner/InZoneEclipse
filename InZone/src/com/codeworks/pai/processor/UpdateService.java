@@ -169,9 +169,13 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 			if (ACTION_SCHEDULE.equals(action) || ACTION_MANUAL_MENU.equals(action) || ACTION_BOOT.equals(action)) {
 				clearServiceLog();
 			}
+<<<<<<< HEAD
 			PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 			PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "InZone");
 			wl.acquire(30000);
+=======
+			powerLockAquire(30000);
+>>>>>>> 0dd641637c4d7f559205202441cf95d75e9da1cb
 			// For each start request, send a message to start a job and deliver the
 			// start ID so we know which request we're stopping when we finish the job
 			// A second repeating can be added to the queue to get a FULL refresh 
@@ -206,7 +210,13 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		Log.d(TAG, "On Start Command execution time ms=" + (System.currentTimeMillis() - startMillis));
 		return START_STICKY;
 	}
-
+	
+	void powerLockAquire(long timeout) {
+		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "InZone");
+		wl.acquire(timeout);
+	}
+	
 	// Handler that receives messages from the thread
 	@SuppressLint("HandlerLeak")
 	final class ServiceHandler extends Handler {

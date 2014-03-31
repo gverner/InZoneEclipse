@@ -477,9 +477,11 @@ public class ProcessorImpl implements Processor {
 	String getLastestOnlineHistoryDbDate(String symbol) {
 		String lastOnlineHistoryDbDate = DateUtils.lastProbableTradeDate();
 		Date latestHistoryDate = reader.latestHistoryDate(symbol);
+		Log.d(TAG,"probable TradeDate"+lastOnlineHistoryDbDate+" latestHistoryDate "+latestHistoryDate);
 		if (latestHistoryDate != null) {
 			lastOnlineHistoryDbDate = DateUtils.toDatabaseFormat(latestHistoryDate);
 		}
+		Log.d(TAG,"latestHistoryDate "+latestHistoryDate);
 		return lastOnlineHistoryDbDate;
 	}
 
@@ -503,6 +505,12 @@ public class ProcessorImpl implements Processor {
 				ContentValues values = new ContentValues();
 				values.put(StudyTable.COLUMN_PRICE, study.getPrice());
 				values.put(StudyTable.COLUMN_PRICE_DATE, StudyTable.priceDateFormat.format(study.getPriceDate()));
+				if (!study.hasDelayedPrice()) {
+					values.put(StudyTable.COLUMN_OPEN, study.getOpen());
+					values.put(StudyTable.COLUMN_LOW, study.getLow());
+					values.put(StudyTable.COLUMN_HIGH, study.getHigh());
+					values.put(StudyTable.COLUMN_LAST_CLOSE, study.getLastClose());
+				}
 				if (study.getStatusMap() != 0) {
 					values.put(StudyTable.COLUMN_STATUSMAP, study.getStatusMap());
 				}

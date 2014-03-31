@@ -227,7 +227,7 @@ public class EmaRules extends RulesBase {
 	@Override
 	public boolean isWeeklyLowerBuyZoneCompressedByMonthly() {
 		
-		if (isDownTrendWeekly() && isDownTrendMonthly() && calcLowerBuyZoneTop(Period.Month) < calcLowerBuyZoneTop(Period.Week)) {
+		if (isDownTrendWeekly() && isDownTrendMonthly()) { // && calcLowerBuyZoneTop(Period.Month) < calcLowerBuyZoneTop(Period.Week)) {
 			return true;
 		} else {
 			return false;

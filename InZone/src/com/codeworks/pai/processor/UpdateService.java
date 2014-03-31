@@ -10,6 +10,7 @@ import org.joda.time.format.ISODateTimeFormat;
 import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -20,6 +21,8 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.ProgressBar;
@@ -166,7 +169,7 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 			if (ACTION_SCHEDULE.equals(action) || ACTION_MANUAL_MENU.equals(action) || ACTION_BOOT.equals(action)) {
 				clearServiceLog();
 			}
-
+			powerLockAquire(30000);
 			// For each start request, send a message to start a job and deliver the
 			// start ID so we know which request we're stopping when we finish the job
 			// A second repeating can be added to the queue to get a FULL refresh 
@@ -201,7 +204,13 @@ public class UpdateService extends Service implements OnSharedPreferenceChangeLi
 		Log.d(TAG, "On Start Command execution time ms=" + (System.currentTimeMillis() - startMillis));
 		return START_STICKY;
 	}
-
+	
+	void powerLockAquire(long timeout) {
+		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "InZone");
+		wl.acquire(timeout);
+	}
+	
 	// Handler that receives messages from the thread
 	@SuppressLint("HandlerLeak")
 	final class ServiceHandler extends Handler {

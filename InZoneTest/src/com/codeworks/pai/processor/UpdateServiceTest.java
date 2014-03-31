@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.HandlerThread;
+import android.os.PowerManager;
 import android.test.AndroidTestCase;
 import android.test.mock.MockContext;
 import android.test.mock.MockResources;
@@ -101,10 +102,16 @@ public class UpdateServiceTest extends AndroidTestCase {
 		void insertServiceLog(ContentValues values) {
 			insertServiceLogCalls++;
 			serviceLogs.add((Integer) values.get(ServiceLogTable.COLUMN_SERVICE_TYPE));
-
 		}
 		
 		
+
+		@Override
+		void powerLockAquire(long timeout) {
+			// Don't know how to mock
+		}
+
+
 		int getPrefUpdateFrequency() {
 			int frequency = 3;
 			return frequency;

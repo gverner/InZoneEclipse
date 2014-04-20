@@ -1,6 +1,8 @@
 package com.codeworks.pai.db;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -98,7 +100,21 @@ public class StudyTable {
 				COLUMN_SMA_STDDEV_MONTH, COLUMN_NOTICE, COLUMN_NOTICE_DATE, COLUMN_CONTRACTS, COLUMN_STATUSMAP };
 		return projection;
 	}
-
+	
+	public static String toPriceDateFormat(Date priceDate) {
+		if (priceDate != null) {
+			return priceDateFormat.format(priceDate);
+		} else {
+			return null;
+		}
+	}
+	public static Date fromPriceDateFormat(String priceDate) throws ParseException {
+		if (priceDate != null && priceDate.length() > 8) {
+			return priceDateFormat.parse(priceDate);
+		} else {
+			return null;
+		}
+	}
 	public static Study loadStudy(Cursor cursor)  {
 		String symbol = cursor.getString(cursor.getColumnIndexOrThrow(StudyTable.COLUMN_SYMBOL));
 		Study study = new Study(symbol);

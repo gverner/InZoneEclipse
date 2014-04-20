@@ -54,7 +54,7 @@ public class Study implements Serializable {
 	Date						noticeDate;
 	int							contracts;
 
-	Date						priceDate;
+	Date						priceDate = new Date();
 	int							statusMap;
 	
 	boolean						historyReloaded = false;

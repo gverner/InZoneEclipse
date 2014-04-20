@@ -360,9 +360,7 @@ public class EmaRules extends RulesBase {
 			if (isUpTrendMonthly()) {
 				double buyZoneTop = calcBuyZoneTop();
 				double AOBBUY = PaiUtils.round(Math.floor(buyZoneTop),0);
-				if (isPossibleDowntrendTermination(Period.Week)) {
-					rule = "Wait for Weekly Close above moving average";
-				} else if (isPriceInBuyZone()) {
+				if (isPriceInBuyZone()) {
 					rule = "C: Sell Puts in the Buy Zone AOB " + Double.toString(AOBBUY) + "p\nA: Buy Stock";
 				} else if (isPriceInSellZone()) {
 					rule = "Sell Puts in the Buy Zone AOB " + Double.toString(AOBBUY) + "p";
@@ -396,9 +394,7 @@ public class EmaRules extends RulesBase {
 			}
 		} else { // Weekly DownTrend
 			if (isUpTrendMonthly()) {
-				if (isPossibleDowntrendTermination(Period.Week)) {
-					rule = "Wait for Weekly Close above moving average";
-				} else if (isPriceInBuyZone()) {
+				if (isPriceInBuyZone()) {
 					rule = "C: Going for the Ride\nA: Buy Stock";
 				} else if (isPriceInSellZone()) {
 					rule = "Going for the Ride";
@@ -434,9 +430,7 @@ public class EmaRules extends RulesBase {
 			}
 		} else { // Weekly DownTrend
 			if (isUpTrendMonthly()) {
-				if (isPossibleDowntrendTermination(Period.Week)) {
-					rule = "C: Sell Stock\nA: Place Stop Loss order at bottom of lower Sell Zone " + PaiUtils.round(calcSellZoneBottom());
-				} else if (isPriceInBuyZone()) {
+				if (isPriceInBuyZone()) {
 					rule = "Going for the Ride";
 				} else if (isPriceInSellZone()) {
 					rule = "C: Sell Stock\nA: Place Stop Loss order at bottom of lower Sell Zone " + PaiUtils.round(calcSellZoneBottom());
@@ -474,10 +468,7 @@ public class EmaRules extends RulesBase {
 			}
 		} else { // Weekly DownTrend
 			if (isUpTrendMonthly()) {
-				if (isPossibleDowntrendTermination(Period.Week)) {
-					rule = "C: Buy Back Calls and Sell Stock\nA: Place Stop Loss order at bottom of lower Sell Zone at " + PaiUtils.round(calcSellZoneBottom())
-							+ " to Buy Back Calls and Sell Stock";
-				} else if (isPriceInBuyZone()) {
+				if (isPriceInBuyZone()) {
 					rule = "Going for the Ride";
 				} else if (isPriceInSellZone()) {
 					rule = "C: Buy Back Calls and Sell Stock\nA: Place Stop Loss order at bottom of lower Sell Zone at " + PaiUtils.round(calcSellZoneBottom())

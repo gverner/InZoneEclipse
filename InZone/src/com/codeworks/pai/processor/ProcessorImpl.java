@@ -180,7 +180,7 @@ public class ProcessorImpl implements Processor {
 		}
 		{
 			if (daily.size() > 20) {
-				updateLastClose(security, daily);
+				// updateLastClose(security, daily);
 				// appendCurrentPrice(daily,security);
 				security.setAverageTrueRange(ATR.compute(daily, 20));
 				Stochastics stoch = new Stochastics();
@@ -195,7 +195,6 @@ public class ProcessorImpl implements Processor {
 	 * update lastClose when price is delayed, real time price populates last close.
 	 * @param security
 	 * @param daily
-	 */
 	void updateLastClose(Study security, List<Price> daily) {
 		if (security.hasDelayedPrice()) { // RTPrice sets lastClose
 			Price lastHistory = daily.get(daily.size() - 1);
@@ -211,6 +210,7 @@ public class ProcessorImpl implements Processor {
 			}
 		}
 	}
+	 */
 
 	private void appendCurrentPrice(List<Price> weekly, Study security, Period period) {
 		if (weekly != null && weekly.size() > 0) {
@@ -504,6 +504,9 @@ public class ProcessorImpl implements Processor {
 			for (Study study : studies) {
 				ContentValues values = new ContentValues();
 				values.put(StudyTable.COLUMN_PRICE, study.getPrice());
+				if (study.getPriceDate() == null) {
+					study.setPriceDate(new Date());
+				}
 				values.put(StudyTable.COLUMN_PRICE_DATE, StudyTable.priceDateFormat.format(study.getPriceDate()));
 				if (!study.hasDelayedPrice()) {
 					values.put(StudyTable.COLUMN_OPEN, study.getOpen());

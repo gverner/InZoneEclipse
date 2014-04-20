@@ -32,8 +32,9 @@ public class DataReaderYahoo implements DataReader {
 
 	/*
 	 * s=symbol l1=last price d1=last trade date t1=last trade time c1=change
-	 * o=open h=day high g=day low v=volumn k1=last trade real times with time
+	 * o=open h=day high g=day low v=volume k1=last trade real times with time
 	 * b=bin b2=bin real time a=asks b1=ask real time n=name
+	 * p=previousClose
 	 */
 	/* (non-Javadoc)
 	 * @see com.codeworks.pai.processor.SecurityDataReader#readCurrentPrice(com.codeworks.pai.db.model.Security)
@@ -45,26 +46,25 @@ public class DataReaderYahoo implements DataReader {
 		double quote = 0;
 		if (security != null && security.getSymbol() != null)
 		try {
-			String url = "http://download.finance.yahoo.com/d/quotes.csv?s=" + security.getSymbol() + "&f=sl1d1k1b2b1nt1gho&e=.csv";
+			String url = "http://download.finance.yahoo.com/d/quotes.csv?s=" + security.getSymbol() + "&f=sl1d1nt1ghop&e=.csv";
 			results = downloadUrl(url);
 			for (String[] line : results) {
 				if (line.length >= 7) {
 					quote = parseDouble(line[1], "Price");
 					security.setPrice(quote);
-					//security.setRtBid(parseDouble(line[4], "Bid"));
-					//security.setRtAsk(parseDouble(line[5], "Ask"));
-					if (N_A.equals(line[2]) && quote == 0.0 && security.getSymbol().equals(line[6])) {
+					if (N_A.equals(line[2]) && quote == 0.0 && security.getSymbol().equals(line[3])) {
 						found = false;
 						security.setName("Not Found");
 					} else {
-						security.setName(line[6]);
+						security.setName(line[3]);
 						found = true;
 					}
-					security.setPriceDate(parseDateTime(line[2] + " " + line[7], " Date Time"));
-					security.setLow(parseDouble(line[8],"Low"));
-					security.setHigh(parseDouble(line[9],"High"));
-					security.setOpen(parseDouble(line[10],"Open"));
-					Log.d(TAG, line[0] + " last=" + line[1] + " rtLast=" + line[3] + " rtBid=" + line[4] + " rtAsk=" + line[5]);
+					security.setPriceDate(parseDateTime(line[2] + " " + line[4], " Date Time"));
+					security.setLow(parseDouble(line[5],"Low"));
+					security.setHigh(parseDouble(line[6],"High"));
+					security.setOpen(parseDouble(line[7],"Open"));
+					security.setLastClose(parseDouble(line[8],"Last Close"));
+					Log.d(TAG, line[0] + " last=" + line[1] + " name=" + line[3] + " time=" + line[4] + " low=" + line[5]);
 				}
 			}
 		} catch (Exception e) {
@@ -92,8 +92,8 @@ public class DataReaderYahoo implements DataReader {
 			long start = System.currentTimeMillis();
 			URL url = new URL(urlStr);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.setReadTimeout(10000 /* milliseconds */);
-			conn.setConnectTimeout(15000 /* milliseconds */);
+			conn.setReadTimeout(15000 /* milliseconds */);
+			conn.setConnectTimeout(20000 /* milliseconds */);
 			conn.setRequestMethod("GET");
 			conn.setDoInput(true);
 			conn.setRequestProperty("User-Agent","Desktop");

@@ -562,7 +562,11 @@ public class ProcessorImpl implements Processor {
 		values.put(StudyTable.COLUMN_HIGH, study.getHigh());
 		values.put(StudyTable.COLUMN_LOW, study.getLow());
 		values.put(StudyTable.COLUMN_LAST_CLOSE,study.getLastClose());
-		values.put(StudyTable.COLUMN_PRICE_DATE, StudyTable.priceDateFormat.format(study.getPriceDate()));
+		try {
+			values.put(StudyTable.COLUMN_PRICE_DATE, StudyTable.priceDateFormat.format(study.getPriceDate()));
+		} catch (Exception e) {
+			Log.e(TAG,"PriceDateFormat Error ", e);
+		}
 		values.put(StudyTable.COLUMN_PRICE_LAST_WEEK, study.getPriceLastWeek());
 		values.put(StudyTable.COLUMN_PRICE_LAST_MONTH, study.getPriceLastMonth());
 		values.put(StudyTable.COLUMN_AVG_TRUE_RANGE, study.getAverageTrueRange());

@@ -182,7 +182,6 @@ public class DataReaderYahoo implements DataReader {
 			returnDate = ydf.parse(stringDate);
 			Log.d(TAG,"Price Date "+ydf.format(returnDate));
 		} catch (ParseException e) {
-			e.printStackTrace();
 			Log.e(TAG, "Parse Date Exception", e);
 		}
 		return returnDate;
